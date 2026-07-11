@@ -1,3 +1,8 @@
+// Preferences window (libadwaita), which runs in a separate process from the
+// shell. It reuses lib/client.js to auto-detect kubectl/kubeconfig and list
+// contexts. Has Adw, Gtk, Gio and GLib but no St/Clutter/Main; see the
+// two-execution-contexts note in CLAUDE.md.
+
 import Adw from 'gi://Adw';
 import Gtk from 'gi://Gtk';
 import Gio from 'gi://Gio';
@@ -66,7 +71,7 @@ export default class KubeMonitorPreferences extends ExtensionPreferences {
         testRow.activatable_widget = testBtn;
         connGroup.add(testRow);
 
-        // Manual overrides, tucked away — empty means auto-detect.
+        // Manual overrides, tucked away; empty means auto-detect.
         const advanced = new Adw.ExpanderRow({
             title: 'Advanced',
             subtitle: 'Extra kubeconfig files and a custom kubectl path.',

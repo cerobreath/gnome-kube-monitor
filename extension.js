@@ -1,3 +1,8 @@
+// Extension entry point: creates the indicator (view), the poller (IO loop) and
+// the GSettings bridge in enable(), tears them all down in disable(), and turns
+// node Ready/NotReady transitions into desktop notifications. Nothing is
+// allocated at module scope, per the EGO lifecycle rules.
+
 import Gio from 'gi://Gio';
 
 import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
@@ -12,7 +17,7 @@ export default class KubeMonitorExtension extends Extension {
     enable() {
         this._settings = this.getSettings();
         this._cancellable = new Gio.Cancellable();
-        // Fallback label when no explicit context is set — resolved lazily.
+        // Fallback label when no explicit context is set; resolved lazily.
         this._context = this._settings.get_string('context');
         this._prevReady = null;
 
@@ -103,7 +108,7 @@ export default class KubeMonitorExtension extends Extension {
     // Fire a desktop notification when a node crosses the Ready boundary. Skips
     // the first poll (no baseline) and always refreshes the baseline so toggling
     // notifications on later doesn't replay old transitions. Works from both
-    // tiers — health-tier nodes carry {name, ready} too.
+    // tiers; health-tier nodes carry {name, ready} too.
     /** @param {{name: string, ready: boolean}[]} nodes */
     _notifyTransitions(nodes) {
         const cur = new Map(nodes.map(n => /** @type {[string, boolean]} */ ([n.name, n.ready])));

@@ -69,17 +69,67 @@ export default class KubeMonitorPreferences extends ExtensionPreferences {
         // Manual overrides, tucked away — empty means auto-detect.
         const advanced = new Adw.ExpanderRow({
             title: 'Advanced',
-            subtitle: 'Custom paths. Leave empty to auto-detect.',
+            subtitle: 'Extra kubeconfig files and a custom kubectl path.',
         });
         connGroup.add(advanced);
-
-        const kubeconfigEntry = new Adw.EntryRow({title: 'kubeconfig path'});
-        advanced.add_row(kubeconfigEntry);
-        settings.bind('kubeconfig-path', kubeconfigEntry, 'text', Gio.SettingsBindFlags.DEFAULT);
 
         const kubectlEntry = new Adw.EntryRow({title: 'kubectl path'});
         advanced.add_row(kubectlEntry);
         settings.bind('kubectl-path', kubectlEntry, 'text', Gio.SettingsBindFlags.DEFAULT);
+
+        // Kubeconfig files: a list that kubectl merges via KUBECONFIG. Add with a
+        // file picker, remove with the trash button. Empty = default ~/.kube/config.
+        const getKubeconfigs = () =>
+            settings.get_string('kubeconfig-path').split(':').map(s => s.trim()).filter(Boolean);
+        const setKubeconfigs = (/** @type {string[]} */ list) =>
+            settings.set_string('kubeconfig-path', list.join(':'));
+
+        const addRow = new Adw.ActionRow({title: 'Add kubeconfig file…'});
+        const addBtn = new Gtk.Button({
+            icon_name: 'list-add-symbolic', valign: Gtk.Align.CENTER, css_classes: ['flat'],
+        });
+        addRow.add_suffix(addBtn);
+        addRow.activatable_widget = addBtn;
+        addBtn.connect('clicked', () => {
+            const dialog = new Gtk.FileDialog({title: 'Select a kubeconfig file'});
+            dialog.open(window, null, (_source, res) => {
+                let file;
+                try {
+                    file = dialog.open_finish(res);
+                } catch {
+                    return;   // dismissed
+                }
+                const path = file?.get_path() ?? '';
+                const list = getKubeconfigs();
+                if (path && !list.includes(path)) {
+                    list.push(path);
+                    setKubeconfigs(list);
+                }
+            });
+        });
+
+        /** @type {Adw.ActionRow[]} */
+        let kubeconfigRows = [];
+        let addRowAdded = false;
+        const rebuildKubeconfigRows = () => {
+            for (const r of kubeconfigRows)
+                advanced.remove(r);
+            if (addRowAdded)
+                advanced.remove(addRow);
+            kubeconfigRows = getKubeconfigs().map(path => {
+                const row = new Adw.ActionRow({title: GLib.path_get_basename(path), subtitle: path});
+                const rm = new Gtk.Button({
+                    icon_name: 'user-trash-symbolic', valign: Gtk.Align.CENTER, css_classes: ['flat'],
+                });
+                rm.connect('clicked', () => setKubeconfigs(getKubeconfigs().filter(p => p !== path)));
+                row.add_suffix(rm);
+                advanced.add_row(row);
+                return row;
+            });
+            advanced.add_row(addRow);
+            addRowAdded = true;
+        };
+        rebuildKubeconfigRows();
 
         // ---------------- logic ----------------
         const opts = () => ({
@@ -94,11 +144,17 @@ export default class KubeMonitorPreferences extends ExtensionPreferences {
             kubectlIcon.icon_name = kubectl ? 'emblem-ok-symbolic' : 'dialog-warning-symbolic';
             kubectlRow.subtitle = kubectl || 'Not found on PATH. Set it under Advanced.';
 
-            const kc = o.kubeconfig || GLib.getenv('KUBECONFIG') ||
-                GLib.build_filenamev([GLib.get_home_dir(), '.kube', 'config']);
-            const exists = GLib.file_test(kc, GLib.FileTest.EXISTS);
-            kubeconfigIcon.icon_name = exists ? 'emblem-ok-symbolic' : 'dialog-warning-symbolic';
-            kubeconfigRow.subtitle = exists ? kc : `${kc}  (missing)`;
+            const list = o.kubeconfig ? o.kubeconfig.split(':').filter(Boolean) : [];
+            if (list.length > 1) {
+                kubeconfigIcon.icon_name = 'emblem-ok-symbolic';
+                kubeconfigRow.subtitle = `${list.length} files`;
+            } else {
+                const kc = list[0] || GLib.getenv('KUBECONFIG') ||
+                    GLib.build_filenamev([GLib.get_home_dir(), '.kube', 'config']);
+                const exists = GLib.file_test(kc, GLib.FileTest.EXISTS);
+                kubeconfigIcon.icon_name = exists ? 'emblem-ok-symbolic' : 'dialog-warning-symbolic';
+                kubeconfigRow.subtitle = exists ? kc : `${kc}  (missing)`;
+            }
         };
 
         let contexts = /** @type {string[]} */ ([]);
@@ -144,7 +200,11 @@ export default class KubeMonitorPreferences extends ExtensionPreferences {
         });
 
         // Re-detect and re-list when the custom paths change.
-        settings.connect('changed::kubeconfig-path', () => { detectPaths(); populate(); });
+        settings.connect('changed::kubeconfig-path', () => {
+            detectPaths();
+            populate();
+            rebuildKubeconfigRows();
+        });
         settings.connect('changed::kubectl-path', () => { detectPaths(); populate(); });
 
         detectPaths();

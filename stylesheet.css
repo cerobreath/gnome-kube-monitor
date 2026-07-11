@@ -76,11 +76,6 @@
     font-size: 0.9em;
 }
 
-.kube-pods-icon {
-    opacity: 0.5;
-    margin-right: 2px;
-}
-
 .kube-pods-ok {
     opacity: 0.6;
 }

@@ -1,0 +1,110 @@
+/* Panel: Kubernetes logo + corner status dot.
+   Logo size/colour are set in code (indicator.js); dot colours below. */
+.kube-panel-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 6px;
+}
+
+/* Menu header: title + refresh on one row, short "updated" time beneath */
+.kube-header {
+    spacing: 8px;
+}
+
+.kube-title {
+    font-weight: bold;
+    font-size: 1.05em;
+}
+
+.kube-time {
+    font-size: 0.82em;
+    opacity: 0.6;
+}
+
+.kube-icon-button {
+    padding: 4px;
+    border-radius: 6px;
+}
+
+.kube-icon-button:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+/* Pods summary line */
+.kube-pods {
+    font-size: 0.9em;
+}
+
+.kube-pods-ok {
+    opacity: 0.6;
+}
+
+.kube-pods-warn {
+    color: #e5a50a;
+}
+
+.kube-pods-err {
+    color: #ff7b72;
+    font-weight: bold;
+}
+
+/* Node rows: name + status on top, CPU/MEM beneath */
+.kube-node-item {
+    spacing: 10px;
+}
+
+.kube-node-text {
+    spacing: 1px;
+}
+
+.kube-node-sub {
+    font-size: 0.8em;
+    opacity: 0.5;
+}
+
+.kube-node-name {
+    font-weight: 500;
+}
+
+.kube-node-value {
+    font-size: 0.9em;
+}
+
+.kube-value-ok,
+.kube-value-unknown {
+    opacity: 0.55;
+}
+
+.kube-value-warning {
+    color: #f5c211;
+    font-weight: bold;
+}
+
+.kube-value-error {
+    color: #ff7b72;
+    font-weight: bold;
+}
+
+/* Status dots (panel corner + node rows) */
+.kube-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 5px;
+    background-color: #9a9996;
+}
+
+.kube-dot-ok {
+    background-color: #2ec27e;
+}
+
+.kube-dot-warning {
+    background-color: #e5a50a;
+}
+
+.kube-dot-error {
+    background-color: #e01b24;
+}
+
+.kube-dot-unknown {
+    background-color: #9a9996;
+}

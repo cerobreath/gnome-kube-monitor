@@ -1,0 +1,11 @@
+{
+  "uuid": "kube-monitor@cerobreath.dev",
+  "name": "Kube Node Monitor",
+  "description": "Monitor the health of Kubernetes cluster nodes right from the GNOME top bar: aggregated status, roles, conditions (Memory/Disk/PID pressure, SchedulingDisabled), age and kubelet version. Data is read via kubectl.",
+  "shell-version": ["45", "46", "47", "48", "49", "50"],
+  "version": 1,
+  "version-name": "0.1.0",
+  "settings-schema": "org.gnome.shell.extensions.kube-monitor",
+  "gettext-domain": "kube-monitor@cerobreath.dev",
+  "url": ""
+}

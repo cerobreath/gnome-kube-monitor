@@ -1,0 +1,31 @@
+{
+  "name": "kube-monitor",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "GPL-2.0-or-later",
+  "description": "Dev tooling for the Kube Node Monitor GNOME Shell extension (tests, lint, JSDoc type-check). Not shipped with the extension.",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "lint": "eslint --cache --cache-location .eslintcache .",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.ui.json",
+    "check": "npm run lint && npm run typecheck && npm test",
+    "pack": "glib-compile-schemas schemas/ && gnome-extensions pack --force --extra-source=lib --extra-source=icons --extra-source=LICENSE .",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.js": "eslint --cache --cache-location .eslintcache --fix"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "@girs/gnome-shell": "^50.0.4",
+    "eslint": "^9.0.0",
+    "globals": "^15.0.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.2.10",
+    "typescript": "^7.0.2"
+  }
+}

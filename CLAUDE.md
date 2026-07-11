@@ -57,8 +57,10 @@ journalctl -f -o cat /usr/bin/gnome-shell | grep -i kube    # extension logs / s
 
 - **Shell process** — `extension.js` + everything in `lib/`. Has `St`, `Clutter`, `Main`,
   `PanelMenu`/`PopupMenu`. No Gtk.
-- **Prefs process** — `prefs.js` only, a separate process. Has `Adw`, `Gtk`, `Gio`. **No**
-  access to `St`/`Clutter`/`Main` or anything in `lib/`.
+- **Prefs process** — `prefs.js`, a separate process. Has `Adw`, `Gtk`, `Gio`, `GLib`.
+  **No** access to `St`/`Clutter`/`Main`. It *may* import the gi-only modules `lib/model.js`
+  and `lib/client.js` (prefs reuses `client.js` to list contexts) — but never the St-based
+  `lib/indicator.js`.
 
 The only thing they share is the **GSettings schema**. All cross-context state (context,
 kubeconfig/kubectl paths, interval, notify toggle) flows through settings keys.

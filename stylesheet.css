@@ -30,6 +30,21 @@
     background-color: rgba(255, 255, 255, 0.08);
 }
 
+/* Context switcher: the clickable name + caret in the header */
+.kube-context-button {
+    padding: 2px 6px;
+    border-radius: 6px;
+}
+
+.kube-context-button:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+.kube-caret {
+    margin-left: 6px;
+    opacity: 0.55;
+}
+
 /* Pods summary line */
 .kube-pods {
     font-size: 0.9em;

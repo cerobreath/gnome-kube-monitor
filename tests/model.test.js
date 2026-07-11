@@ -18,6 +18,7 @@ import {
     aggregateLevel,
     compareNodes,
     nodeQualifier,
+    meterLevel,
     firstLine,
     diffReadiness,
 } from '../lib/model.js';
@@ -172,6 +173,15 @@ test('nodeQualifier: role when healthy, reason when degraded, empty when down', 
     assert.equal(
         nodeQualifier({ready: false, level: NodeLevel.ERROR, roles: ['worker'], issues: []}),
         '');
+});
+
+test('meterLevel buckets load% into ok/warning/error at 70 and 90', () => {
+    assert.equal(meterLevel(0), NodeLevel.OK);
+    assert.equal(meterLevel(69), NodeLevel.OK);
+    assert.equal(meterLevel(70), NodeLevel.WARNING);   // warning boundary
+    assert.equal(meterLevel(89), NodeLevel.WARNING);
+    assert.equal(meterLevel(90), NodeLevel.ERROR);     // error boundary
+    assert.equal(meterLevel(100), NodeLevel.ERROR);
 });
 
 test('firstLine trims to the first line and caps length', () => {

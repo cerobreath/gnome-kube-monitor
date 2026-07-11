@@ -17,7 +17,7 @@ import {
     nodeLevel,
     aggregateLevel,
     compareNodes,
-    nodeValue,
+    nodeQualifier,
     firstLine,
     diffReadiness,
 } from '../lib/model.js';
@@ -162,16 +162,16 @@ test('compareNodes orders most-severe first, then by name', () => {
     assert.deepEqual(order, ['a', 'd', 'b', 'c']);
 });
 
-test('nodeValue phrases healthy/degraded/down differently', () => {
+test('nodeQualifier: role when healthy, reason when degraded, empty when down', () => {
     assert.equal(
-        nodeValue({ready: true, level: NodeLevel.OK, roles: ['worker'], since: '3d', issues: []}),
-        'worker · up 3d');
+        nodeQualifier({ready: true, level: NodeLevel.OK, roles: ['worker'], issues: []}),
+        'worker');
     assert.equal(
-        nodeValue({ready: true, level: NodeLevel.WARNING, roles: ['worker'], since: '1h', issues: ['MemoryPressure']}),
-        'MemoryPressure · up 1h');
+        nodeQualifier({ready: true, level: NodeLevel.WARNING, roles: ['worker'], issues: ['MemoryPressure']}),
+        'MemoryPressure');
     assert.equal(
-        nodeValue({ready: false, level: NodeLevel.ERROR, roles: ['worker'], since: '45m', issues: []}),
-        'down 45m');
+        nodeQualifier({ready: false, level: NodeLevel.ERROR, roles: ['worker'], issues: []}),
+        '');
 });
 
 test('firstLine trims to the first line and caps length', () => {

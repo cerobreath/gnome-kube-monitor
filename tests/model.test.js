@@ -17,8 +17,9 @@ import {
     nodeLevel,
     aggregateLevel,
     compareNodes,
-    nodeValue,
+    nodeQualifier,
     firstLine,
+    diffReadiness,
 } from '../lib/model.js';
 
 import {NOW, HEALTH_TEXT, DETAIL_OBJ, METRICS_OBJ, PODS_TEXT} from './fixtures.js';
@@ -161,20 +162,32 @@ test('compareNodes orders most-severe first, then by name', () => {
     assert.deepEqual(order, ['a', 'd', 'b', 'c']);
 });
 
-test('nodeValue phrases healthy/degraded/down differently', () => {
+test('nodeQualifier: role when healthy, reason when degraded, empty when down', () => {
     assert.equal(
-        nodeValue({ready: true, level: NodeLevel.OK, roles: ['worker'], since: '3d', issues: []}),
-        'worker · up 3d');
+        nodeQualifier({ready: true, level: NodeLevel.OK, roles: ['worker'], issues: []}),
+        'worker');
     assert.equal(
-        nodeValue({ready: true, level: NodeLevel.WARNING, roles: ['worker'], since: '1h', issues: ['MemoryPressure']}),
-        'MemoryPressure · up 1h');
+        nodeQualifier({ready: true, level: NodeLevel.WARNING, roles: ['worker'], issues: ['MemoryPressure']}),
+        'MemoryPressure');
     assert.equal(
-        nodeValue({ready: false, level: NodeLevel.ERROR, roles: ['worker'], since: '45m', issues: []}),
-        'down 45m');
+        nodeQualifier({ready: false, level: NodeLevel.ERROR, roles: ['worker'], issues: []}),
+        '');
 });
 
 test('firstLine trims to the first line and caps length', () => {
     assert.equal(firstLine('boom\nstack\nmore'), 'boom');
     assert.equal(firstLine('x'.repeat(500)).length, 240);
     assert.equal(firstLine(null), '');
+});
+
+test('diffReadiness reports down/up transitions (the notify logic)', () => {
+    const prev = new Map([['a', true], ['b', true], ['c', false]]);
+    const cur = new Map([['a', true], ['b', false], ['c', true], ['d', true]]);
+    // b went down, c recovered, a unchanged, d is new (no baseline → ignored)
+    assert.deepEqual(diffReadiness(prev, cur), {down: ['b'], up: ['c']});
+});
+
+test('diffReadiness yields nothing on the first poll (null baseline)', () => {
+    // This is why already-down nodes at startup never notify — they only set the baseline.
+    assert.deepEqual(diffReadiness(null, new Map([['a', false], ['b', true]])), {down: [], up: []});
 });

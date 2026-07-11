@@ -6,6 +6,7 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import {KubeIndicator} from './lib/indicator.js';
 import {KubePoller} from './lib/poller.js';
 import {fetchContexts, fetchCurrentContext} from './lib/client.js';
+import {diffReadiness} from './lib/model.js';
 
 export default class KubeMonitorExtension extends Extension {
     enable() {
@@ -79,14 +80,24 @@ export default class KubeMonitorExtension extends Extension {
     // the cluster switcher. Best-effort; failures leave the UI as-is.
     _refreshContextInfo() {
         const opts = this._readOpts();
-        if (!opts.context) {
-            fetchCurrentContext(opts, this._cancellable)
-                .then(ctx => { if (ctx) this._context = ctx; })
+        const showList = (/** @type {string} */ current) => {
+            fetchContexts(opts, this._cancellable)
+                .then(list => this._indicator?.setContexts(list, current))
                 .catch(() => {});
+        };
+        // Resolve the effective current context first so the switcher can mark it
+        // (when no explicit context is set, that's kubectl's current-context).
+        if (opts.context) {
+            showList(opts.context);
+        } else {
+            fetchCurrentContext(opts, this._cancellable)
+                .then(ctx => {
+                    if (ctx)
+                        this._context = ctx;
+                    showList(ctx || this._context || '');
+                })
+                .catch(() => showList(''));
         }
-        fetchContexts(opts, this._cancellable)
-            .then(list => this._indicator?.setContexts(list, this._settings?.get_string('context') ?? ''))
-            .catch(() => {});
     }
 
     // Fire a desktop notification when a node crosses the Ready boundary. Skips
@@ -96,21 +107,11 @@ export default class KubeMonitorExtension extends Extension {
     /** @param {{name: string, ready: boolean}[]} nodes */
     _notifyTransitions(nodes) {
         const cur = new Map(nodes.map(n => /** @type {[string, boolean]} */ ([n.name, n.ready])));
-        if (this._prevReady && this._settings?.get_boolean('notify-node-changes')) {
-            const down = [];
-            const up = [];
-            for (const [name, ready] of cur) {
-                const was = this._prevReady.get(name);
-                if (was === undefined)
-                    continue;
-                if (was && !ready)
-                    down.push(name);
-                else if (!was && ready)
-                    up.push(name);
-            }
+        if (this._settings?.get_boolean('notify-node-changes')) {
+            const {down, up} = diffReadiness(this._prevReady, cur);
             this._notify(down, up);
         }
-        this._prevReady = cur;
+        this._prevReady = cur;   // always refresh the baseline (even when notifications are off)
     }
 
     // One notification per poll, even when several nodes flip at once.
@@ -123,16 +124,15 @@ export default class KubeMonitorExtension extends Extension {
         if (total === 0)
             return;
         if (total === 1) {
-            Main.notify('Kube Node Monitor', down.length
-                ? `⚠ Node ${down[0]} is NotReady`
-                : `✓ Node ${up[0]} recovered`);
+            Main.notify('Kube Node Monitor',
+                down.length ? `${down[0]} is down` : `${up[0]} recovered`);
             return;
         }
         const lines = [];
         if (down.length)
-            lines.push(`⚠ NotReady: ${down.join(', ')}`);
+            lines.push(`Down: ${down.join(', ')}`);
         if (up.length)
-            lines.push(`✓ Recovered: ${up.join(', ')}`);
+            lines.push(`Recovered: ${up.join(', ')}`);
         Main.notify('Kube Node Monitor', lines.join('\n'));
     }
 }

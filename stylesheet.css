@@ -1,4 +1,4 @@
-/* Panel: Kubernetes logo + corner status dot.
+/* Panel: Kubernetes helm + corner status dot.
    Logo size/colour are set in code (indicator.js); dot colours below. */
 .kube-panel-dot {
     width: 10px;
@@ -6,33 +6,79 @@
     border-radius: 6px;
 }
 
-/* Menu header: title + refresh on one row, short "updated" time beneath */
+/* Menu header: context name + caret, "updated" time beneath.
+   min-width widens the whole popup so node rows and meters have room. */
 .kube-header {
     spacing: 8px;
+    min-width: 340px;
 }
 
 .kube-title {
-    font-weight: bold;
+    font-weight: 600;
     font-size: 1.05em;
 }
 
 .kube-time {
-    font-size: 0.82em;
-    opacity: 0.6;
+    font-size: 0.8em;
+    opacity: 0.5;
+}
+
+.kube-context-button {
+    padding: 2px 8px;
+    border-radius: 8px;
+}
+
+.kube-context-button:hover {
+    background-color: rgba(255, 255, 255, 0.07);
+}
+
+.kube-caret {
+    margin-left: 6px;
+    opacity: 0.45;
 }
 
 .kube-icon-button {
-    padding: 4px;
-    border-radius: 6px;
+    padding: 5px;
+    border-radius: 8px;
 }
 
 .kube-icon-button:hover {
-    background-color: rgba(255, 255, 255, 0.08);
+    background-color: rgba(255, 255, 255, 0.07);
 }
 
-/* Pods summary line */
+/* Collapsible context list (buttons that keep the menu open) */
+.kube-context-list {
+    padding-top: 2px;
+    padding-bottom: 2px;
+}
+
+.kube-context-row {
+    padding: 5px 8px;
+    border-radius: 8px;
+}
+
+.kube-context-row:hover {
+    background-color: rgba(255, 255, 255, 0.07);
+}
+
+.kube-context-icon {
+    margin-right: 10px;
+}
+
+.kube-context-empty {
+    padding: 5px 8px;
+    opacity: 0.45;
+}
+
+/* Pods summary: centred, labelled, spaced (no dot separators) */
 .kube-pods {
+    spacing: 14px;
     font-size: 0.9em;
+}
+
+.kube-pods-icon {
+    opacity: 0.5;
+    margin-right: 2px;
 }
 
 .kube-pods-ok {
@@ -45,44 +91,97 @@
 
 .kube-pods-err {
     color: #ff7b72;
-    font-weight: bold;
+    font-weight: 600;
 }
 
-/* Node rows: name + status on top, CPU/MEM beneath */
+/* Node rows: dot + name + qualifier + duration on top, meters beneath */
 .kube-node-item {
+    padding-top: 9px;
+    padding-bottom: 9px;
+}
+
+.kube-node-box {
+    spacing: 6px;
+}
+
+.kube-node-top {
     spacing: 10px;
-}
-
-.kube-node-text {
-    spacing: 1px;
-}
-
-.kube-node-sub {
-    font-size: 0.8em;
-    opacity: 0.5;
 }
 
 .kube-node-name {
     font-weight: 500;
+    font-size: 1.02em;
 }
 
-.kube-node-value {
-    font-size: 0.9em;
+.kube-node-qual {
+    font-size: 0.85em;
+    opacity: 0.45;
 }
 
-.kube-value-ok,
-.kube-value-unknown {
-    opacity: 0.55;
+.kube-node-duration {
+    font-size: 0.85em;
+    font-weight: 600;
 }
 
-.kube-value-warning {
+.kube-dur-up {
+    color: #57e389;
+}
+
+.kube-dur-warn {
     color: #f5c211;
-    font-weight: bold;
 }
 
-.kube-value-error {
+.kube-dur-down {
     color: #ff7b72;
-    font-weight: bold;
+}
+
+/* Per-node CPU/MEM meters; min-widths keep the CPU and MEM columns aligned
+   across rows, and the row is indented to sit under the node name. */
+.kube-node-meters {
+    spacing: 20px;
+    margin-left: 19px;
+}
+
+.kube-meter {
+    spacing: 7px;
+}
+
+.kube-meter-label {
+    font-size: 0.68em;
+    font-weight: 600;
+    opacity: 0.4;
+    min-width: 26px;
+}
+
+.kube-meter-track {
+    width: 54px;
+    height: 5px;
+    border-radius: 3px;
+    background-color: rgba(255, 255, 255, 0.13);
+}
+
+.kube-meter-fill {
+    height: 5px;
+    border-radius: 3px;
+    background-color: rgba(255, 255, 255, 0.5);
+}
+
+.kube-meter-fill.kube-meter-ok {
+    background-color: #2ec27e;
+}
+
+.kube-meter-fill.kube-meter-warning {
+    background-color: #e5a50a;
+}
+
+.kube-meter-fill.kube-meter-error {
+    background-color: #e01b24;
+}
+
+.kube-meter-value {
+    font-size: 0.72em;
+    opacity: 0.65;
+    min-width: 30px;
 }
 
 /* Status dots (panel corner + node rows) */
@@ -107,4 +206,10 @@
 
 .kube-dot-unknown {
     background-color: #9a9996;
+}
+
+/* Error text reuses the value-error colour */
+.kube-value-error {
+    color: #ff7b72;
+    font-weight: 600;
 }

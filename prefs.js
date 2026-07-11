@@ -30,7 +30,7 @@ export default class KubeMonitorPreferences extends ExtensionPreferences {
 
         const notify = new Adw.SwitchRow({
             title: 'Notify on node up/down',
-            subtitle: 'Desktop notification when a node becomes NotReady or recovers',
+            subtitle: 'Alert when a node goes down or recovers',
         });
         monitorGroup.add(notify);
         settings.bind('notify-node-changes', notify, 'active', Gio.SettingsBindFlags.DEFAULT);
@@ -38,7 +38,7 @@ export default class KubeMonitorPreferences extends ExtensionPreferences {
         // ---------------- Connection ----------------
         const connGroup = new Adw.PreferencesGroup({
             title: 'Connection',
-            description: 'Auto-detected — you normally don’t need to change anything.',
+            description: 'Auto-detected. Change these only if needed.',
         });
         page.add(connGroup);
 
@@ -69,7 +69,7 @@ export default class KubeMonitorPreferences extends ExtensionPreferences {
         // Manual overrides, tucked away — empty means auto-detect.
         const advanced = new Adw.ExpanderRow({
             title: 'Advanced',
-            subtitle: 'Custom paths — leave empty to auto-detect',
+            subtitle: 'Custom paths. Leave empty to auto-detect.',
         });
         connGroup.add(advanced);
 
@@ -92,7 +92,7 @@ export default class KubeMonitorPreferences extends ExtensionPreferences {
             const o = opts();
             const kubectl = o.kubectlPath || GLib.find_program_in_path('kubectl') || '';
             kubectlIcon.icon_name = kubectl ? 'emblem-ok-symbolic' : 'dialog-warning-symbolic';
-            kubectlRow.subtitle = kubectl || 'Not found on PATH — set it under Advanced';
+            kubectlRow.subtitle = kubectl || 'Not found on PATH. Set it under Advanced.';
 
             const kc = o.kubeconfig || GLib.getenv('KUBECONFIG') ||
                 GLib.build_filenamev([GLib.get_home_dir(), '.kube', 'config']);
@@ -135,7 +135,7 @@ export default class KubeMonitorPreferences extends ExtensionPreferences {
             testBtn.sensitive = false;
             fetchContexts(opts(), null)
                 .then(list => window.add_toast(new Adw.Toast({
-                    title: `Connected — ${list.length} context${list.length === 1 ? '' : 's'} found`,
+                    title: `Connected. Found ${list.length} context${list.length === 1 ? '' : 's'}.`,
                 })))
                 .catch(e => window.add_toast(new Adw.Toast({
                     title: `Failed: ${String(e?.message ?? e).split('\n')[0]}`,

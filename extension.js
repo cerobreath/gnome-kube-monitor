@@ -124,16 +124,15 @@ export default class KubeMonitorExtension extends Extension {
         if (total === 0)
             return;
         if (total === 1) {
-            Main.notify('Kube Node Monitor', down.length
-                ? `⚠ Node ${down[0]} is NotReady`
-                : `✓ Node ${up[0]} recovered`);
+            Main.notify('Kube Node Monitor',
+                down.length ? `${down[0]} is down` : `${up[0]} recovered`);
             return;
         }
         const lines = [];
         if (down.length)
-            lines.push(`⚠ NotReady: ${down.join(', ')}`);
+            lines.push(`Down: ${down.join(', ')}`);
         if (up.length)
-            lines.push(`✓ Recovered: ${up.join(', ')}`);
+            lines.push(`Recovered: ${up.join(', ')}`);
         Main.notify('Kube Node Monitor', lines.join('\n'));
     }
 }

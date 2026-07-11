@@ -1,4 +1,4 @@
-/* Panel: Kubernetes logo + corner status dot.
+/* Panel: Kubernetes helm + corner status dot.
    Logo size/colour are set in code (indicator.js); dot colours below. */
 .kube-panel-dot {
     width: 10px;
@@ -6,52 +6,54 @@
     border-radius: 6px;
 }
 
-/* Menu header: title + refresh on one row, short "updated" time beneath */
+/* Menu header: context name + caret on one row, "updated" time beneath.
+   min-width widens the whole popup so node rows and meters have room. */
 .kube-header {
     spacing: 8px;
+    min-width: 320px;
 }
 
 .kube-title {
-    font-weight: bold;
+    font-weight: 600;
     font-size: 1.05em;
 }
 
 .kube-time {
-    font-size: 0.82em;
-    opacity: 0.6;
+    font-size: 0.8em;
+    opacity: 0.5;
 }
 
-.kube-icon-button {
-    padding: 4px;
-    border-radius: 6px;
-}
-
-.kube-icon-button:hover {
-    background-color: rgba(255, 255, 255, 0.08);
-}
-
-/* Context switcher: the clickable name + caret in the header */
+/* The clickable context switcher (name + caret). Tight hover highlight. */
 .kube-context-button {
-    padding: 2px 6px;
-    border-radius: 6px;
+    padding: 2px 8px;
+    border-radius: 8px;
 }
 
 .kube-context-button:hover {
-    background-color: rgba(255, 255, 255, 0.08);
+    background-color: rgba(255, 255, 255, 0.07);
 }
 
 .kube-caret {
     margin-left: 6px;
-    opacity: 0.55;
+    opacity: 0.45;
 }
 
-/* Pods summary line */
+.kube-icon-button {
+    padding: 5px;
+    border-radius: 8px;
+}
+
+.kube-icon-button:hover {
+    background-color: rgba(255, 255, 255, 0.07);
+}
+
+/* Pods summary */
 .kube-pods {
     font-size: 0.9em;
 }
 
 .kube-pods-ok {
-    opacity: 0.6;
+    opacity: 0.55;
 }
 
 .kube-pods-warn {
@@ -60,21 +62,18 @@
 
 .kube-pods-err {
     color: #ff7b72;
-    font-weight: bold;
+    font-weight: 600;
 }
 
-/* Node rows: name + status on top, CPU/MEM beneath */
+/* Node rows: name + status on top, CPU/MEM meters beneath */
 .kube-node-item {
     spacing: 10px;
+    padding-top: 6px;
+    padding-bottom: 6px;
 }
 
 .kube-node-text {
-    spacing: 1px;
-}
-
-.kube-node-sub {
-    font-size: 0.8em;
-    opacity: 0.5;
+    spacing: 5px;
 }
 
 .kube-node-name {
@@ -87,17 +86,61 @@
 
 .kube-value-ok,
 .kube-value-unknown {
-    opacity: 0.55;
+    opacity: 0.5;
 }
 
 .kube-value-warning {
     color: #f5c211;
-    font-weight: bold;
+    font-weight: 600;
 }
 
 .kube-value-error {
     color: #ff7b72;
-    font-weight: bold;
+    font-weight: 600;
+}
+
+/* Per-node CPU/MEM meters: label · track/fill · percentage */
+.kube-node-meters {
+    spacing: 18px;
+}
+
+.kube-meter {
+    spacing: 6px;
+}
+
+.kube-meter-label {
+    font-size: 0.7em;
+    opacity: 0.45;
+}
+
+.kube-meter-track {
+    width: 54px;
+    height: 5px;
+    border-radius: 3px;
+    background-color: rgba(255, 255, 255, 0.13);
+}
+
+.kube-meter-fill {
+    height: 5px;
+    border-radius: 3px;
+    background-color: rgba(255, 255, 255, 0.5);
+}
+
+.kube-meter-fill.kube-meter-ok {
+    background-color: #2ec27e;
+}
+
+.kube-meter-fill.kube-meter-warning {
+    background-color: #e5a50a;
+}
+
+.kube-meter-fill.kube-meter-error {
+    background-color: #e01b24;
+}
+
+.kube-meter-value {
+    font-size: 0.72em;
+    opacity: 0.65;
 }
 
 /* Status dots (panel corner + node rows) */

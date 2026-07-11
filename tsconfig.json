@@ -1,0 +1,24 @@
+{
+  "//": "Strict type-check (checkJs) of the logic core. The GObject view layer (extension.js, lib/indicator.js) is checked by tsconfig.ui.json with strict-null relaxed. No emit — the extension ships as the plain .js it already is. Run: npm run typecheck.",
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2022"],
+    "allowJs": true,
+    "checkJs": true,
+    "noEmit": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "types": []
+  },
+  "include": [
+    "prefs.js",
+    "lib/model.js",
+    "lib/schedule.js",
+    "lib/client.js",
+    "lib/poller.js",
+    "types/**/*.d.ts"
+  ]
+}

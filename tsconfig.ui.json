@@ -1,0 +1,12 @@
+{
+  "//": "The GObject view layer. Same strict options as tsconfig.json but with strictNullChecks relaxed. PanelMenu.Button initializes its fields in _init() (not a constructor), and JSDoc has no definite-assignment (!) operator, so strict-null reports a false 'possibly undefined' on every _init-assigned widget. Class-field declarations can't fix it either — in GObject.registerClass classes the field initializers run after _init() and clobber it. All other strict checks (noImplicitAny, etc.) stay on here.",
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "strictNullChecks": false
+  },
+  "include": [
+    "extension.js",
+    "lib/indicator.js",
+    "types/**/*.d.ts"
+  ]
+}

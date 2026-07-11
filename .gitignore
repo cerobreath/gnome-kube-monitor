@@ -1,0 +1,6 @@
+schemas/gschemas.compiled
+*.zip
+node_modules/
+.eslintcache
+.idea/
+.codegraph/

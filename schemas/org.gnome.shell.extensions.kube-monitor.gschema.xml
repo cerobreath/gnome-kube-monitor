@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+  <schema id="org.gnome.shell.extensions.kube-monitor"
+          path="/org/gnome/shell/extensions/kube-monitor/">
+    <key name="refresh-interval" type="i">
+      <default>10</default>
+      <range min="2" max="3600"/>
+      <summary>Refresh interval (sec)</summary>
+      <description>How often to poll kubectl for node status.</description>
+    </key>
+    <key name="notify-node-changes" type="b">
+      <default>true</default>
+      <summary>Notify on node up/down</summary>
+      <description>Show a desktop notification when a node becomes NotReady or recovers.</description>
+    </key>
+    <key name="context" type="s">
+      <default>''</default>
+      <summary>kubectl context</summary>
+      <description>Context name. Empty means the current context is used.</description>
+    </key>
+    <key name="kubeconfig-path" type="s">
+      <default>''</default>
+      <summary>kubeconfig path</summary>
+      <description>Path to the kubeconfig file. Empty means the default (~/.kube/config).</description>
+    </key>
+    <key name="kubectl-path" type="s">
+      <default>''</default>
+      <summary>kubectl path</summary>
+      <description>Full path to the kubectl binary. Empty means look it up in PATH.</description>
+    </key>
+  </schema>
+</schemalist>

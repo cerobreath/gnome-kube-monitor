@@ -12,7 +12,7 @@ glib-compile-schemas "$SRC_DIR/schemas"
 echo "==> Symlink $DEST_DIR -> $SRC_DIR"
 mkdir -p "$EXT_ROOT"
 if [ -e "$DEST_DIR" ] && [ ! -L "$DEST_DIR" ]; then
-    echo "ERROR: $DEST_DIR exists and is not a symlink — remove it manually." >&2
+    echo "ERROR: $DEST_DIR exists and is not a symlink; remove it manually." >&2
     exit 1
 fi
 ln -sfn "$SRC_DIR" "$DEST_DIR"
@@ -23,9 +23,10 @@ echo
 echo "Enable:    gnome-extensions enable $UUID"
 echo "Prefs:     gnome-extensions prefs $UUID"
 echo
-echo "Wayland: the shell picks up a new extension after you log out and back in,"
-echo "or test it in a nested session without logging out:"
-echo "    dbus-run-session -- gnome-shell --nested --wayland"
+echo "Wayland: the shell picks up a new extension after you log out and back in."
+echo "To test without logging out, run a nested shell:"
+echo "    dbus-run-session -- gnome-shell --devkit             # GNOME 49+ (needs mutter-devkit)"
+echo "    dbus-run-session -- gnome-shell --nested --wayland   # GNOME 45-48"
 echo
 echo "Extension logs:"
 echo "    journalctl -f -o cat /usr/bin/gnome-shell | grep -i kube"

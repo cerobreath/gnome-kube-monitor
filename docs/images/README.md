@@ -6,10 +6,10 @@ Drop the files here with these exact names and the README picks them up. Shoot o
 | File | Type | Priority | What to capture |
 |------|------|----------|-----------------|
 | `logo-dark.svg` / `logo-light.svg` | SVG | **done** | The Kubernetes helm, black for the light theme and white for dark. Recolored from `icons/kubernetes-symbolic.svg`; vector, so no PNG needed. |
-| `hero.png` | PNG (or GIF), ~1400px | **must** | Panel top-right with the menu open: the context header + "updated now", the pods line, 2–3 nodes with CPU/MEM bars, and one node red (down). Real wallpaper behind it. This is the one shot that carries the README. |
+| `demo.mp4` + `hero.png` | video (5 MB) + still | **done** | Full ~28s walkthrough (open menu → meters → click-to-copy → context switcher → prefs) + a poster still, both from the recording. On publish, embed demo.mp4 as an inline `<video>` (see README comment). |
+| `prefs.png` | PNG | **done** | Pulled from the walkthrough: Connection group, context = demo-cluster, kubectl/kubeconfig paths, Test button. |
 | `panel-states.png` | PNG, ~600px | **must** | Tight crop of just the panel icon in green / amber / red, composited into one strip. |
-| `notification.gif` | GIF, few sec | **must** | A node flipping to NotReady: dot goes red + the GNOME notification slides in. Use a throwaway cluster (kind/minikube), never a real one. |
-| `prefs.png` | PNG, ~700px | recommended | Preferences window: Connection group with green checks on kubectl/kubeconfig, context dropdown open, ideally the Test "Connected" toast. |
+| `notification.png` | PNG, ~560px | **must** | Screenshot of the "worker-2 is down" desktop notification, ideally with the panel's red dot in frame. Trigger: `docker stop k3d-demo-agent-1`. |
 
 Tips: for GIFs, `peek` or `wf-recorder` + `gifski` give clean output. Crop tight, the
 panel and popup are small. Blur or use fake node names if your real cluster names are

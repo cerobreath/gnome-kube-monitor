@@ -37,18 +37,22 @@
   </p>
 -->
 
-<!-- MEDIA: hero
-  What: the GNOME panel top-right with the extension menu open, showing the whole thing
-        at once: the context header + "updated now", the pods summary line, two or three
-        nodes with CPU/MEM bars, and ideally one node red (down) so the colors read.
-        Real desktop wallpaper, dark theme.
-  Type: screenshot (PNG); a 3-5s looping GIF is stronger. Keep a GIF under ~4 MB.
-  Size: ~1400px wide (shown at 760).
-  Drop at: docs/images/hero.png
--->
 <p align="center">
-  <img src="docs/images/hero.png" alt="Kube Node Monitor menu open in the GNOME top bar" width="760">
+  <img src="docs/images/hero.png" alt="Kube Node Monitor: cluster health in the GNOME top bar" width="820">
 </p>
+
+<p align="center">
+  <a href="docs/images/demo.mp4"><b>▶ Watch the full ~30-second walkthrough</b></a>
+</p>
+
+<!-- The still above is a frame from docs/images/demo.mp4, the full ~28s walkthrough
+     (open the menu, node meters, click-to-copy, context switcher, preferences).
+     To show it as an inline player on GitHub, upload demo.mp4 to a Release (or drag it
+     into any issue/PR comment) and paste the resulting user-attachments URL here:
+       <video src="https://github.com/user-attachments/assets/…" controls muted width="820"></video>
+     A committed-file form also plays once the repo is pushed:
+       <video src="https://github.com/<OWNER>/<REPO>/raw/main/docs/images/demo.mp4" controls muted width="820"></video> -->
+
 
 ## Why
 
@@ -85,16 +89,15 @@ Two more things:
 - desktop notifications when a node crosses Ready to NotReady, and again when it recovers;
 - click any node to copy `kubectl describe node <name>` to the clipboard.
 
-<!-- MEDIA: notification
-  What: GIF of a node flipping to NotReady: the panel dot going red and the GNOME
-        notification ("<node> is down") sliding in. Trigger it on a throwaway cluster
-        (kind/minikube), not a real one.
-  Type: GIF, a few seconds.
-  Size: ~700px wide.
-  Drop at: docs/images/notification.gif
+<!-- MEDIA: notification  (screenshot)
+  What: the desktop notification "worker-2 is down" from Kube Node Monitor, ideally with
+        the panel's red status dot in frame. Trigger it with: docker stop k3d-demo-agent-1.
+  Type: PNG.
+  Size: ~560px wide.
+  Drop at: docs/images/notification.png
 -->
 <p align="center">
-  <img src="docs/images/notification.gif" alt="Desktop notification when a node goes NotReady" width="560">
+  <img src="docs/images/notification.png" alt="Desktop notification: worker-2 is down" width="480">
 </p>
 
 ## Install

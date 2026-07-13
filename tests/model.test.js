@@ -19,8 +19,8 @@ import {
     compareNodes,
     nodeQualifier,
     meterLevel,
-    firstLine,
     diffReadiness,
+    classifyError,
 } from '../lib/model.js';
 
 import {NOW, HEALTH_TEXT, DETAIL_OBJ, METRICS_OBJ, PODS_TEXT} from './fixtures.js';
@@ -184,12 +184,6 @@ test('meterLevel buckets load% into ok/warning/error at 70 and 90', () => {
     assert.equal(meterLevel(100), NodeLevel.ERROR);
 });
 
-test('firstLine trims to the first line and caps length', () => {
-    assert.equal(firstLine('boom\nstack\nmore'), 'boom');
-    assert.equal(firstLine('x'.repeat(500)).length, 240);
-    assert.equal(firstLine(null), '');
-});
-
 test('diffReadiness reports down/up transitions (the notify logic)', () => {
     const prev = new Map([['a', true], ['b', true], ['c', false]]);
     const cur = new Map([['a', true], ['b', false], ['c', true], ['d', true]]);
@@ -200,4 +194,68 @@ test('diffReadiness reports down/up transitions (the notify logic)', () => {
 test('diffReadiness yields nothing on the first poll (null baseline)', () => {
     // This is why already-down nodes at startup never notify — they only set the baseline.
     assert.deepEqual(diffReadiness(null, new Map([['a', false], ['b', true]])), {down: [], up: []});
+});
+
+test('classifyError buckets each kubectl failure into a human headline', () => {
+    const title = raw => classifyError(raw).title;
+
+    // A chained message (deadline + trailing EOF) is a timeout, not a drop.
+    assert.equal(
+        title('error: client rate limiter Wait returned an error: context deadline exceeded - error from a previous attempt: EOF'),
+        "The cluster didn't answer in time");
+    assert.equal(title('Unable to connect to the server: dial tcp 10.0.0.1:6443: connect: connection refused'),
+        "Can't reach the cluster");
+    assert.equal(title('Get "https://api:6443/api": dial tcp: lookup api on 1.1.1.1:53: no such host'),
+        "Can't reach the cluster");
+    assert.equal(title('x509: certificate signed by unknown authority'),
+        "The cluster's certificate didn't check out");
+    assert.equal(title('error: You must be logged in to the server (Unauthorized)'),
+        'The cluster turned down the login');
+    assert.equal(title('nodes is forbidden: User "dev" cannot list resource "nodes" in API group ""'),
+        "This login can't read the cluster");
+    assert.equal(title('error: getting credentials: exec: executable kubectl-oidc_login failed'),
+        'The login needs renewing');
+    assert.equal(title('Failed to execute child process "kubectl" (No such file or directory)'),
+        "Can't find kubectl");
+    assert.equal(title('error: no configuration has been provided, try setting KUBECONFIG'),
+        'No kubeconfig found');
+    assert.equal(title('error: context "old" does not exist'),
+        "That context isn't set up");
+    // kubectl 1.35's actual wording for a missing context (verified against the binary).
+    assert.equal(title('Error in configuration: context was not found for specified context: old'),
+        "That context isn't set up");
+    assert.equal(title('error: something nobody has ever seen'),
+        'kubectl ran into a problem');
+});
+
+test('classifyError strips klog noise from the detail, keeps kubectl words', () => {
+    const raw = 'E0711 22:10:05.879293  658680 memcache.go:265] "Unhandled Error" ' +
+        'err="couldn\'t get current server API group list: Get \\"http://localhost:8080/api?timeout=5s\\": ' +
+        'dial tcp [::1]:8080: connect: connection refused"';
+    const {title, detail} = classifyError(raw);
+    assert.equal(title, "Can't reach the cluster");
+    // klog prefix + `"Unhandled Error" err=` wrapper gone, quotes unescaped.
+    assert.equal(detail,
+        'couldn\'t get current server API group list: Get "http://localhost:8080/api?timeout=5s": ' +
+        'dial tcp [::1]:8080: connect: connection refused');
+});
+
+test('classifyError prefers kubectl\'s human summary over the repeated klog noise', () => {
+    // Exactly what kubectl 1.35 emits for an unreachable server: five identical
+    // klog lines, then a plain summary. The detail should be that summary.
+    const klog = 'E0713 13:30:03.888827   96402 memcache.go:265] "Unhandled Error" ' +
+        'err="couldn\'t get current server API group list: dial tcp 127.0.0.1:8080: connect: connection refused"';
+    const raw = `${klog}\n${klog}\n${klog}\n` +
+        'The connection to the server 127.0.0.1:8080 was refused - did you specify the right host or port?';
+    assert.deepEqual(classifyError(raw), {
+        title: "Can't reach the cluster",
+        detail: 'The connection to the server 127.0.0.1:8080 was refused - did you specify the right host or port?',
+    });
+});
+
+test('classifyError caps the detail length and honours the watchdog flag', () => {
+    assert.equal(classifyError('x'.repeat(500)).detail.length, 200);   // 199 + ellipsis
+    // The watchdog killed the poll: timeout headline, no misleading detail.
+    assert.deepEqual(classifyError('Operation was cancelled', {timedOut: true}),
+        {title: "The cluster didn't answer in time", detail: ''});
 });

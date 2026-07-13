@@ -16,6 +16,7 @@
 .kube-title {
     font-weight: 600;
     font-size: 1.05em;
+    max-width: 240px;
 }
 
 .kube-time {
@@ -206,8 +207,23 @@
     background-color: #9a9996;
 }
 
-/* Error text reuses the value-error colour */
-.kube-value-error {
+/* Error state: a human headline plus kubectl's de-noised detail. max-width
+   caps the labels' preferred width (St clamps to it), so a long single-line
+   error wraps inside the menu instead of stretching it past its standard
+   width; the value stays under the header's 340px min-width. */
+.kube-error {
+    spacing: 3px;
+    max-width: 300px;
+}
+
+.kube-error-title {
     color: #ff7b72;
     font-weight: 600;
+    max-width: 300px;
+}
+
+.kube-error-detail {
+    font-size: 0.85em;
+    opacity: 0.55;
+    max-width: 300px;
 }

@@ -59,8 +59,8 @@ journalctl -f -o cat /usr/bin/gnome-shell | grep -i kube    # extension logs / s
   `PanelMenu`/`PopupMenu`. No Gtk.
 - **Prefs process** — `prefs.js`, a separate process. Has `Adw`, `Gtk`, `Gio`, `GLib`.
   **No** access to `St`/`Clutter`/`Main`. It *may* import the gi-only modules `lib/model.js`
-  and `lib/client.js` (prefs reuses `client.js` to list contexts) — but never the St-based
-  `lib/indicator.js`.
+  and `lib/client.js` (prefs reuses `client.js` to list contexts) — but never the shell-only
+  `lib/indicator.js` / `lib/notifier.js`.
 
 The only thing they share is the **GSettings schema**. All cross-context state (context,
 kubeconfig/kubectl paths, interval, notify toggle) flows through settings keys.
@@ -70,8 +70,10 @@ kubeconfig/kubectl paths, interval, notify toggle) flows through settings keys.
 The layering is the point — it's what makes the logic testable and the shell coupling
 contained. Dependencies point inward toward `model.js`; nothing imports "up".
 
-- **`lib/model.js` — pure, zero `gi://` imports.** All parsing, severity, sorting, and
-  display-string formatting. Plain data in → plain data out; time-dependent functions take
+- **`lib/model.js` — pure, zero `gi://` imports.** All parsing, severity, sorting,
+  display-string formatting, and error classification (`classifyError` maps raw kubectl
+  stderr to a `{title, detail}` — headline wording + tests live here, not in the view).
+  Plain data in → plain data out; time-dependent functions take
   an explicit `nowMs`. This runs unchanged under gnome-shell, plain gjs, and node, which is
   why it carries the test coverage. **Keep it gi-free.**
 - **`lib/schedule.js` — pure, gi-free.** Poll-cadence math (base-interval clamp,
@@ -84,9 +86,16 @@ contained. Dependencies point inward toward `model.js`; nothing imports "up".
   `schedule.js`), the watchdog, and reentrancy (see invariants below). Pushes render state
   out via callbacks.
 - **`lib/indicator.js` — the view.** `PanelMenu.Button` + menu. Decoupled from settings:
-  it emits `refresh-requested`, `context-selected(string)`, `menu-open-changed(bool)` and
-  never reads GSettings itself.
-- **`extension.js` — thin wiring** + node up/down notifications.
+  it emits `refresh-requested`, `context-selected(string)`, `menu-open-changed(bool)`,
+  `node-copied(string)` and never reads GSettings itself. Notifications are the extension's
+  job, so the copy-to-clipboard row emits `node-copied` rather than posting a banner itself.
+- **`lib/notifier.js` — the notification edge.** Shell-only (imports `resource:///`, like
+  `indicator.js`). Owns a dedicated `MessageTray.Source` titled "Kube Node Monitor" with the
+  helm icon, so banners are attributed to the extension, not the generic "System" source.
+  Bridges the MessageTray API split at GNOME 46 (45: positional ctors + `showNotification`;
+  46–50+: params-object ctors + `addNotification`) by feature-detecting `addNotification` on
+  the `Source` prototype. Persistent-source pattern: recreated after the shell destroys it.
+- **`extension.js` — thin wiring** + node up/down transitions routed through `notifier.js`.
 
 ### Two-tier polling (the core optimization)
 
@@ -122,10 +131,15 @@ poller picks a tier by menu state:
 - **Actor reuse**: node rows are keyed by name in `_nodeRows`; a full rebuild happens only
   when the signature (sorted names + levels) changes. Otherwise only dynamic bits (up/down
   duration, CPU/MEM) are updated in place — no teardown churn while the menu is open.
-- Status color is class-based (`kube-dot-<level>` / `kube-value-<level>`, level ∈
+- Status color is class-based (`kube-dot-<level>` / `kube-meter-<level>`, level ∈
   `ok|warning|error|unknown`), not inline. The one exception is the panel logo color:
   `_syncIconColor()` pins the symbolic icon to the panel's foreground and re-runs on
   `Main.panel` `style-changed` so it tracks light/dark themes.
+- **Stable width**: the menu width is the header's `min-width` (`.kube-header`); any
+  variable-length text is bounded so it can't stretch the popup. The context title
+  ellipsizes; the error state (`_makeErrorItem`) wraps at `WORD_CHAR`. St clamps an actor's
+  preferred width to its CSS `max-width`, so a `max-width` + `line_wrap` label reflows
+  instead of widening the menu — never let unbounded text into the menu.
 - The "updated N ago" label uses `GLib.get_monotonic_time()` (immune to wall-clock jumps).
 
 ## Testing & type-checking

@@ -7,6 +7,7 @@
   "include": [
     "extension.js",
     "lib/indicator.js",
+    "lib/notifier.js",
     "types/**/*.d.ts"
   ]
 }

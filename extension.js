@@ -10,6 +10,7 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
 import {KubeIndicator} from './lib/indicator.js';
 import {KubePoller} from './lib/poller.js';
+import {KubeNotifier} from './lib/notifier.js';
 import {fetchContexts, fetchCurrentContext} from './lib/client.js';
 import {diffReadiness} from './lib/model.js';
 
@@ -20,6 +21,7 @@ export default class KubeMonitorExtension extends Extension {
         // Fallback label when no explicit context is set; resolved lazily.
         this._context = this._settings.get_string('context');
         this._prevReady = null;
+        this._notifier = new KubeNotifier(this);
 
         this._indicator = new KubeIndicator(this);
         // registerClass() instances are St widgets at runtime, but @girs types the
@@ -29,6 +31,8 @@ export default class KubeMonitorExtension extends Extension {
         this._indicator.connect('refresh-requested', () => this._poller?.refreshNow());
         this._indicator.connect('menu-open-changed', (_i, open) => this._poller?.setMenuOpen(open));
         this._indicator.connect('context-selected', (_i, ctx) => this._settings?.set_string('context', ctx));
+        this._indicator.connect('node-copied', (_i, name) => this._notifier?.notify(
+            'Copied to clipboard', `kubectl describe node ${name}`, {transient: true}));
 
         this._poller = new KubePoller({
             getOpts: () => this._readOpts(),
@@ -69,6 +73,8 @@ export default class KubeMonitorExtension extends Extension {
         }
         this._indicator?.destroy();
         this._indicator = null;
+        this._notifier?.destroy();
+        this._notifier = null;
         this._settings = null;
         this._prevReady = null;
     }
@@ -119,7 +125,9 @@ export default class KubeMonitorExtension extends Extension {
         this._prevReady = cur;   // always refresh the baseline (even when notifications are off)
     }
 
-    // One notification per poll, even when several nodes flip at once.
+    // One notification per poll, even when several nodes flip at once. The
+    // "Kube Node Monitor" attribution comes from the notifier's source, so the
+    // notification title carries the actual event.
     /**
      * @param {string[]} down
      * @param {string[]} up
@@ -129,8 +137,7 @@ export default class KubeMonitorExtension extends Extension {
         if (total === 0)
             return;
         if (total === 1) {
-            Main.notify('Kube Node Monitor',
-                down.length ? `${down[0]} is down` : `${up[0]} recovered`);
+            this._notifier?.notify(down.length ? `${down[0]} is down` : `${up[0]} recovered`);
             return;
         }
         const lines = [];
@@ -138,6 +145,6 @@ export default class KubeMonitorExtension extends Extension {
             lines.push(`Down: ${down.join(', ')}`);
         if (up.length)
             lines.push(`Recovered: ${up.join(', ')}`);
-        Main.notify('Kube Node Monitor', lines.join('\n'));
+        this._notifier?.notify('Node changes', lines.join('\n'));
     }
 }

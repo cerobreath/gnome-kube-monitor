@@ -10,6 +10,7 @@ import GLib from 'gi://GLib';
 
 import {ExtensionPreferences} from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 import {fetchContexts, fetchCurrentContext} from './lib/client.js';
+import {classifyError} from './lib/model.js';
 
 const AUTO_LABEL = 'Current context (auto)';
 
@@ -258,9 +259,16 @@ export default class KubeMonitorPreferences extends ExtensionPreferences {
             fetchContexts(opts(), null)
                 .then(list => window.add_toast(new Adw.Toast({
                     title: `Connected. Found ${list.length} context${list.length === 1 ? '' : 's'}.`,
+                    use_markup: false,
                 })))
+                // Route through the shared classifier rather than printing raw
+                // stderr: it picks kubectl's own summary over the klog noise and
+                // redacts credential material an exec plugin may have logged.
+                // use_markup is false because Adw.Toast parses Pango markup by
+                // default, so untrusted text would be interpreted, not shown.
                 .catch(e => window.add_toast(new Adw.Toast({
-                    title: `Failed: ${String(e?.message ?? e).split('\n')[0]}`,
+                    title: classifyError(e?.message ?? e).title,
+                    use_markup: false,
                 })))
                 .finally(() => { testBtn.sensitive = true; });
         });

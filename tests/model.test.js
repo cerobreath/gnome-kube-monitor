@@ -20,6 +20,7 @@ import {
     nodeQualifier,
     meterLevel,
     classifyError,
+    safeNodeName,
 } from '../lib/model.js';
 
 import {NOW, HEALTH_TEXT, DETAIL_OBJ, METRICS_OBJ, PODS_TEXT} from './fixtures.js';
@@ -238,6 +239,54 @@ test('classifyError prefers kubectl\'s human summary over the repeated klog nois
         title: "Can't reach the cluster",
         detail: 'The connection to the server 127.0.0.1:8080 was refused - did you specify the right host or port?',
     });
+});
+
+test('classifyError redacts credential material an exec plugin may have logged', () => {
+    const jwt = 'eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJhZG1pbiJ9.c2lnbmF0dXJl';
+    const detail = raw => classifyError(raw).detail;
+
+    // OIDC / exec-plugin token echoed into stderr.
+    const oidc = detail(`error: id_token ${jwt} was rejected by the server`);
+    assert.ok(!oidc.includes(jwt), `token leaked: ${oidc}`);
+    assert.ok(oidc.includes('[redacted'), oidc);
+
+    // aws eks get-token style presigned URL.
+    const presigned = detail(
+        'Get "https://sts.amazonaws.com/?Action=GetCallerIdentity&X-Amz-Security-Token=FQoDYXdzEBYaD' +
+        '&X-Amz-Signature=abc123": dial tcp: lookup sts.amazonaws.com: no such host');
+    assert.ok(!presigned.includes('FQoDYXdzEBYaD'), presigned);
+    assert.ok(!presigned.includes('abc123'), presigned);
+    assert.ok(presigned.includes('no such host'), presigned);   // the useful part survives
+
+    // Authorization header dump.
+    assert.ok(!detail(`Unauthorized: Authorization: Bearer ${jwt}`).includes(jwt));
+    // key=value prose.
+    assert.ok(!detail('failed: token=s3cr3tvalue rejected').includes('s3cr3tvalue'));
+    // Client certificate / key material.
+    const pem = detail('-----BEGIN PRIVATE KEY-----\nMIIEvQIBADAN\n-----END PRIVATE KEY-----');
+    assert.ok(!pem.includes('MIIEvQIBADAN'), pem);
+});
+
+test('safeNodeName neutralizes names that would be unsafe to key, render or paste', () => {
+    assert.equal(safeNodeName('worker-1.example.com'), 'worker-1.example.com');   // valid: untouched
+    // A newline would otherwise auto-execute the rest once pasted into a shell.
+    assert.equal(safeNodeName('worker-1\nrm -rf /'), 'worker-1rm-rf');
+    assert.equal(safeNodeName('a;b`c$(id)'), 'abcid');
+    assert.equal(safeNodeName('  padded  '), 'padded');
+    assert.equal(safeNodeName(''), 'unknown');
+    assert.equal(safeNodeName(null), 'unknown');
+    assert.equal(safeNodeName('!!!'), 'unknown');            // nothing salvageable
+    assert.equal(safeNodeName('x'.repeat(400)).length, 253);  // capped at the RFC 1123 limit
+});
+
+test('parseHealth and parseNodesDetail run node names through safeNodeName', () => {
+    // parseHealth is line-based, so the interesting case here is shell metacharacters.
+    const health = parseHealth('evil;rm -rf /\tfalse\tReady=True,\n');
+    assert.equal(health.nodes[0].name, 'evilrm-rf');
+    const detail = parseNodesDetail(JSON.stringify({
+        items: [{metadata: {name: 'evil;rm -rf /', creationTimestamp: '2026-01-01T00:00:00Z'}, status: {}, spec: {}}],
+    }), NOW);
+    assert.equal(detail.nodes[0].name, 'evilrm-rf');
 });
 
 test('classifyError caps the detail length and honours the watchdog flag', () => {

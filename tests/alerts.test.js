@@ -141,7 +141,10 @@ test('cluster-unreachable: pends under `for`, fires once, resolves on reconnect'
     ]);
     assert.deepEqual(types(out[1]), [`fire:${CLUSTER_KEY}`]);
     assert.equal(out[1][0].title, "Can't reach the cluster");
-    assert.equal(out[1][0].body, 'connection refused');
+    // The kubectl detail is deliberately NOT in the banner body: it can carry
+    // credential material from an exec plugin, and GNOME shows notification
+    // bodies on the lock screen. It stays in the menu instead.
+    assert.equal(out[1][0].body, '');
     assert.deepEqual(out[2], []);
     assert.deepEqual(types(out[3]), [`resolve:${CLUSTER_KEY}`]);
 });

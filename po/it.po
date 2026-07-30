@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Kube Node Monitor 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-31 01:05+0300\n"
+"POT-Creation-Date: 2026-07-31 02:24+0300\n"
 "PO-Revision-Date: 2026-07-31 01:05+0300\n"
 "Last-Translator: Kube Node Monitor contributors\n"
 "Language-Team: Italian\n"
@@ -54,8 +54,11 @@ msgstr "Notifiche"
 #. Translators: "Debounce" and "hold" are the two waiting periods
 #. configured by the rows below.
 #: prefs.js:54
-msgid "How and when alerts fire. Debounce and hold windows ride out brief blips."
-msgstr "Come e quando scattano gli avvisi. Le finestre di attesa e di mantenimento assorbono le interruzioni brevi."
+msgid ""
+"How and when alerts fire. Debounce and hold windows ride out brief blips."
+msgstr ""
+"Come e quando scattano gli avvisi. Le finestre di attesa e di mantenimento "
+"assorbono le interruzioni brevi."
 
 #: prefs.js:59
 msgid "Notify when the cluster is unreachable"
@@ -90,7 +93,8 @@ msgstr "Attesa per il cluster"
 
 #: prefs.js:85
 msgid "Seconds the cluster must stay unreachable before it notifies"
-msgstr "Secondi in cui il cluster deve restare irraggiungibile prima di notificare"
+msgstr ""
+"Secondi in cui il cluster deve restare irraggiungibile prima di notificare"
 
 #. Translators: an alert stays active this long after its cause clears.
 #: prefs.js:93
@@ -99,8 +103,11 @@ msgstr "Mantieni l'avviso per"
 
 #. Translators: a "flap" is a node switching state repeatedly.
 #: prefs.js:95
-msgid "Seconds to hold a firing alert after it clears, so a flap doesn’t re-fire"
-msgstr "Secondi per mantenere attivo un avviso dopo che la causa è cessata, così un'oscillazione non lo fa scattare di nuovo"
+msgid ""
+"Seconds to hold a firing alert after it clears, so a flap doesn’t re-fire"
+msgstr ""
+"Secondi per mantenere attivo un avviso dopo che la causa è cessata, così "
+"un'oscillazione non lo fa scattare di nuovo"
 
 #: prefs.js:102
 msgid "Repeat interval"
@@ -108,7 +115,9 @@ msgstr "Intervallo di ripetizione"
 
 #: prefs.js:103
 msgid "Seconds before re-notifying a still-firing alert (0 never repeats)"
-msgstr "Secondi prima di notificare di nuovo un avviso ancora attivo (0 non ripete mai)"
+msgstr ""
+"Secondi prima di notificare di nuovo un avviso ancora attivo (0 non ripete "
+"mai)"
 
 #. Translators: alerts firing within this window become one banner.
 #: prefs.js:111
@@ -116,8 +125,11 @@ msgid "Group wait"
 msgstr "Attesa di raggruppamento"
 
 #: prefs.js:112
-msgid "Seconds to batch alerts firing together into one banner (0 groups per poll)"
-msgstr "Secondi per raggruppare gli avvisi simultanei in un'unica notifica (0 raggruppa solo quelli della stessa interrogazione)"
+msgid ""
+"Seconds to batch alerts firing together into one banner (0 groups per poll)"
+msgstr ""
+"Secondi per raggruppare gli avvisi simultanei in un'unica notifica (0 "
+"raggruppa solo quelli della stessa interrogazione)"
 
 #: prefs.js:120
 msgid "Connection"
@@ -328,69 +340,69 @@ msgstr[0] "Per %d ora"
 msgstr[1] "Per %d ore"
 
 #. Translators: placeholder in the menu header before the first poll lands.
-#: lib/indicator.js:167 lib/indicator.js:389
+#: lib/indicator.js:176 lib/indicator.js:398
 msgid "Loading…"
 msgstr "Caricamento…"
 
 #. Translators: spoken name of the icon-only refresh button.
-#: lib/indicator.js:193
+#: lib/indicator.js:202
 msgid "Refresh now"
 msgstr "Aggiorna ora"
 
 #. Translators: submenu that mutes alert banners for a while.
-#: lib/indicator.js:234 lib/indicator.js:289
+#: lib/indicator.js:243 lib/indicator.js:298
 msgid "Mute alerts"
 msgstr "Silenzia avvisi"
 
 #. Translators: menu row that cancels an active mute.
-#: lib/indicator.js:242
+#: lib/indicator.js:251
 msgid "Turn muting off"
 msgstr "Disattiva il silenzio"
 
 #. Translators: menu row that opens the extension's preferences window.
-#: lib/indicator.js:252
+#: lib/indicator.js:261
 msgid "Settings"
 msgstr "Impostazioni"
 
 #. Translators: the "Mute alerts" row while muting is active. %s is a
 #. short duration such as "45m" or "2h".
-#: lib/indicator.js:286
+#: lib/indicator.js:295
 #, javascript-format
 msgid "Muted · %s left"
 msgstr "Silenziato · ancora %s"
 
 #. Translators: spoken state of the cluster switcher when its list is open.
-#: lib/indicator.js:307
+#: lib/indicator.js:316
 msgid "expanded"
 msgstr "espanso"
 
 #. Translators: spoken state of the cluster switcher when its list is closed.
-#: lib/indicator.js:309
+#: lib/indicator.js:318
 msgid "collapsed"
 msgstr "compresso"
 
 #. Translators: spoken name of the menu header button. %1$s is the current
 #. context name, %2$s is "expanded" or "collapsed".
-#: lib/indicator.js:312
+#: lib/indicator.js:321
 #, javascript-format
 msgid "%1$s, %2$s, cluster switcher"
 msgstr "%1$s, %2$s, selettore di cluster"
 
 #. Translators: shown in the cluster switcher when the kubeconfig
 #. defines no contexts.
-#: lib/indicator.js:326
+#: lib/indicator.js:335
 msgid "No contexts"
 msgstr "Nessun contesto"
 
 #. Translators: last row of the cluster switcher; opens preferences so
 #. another kubeconfig can be added.
-#: lib/indicator.js:342
+#: lib/indicator.js:351
 msgid "Add connection…"
 msgstr "Aggiungi connessione…"
 
 #. Translators: spoken name of the selected row in the cluster switcher.
 #. %s is the context name -- a cluster identifier, leave it as it is.
-#: lib/indicator.js:369
+#: lib/indicator.js:378
 #, javascript-format
 msgid "%s, current"
 msgstr "%s, corrente"
@@ -398,7 +410,7 @@ msgstr "%s, corrente"
 #. Translators: spoken summary of the whole cluster. %1$s is a state word
 #. ("healthy", "degraded", …), %2$d is how many nodes are Ready and %3$d
 #. how many there are. The plural form follows the total, %3$d.
-#: lib/indicator.js:414
+#: lib/indicator.js:423
 #, javascript-format
 msgid "%1$s, %2$d of %3$d node ready"
 msgid_plural "%1$s, %2$d of %3$d nodes ready"
@@ -407,13 +419,13 @@ msgstr[1] "%1$s, %2$d di %3$d nodi pronti"
 
 #. Translators: shown in place of the node list when the cluster
 #. reports no nodes at all.
-#: lib/indicator.js:493
+#: lib/indicator.js:502
 msgid "No nodes"
 msgstr "Nessun nodo"
 
 #. Translators: closes a truncated node list. %d is how many
 #. further nodes exist that the menu did not draw.
-#: lib/indicator.js:506
+#: lib/indicator.js:515
 #, javascript-format
 msgid "… and %d more node"
 msgid_plural "… and %d more nodes"
@@ -422,40 +434,40 @@ msgstr[1] "… e altri %d nodi"
 
 #. Translators: very short label for the CPU bar on a node row. Keep it to
 #. about three characters -- it sits in a fixed 30px column.
-#: lib/indicator.js:545
+#: lib/indicator.js:554
 msgctxt "meter"
 msgid "CPU"
 msgstr "CPU"
 
 #. Translators: very short label for the memory bar on a node row. Keep it
 #. to about three characters -- it sits in a fixed 30px column.
-#: lib/indicator.js:548
+#: lib/indicator.js:557
 msgctxt "meter"
 msgid "MEM"
 msgstr "MEM"
 
 #. Translators: spoken uptime on a node row -- how long it has been
 #. Ready. %s is a short duration such as "3d".
-#: lib/indicator.js:604
+#: lib/indicator.js:613
 #, javascript-format
 msgid "up %s"
 msgstr "attivo da %s"
 
 #. Translators: spoken downtime on a node row -- how long it has been
 #. NotReady. %s is a short duration such as "3d".
-#: lib/indicator.js:607
+#: lib/indicator.js:616
 #, javascript-format
 msgid "down %s"
 msgstr "non attivo da %s"
 
 #. Translators: spoken CPU load on a node row. %d is a percentage.
-#: lib/indicator.js:610
+#: lib/indicator.js:619
 #, javascript-format
 msgid "CPU %d%%"
 msgstr "CPU %d%%"
 
 #. Translators: spoken memory load on a node row. %d is a percentage.
-#: lib/indicator.js:614
+#: lib/indicator.js:623
 #, javascript-format
 msgid "memory %d%%"
 msgstr "memoria %d%%"
@@ -463,7 +475,7 @@ msgstr "memoria %d%%"
 #. Translators: pod counts under the menu header. English has one form for
 #. all counts, but %d selects the plural form your language needs. Keep
 #. these very short: up to four of them share one row.
-#: lib/indicator.js:662
+#: lib/indicator.js:671
 #, javascript-format
 msgid "%d running"
 msgid_plural "%d running"
@@ -471,7 +483,7 @@ msgstr[0] "%d in esecuzione"
 msgstr[1] "%d in esecuzione"
 
 #. Translators: pods accepted but not yet started. Keep it very short.
-#: lib/indicator.js:666
+#: lib/indicator.js:675
 #, javascript-format
 msgid "%d pending"
 msgid_plural "%d pending"
@@ -479,7 +491,7 @@ msgstr[0] "%d in attesa"
 msgstr[1] "%d in attesa"
 
 #. Translators: pods stuck restarting (CrashLoopBackOff). Keep it very short.
-#: lib/indicator.js:671
+#: lib/indicator.js:680
 #, javascript-format
 msgid "%d crashing"
 msgid_plural "%d crashing"
@@ -487,7 +499,7 @@ msgstr[0] "%d in crash"
 msgstr[1] "%d in crash"
 
 #. Translators: pods that terminated in failure. Keep it very short.
-#: lib/indicator.js:676
+#: lib/indicator.js:685
 #, javascript-format
 msgid "%d failed"
 msgid_plural "%d failed"
@@ -496,20 +508,20 @@ msgstr[1] "%d falliti"
 
 #. Translators: spoken name of the panel button. "Kube Node Monitor" is
 #. the extension's name -- leave it as it is. %s is the cluster summary.
-#: lib/indicator.js:687
+#: lib/indicator.js:696
 #, javascript-format
 msgid "Kube Node Monitor: %s"
 msgstr "Kube Node Monitor: %s"
 
 #. Translators: shown under the context name while the first poll of a
 #. cluster is still in flight.
-#: lib/indicator.js:701
+#: lib/indicator.js:710
 msgid "updating…"
 msgstr "aggiornamento…"
 
 #. Translators: shown under the context name when the reading is only a
 #. few seconds old, in place of a duration.
-#: lib/indicator.js:709
+#: lib/indicator.js:718
 msgid "now"
 msgstr "adesso"
 

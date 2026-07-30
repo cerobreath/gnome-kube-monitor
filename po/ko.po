@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Kube Node Monitor 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-31 01:05+0300\n"
+"POT-Creation-Date: 2026-07-31 02:24+0300\n"
 "PO-Revision-Date: 2026-07-31 01:05+0300\n"
 "Last-Translator: Kube Node Monitor contributors\n"
 "Language-Team: Korean\n"
@@ -54,8 +54,11 @@ msgstr "알림"
 #. Translators: "Debounce" and "hold" are the two waiting periods
 #. configured by the rows below.
 #: prefs.js:54
-msgid "How and when alerts fire. Debounce and hold windows ride out brief blips."
-msgstr "알림이 발생하는 방식과 시점입니다. 지연 및 유지 시간으로 짧은 장애를 걸러냅니다."
+msgid ""
+"How and when alerts fire. Debounce and hold windows ride out brief blips."
+msgstr ""
+"알림이 발생하는 방식과 시점입니다. 지연 및 유지 시간으로 짧은 장애를 걸러냅니"
+"다."
 
 #: prefs.js:59
 msgid "Notify when the cluster is unreachable"
@@ -99,8 +102,11 @@ msgstr "알림 유지 시간"
 
 #. Translators: a "flap" is a node switching state repeatedly.
 #: prefs.js:95
-msgid "Seconds to hold a firing alert after it clears, so a flap doesn’t re-fire"
-msgstr "원인이 사라진 뒤에도 알림을 유지하는 시간(초). 상태가 요동쳐도 다시 알리지 않습니다"
+msgid ""
+"Seconds to hold a firing alert after it clears, so a flap doesn’t re-fire"
+msgstr ""
+"원인이 사라진 뒤에도 알림을 유지하는 시간(초). 상태가 요동쳐도 다시 알리지 않"
+"습니다"
 
 #: prefs.js:102
 msgid "Repeat interval"
@@ -108,7 +114,8 @@ msgstr "반복 간격"
 
 #: prefs.js:103
 msgid "Seconds before re-notifying a still-firing alert (0 never repeats)"
-msgstr "계속 발생 중인 알림을 다시 알리기까지의 시간(초). 0이면 반복하지 않습니다"
+msgstr ""
+"계속 발생 중인 알림을 다시 알리기까지의 시간(초). 0이면 반복하지 않습니다"
 
 #. Translators: alerts firing within this window become one banner.
 #: prefs.js:111
@@ -116,8 +123,10 @@ msgid "Group wait"
 msgstr "묶음 대기 시간"
 
 #: prefs.js:112
-msgid "Seconds to batch alerts firing together into one banner (0 groups per poll)"
-msgstr "동시에 발생한 알림을 하나로 묶는 시간(초). 0이면 같은 조회의 알림만 묶습니다"
+msgid ""
+"Seconds to batch alerts firing together into one banner (0 groups per poll)"
+msgstr ""
+"동시에 발생한 알림을 하나로 묶는 시간(초). 0이면 같은 조회의 알림만 묶습니다"
 
 #: prefs.js:120
 msgid "Connection"
@@ -322,69 +331,69 @@ msgid_plural "For %d hours"
 msgstr[0] "%d시간 동안"
 
 #. Translators: placeholder in the menu header before the first poll lands.
-#: lib/indicator.js:167 lib/indicator.js:389
+#: lib/indicator.js:176 lib/indicator.js:398
 msgid "Loading…"
 msgstr "불러오는 중…"
 
 #. Translators: spoken name of the icon-only refresh button.
-#: lib/indicator.js:193
+#: lib/indicator.js:202
 msgid "Refresh now"
 msgstr "지금 새로 고침"
 
 #. Translators: submenu that mutes alert banners for a while.
-#: lib/indicator.js:234 lib/indicator.js:289
+#: lib/indicator.js:243 lib/indicator.js:298
 msgid "Mute alerts"
 msgstr "알림 음소거"
 
 #. Translators: menu row that cancels an active mute.
-#: lib/indicator.js:242
+#: lib/indicator.js:251
 msgid "Turn muting off"
 msgstr "음소거 해제"
 
 #. Translators: menu row that opens the extension's preferences window.
-#: lib/indicator.js:252
+#: lib/indicator.js:261
 msgid "Settings"
 msgstr "설정"
 
 #. Translators: the "Mute alerts" row while muting is active. %s is a
 #. short duration such as "45m" or "2h".
-#: lib/indicator.js:286
+#: lib/indicator.js:295
 #, javascript-format
 msgid "Muted · %s left"
 msgstr "음소거 · %s 남음"
 
 #. Translators: spoken state of the cluster switcher when its list is open.
-#: lib/indicator.js:307
+#: lib/indicator.js:316
 msgid "expanded"
 msgstr "펼침"
 
 #. Translators: spoken state of the cluster switcher when its list is closed.
-#: lib/indicator.js:309
+#: lib/indicator.js:318
 msgid "collapsed"
 msgstr "접힘"
 
 #. Translators: spoken name of the menu header button. %1$s is the current
 #. context name, %2$s is "expanded" or "collapsed".
-#: lib/indicator.js:312
+#: lib/indicator.js:321
 #, javascript-format
 msgid "%1$s, %2$s, cluster switcher"
 msgstr "%1$s, %2$s, 클러스터 전환기"
 
 #. Translators: shown in the cluster switcher when the kubeconfig
 #. defines no contexts.
-#: lib/indicator.js:326
+#: lib/indicator.js:335
 msgid "No contexts"
 msgstr "컨텍스트 없음"
 
 #. Translators: last row of the cluster switcher; opens preferences so
 #. another kubeconfig can be added.
-#: lib/indicator.js:342
+#: lib/indicator.js:351
 msgid "Add connection…"
 msgstr "연결 추가…"
 
 #. Translators: spoken name of the selected row in the cluster switcher.
 #. %s is the context name -- a cluster identifier, leave it as it is.
-#: lib/indicator.js:369
+#: lib/indicator.js:378
 #, javascript-format
 msgid "%s, current"
 msgstr "%s, 현재"
@@ -392,7 +401,7 @@ msgstr "%s, 현재"
 #. Translators: spoken summary of the whole cluster. %1$s is a state word
 #. ("healthy", "degraded", …), %2$d is how many nodes are Ready and %3$d
 #. how many there are. The plural form follows the total, %3$d.
-#: lib/indicator.js:414
+#: lib/indicator.js:423
 #, javascript-format
 msgid "%1$s, %2$d of %3$d node ready"
 msgid_plural "%1$s, %2$d of %3$d nodes ready"
@@ -400,13 +409,13 @@ msgstr[0] "%1$s, 노드 %3$d개 중 %2$d개 준비됨"
 
 #. Translators: shown in place of the node list when the cluster
 #. reports no nodes at all.
-#: lib/indicator.js:493
+#: lib/indicator.js:502
 msgid "No nodes"
 msgstr "노드 없음"
 
 #. Translators: closes a truncated node list. %d is how many
 #. further nodes exist that the menu did not draw.
-#: lib/indicator.js:506
+#: lib/indicator.js:515
 #, javascript-format
 msgid "… and %d more node"
 msgid_plural "… and %d more nodes"
@@ -414,40 +423,40 @@ msgstr[0] "… 외 %d개 노드"
 
 #. Translators: very short label for the CPU bar on a node row. Keep it to
 #. about three characters -- it sits in a fixed 30px column.
-#: lib/indicator.js:545
+#: lib/indicator.js:554
 msgctxt "meter"
 msgid "CPU"
 msgstr "CPU"
 
 #. Translators: very short label for the memory bar on a node row. Keep it
 #. to about three characters -- it sits in a fixed 30px column.
-#: lib/indicator.js:548
+#: lib/indicator.js:557
 msgctxt "meter"
 msgid "MEM"
 msgstr "메모리"
 
 #. Translators: spoken uptime on a node row -- how long it has been
 #. Ready. %s is a short duration such as "3d".
-#: lib/indicator.js:604
+#: lib/indicator.js:613
 #, javascript-format
 msgid "up %s"
 msgstr "가동 %s"
 
 #. Translators: spoken downtime on a node row -- how long it has been
 #. NotReady. %s is a short duration such as "3d".
-#: lib/indicator.js:607
+#: lib/indicator.js:616
 #, javascript-format
 msgid "down %s"
 msgstr "중단 %s"
 
 #. Translators: spoken CPU load on a node row. %d is a percentage.
-#: lib/indicator.js:610
+#: lib/indicator.js:619
 #, javascript-format
 msgid "CPU %d%%"
 msgstr "CPU %d%%"
 
 #. Translators: spoken memory load on a node row. %d is a percentage.
-#: lib/indicator.js:614
+#: lib/indicator.js:623
 #, javascript-format
 msgid "memory %d%%"
 msgstr "메모리 %d%%"
@@ -455,28 +464,28 @@ msgstr "메모리 %d%%"
 #. Translators: pod counts under the menu header. English has one form for
 #. all counts, but %d selects the plural form your language needs. Keep
 #. these very short: up to four of them share one row.
-#: lib/indicator.js:662
+#: lib/indicator.js:671
 #, javascript-format
 msgid "%d running"
 msgid_plural "%d running"
 msgstr[0] "%d개 실행 중"
 
 #. Translators: pods accepted but not yet started. Keep it very short.
-#: lib/indicator.js:666
+#: lib/indicator.js:675
 #, javascript-format
 msgid "%d pending"
 msgid_plural "%d pending"
 msgstr[0] "%d개 대기 중"
 
 #. Translators: pods stuck restarting (CrashLoopBackOff). Keep it very short.
-#: lib/indicator.js:671
+#: lib/indicator.js:680
 #, javascript-format
 msgid "%d crashing"
 msgid_plural "%d crashing"
 msgstr[0] "%d개 충돌"
 
 #. Translators: pods that terminated in failure. Keep it very short.
-#: lib/indicator.js:676
+#: lib/indicator.js:685
 #, javascript-format
 msgid "%d failed"
 msgid_plural "%d failed"
@@ -484,20 +493,20 @@ msgstr[0] "%d개 실패"
 
 #. Translators: spoken name of the panel button. "Kube Node Monitor" is
 #. the extension's name -- leave it as it is. %s is the cluster summary.
-#: lib/indicator.js:687
+#: lib/indicator.js:696
 #, javascript-format
 msgid "Kube Node Monitor: %s"
 msgstr "Kube Node Monitor: %s"
 
 #. Translators: shown under the context name while the first poll of a
 #. cluster is still in flight.
-#: lib/indicator.js:701
+#: lib/indicator.js:710
 msgid "updating…"
 msgstr "업데이트 중…"
 
 #. Translators: shown under the context name when the reading is only a
 #. few seconds old, in place of a duration.
-#: lib/indicator.js:709
+#: lib/indicator.js:718
 msgid "now"
 msgstr "방금"
 

@@ -248,9 +248,28 @@ poller picks a tier by menu state:
 **~36 KB/node** (`status.images` is 40% of it) against **251 B for the whole cluster** in
 tier 1 — so a 1000-node cluster means ~36 MB `JSON.parse`d on the compositor's main loop
 while the menu is open. Two bounds contain the damage: `MAX_NODE_ROWS` (indicator.js) caps
-rows at 50 (sorted most-severe-first, remainder summarised, never silently dropped) since
-~14 St actors per row is what actually wedges the shell, and `MAX_TRACKED_ALERTS`
-(alerts.js) caps the persisted alert map. Replacing tier 2's `-o json` with jsonpath was
+rows at 50 (sorted most-severe-first, remainder summarised, never silently dropped), and
+`MAX_TRACKED_ALERTS` (alerts.js) caps the persisted alert map.
+
+The row cap has since been **profiled rather than reasoned about** (Ryzen 7 5800HS,
+headless GNOME 50, synthetic nodes tuned to the measured 37 KB):
+
+| nodes | menu open, capped at 50 | menu open, uncapped | tier-2 parse |
+|-------|-------------------------|---------------------|--------------|
+| 50    | 40 ms build / 129 ms laid out | same | 6 ms |
+| 200   | 42 / 133 ms             | 157 / 641 ms        | 24 ms |
+| 500   | 39 / 128 ms             | 406 / 889 ms        | 31 ms |
+| 1000  | 43 / 138 ms             | 830 / **1826 ms**   | 64 ms |
+
+So the cap holds the cost flat whatever the cluster size, and without it a 1000-node
+cluster would freeze the entire shell for nearly two seconds on every menu open. ~2.5 ms
+per row: halving the cap halves the hitch and shows half the nodes, which is now an
+informed trade rather than a guess. Re-rendering an unchanged list is ~2.5 ms total, so
+the build cost lands on the first open and on a signature change, not on every poll —
+that is the actor-reuse path earning its keep. The parse column is separate and *not*
+capped: it scales with the whole cluster and is the remaining tier-2 cost.
+
+Replacing tier 2's `-o json` with jsonpath was
 measured and **rejected**: roles come from label *keys*, jsonpath can't prefix-filter a map,
 and emitting `{.metadata.labels}` wholesale is worse — one kubevirt node carried ~500 labels,
 so the "optimised" query was only 4x smaller. Fixing it properly needs a different

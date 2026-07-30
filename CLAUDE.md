@@ -54,8 +54,12 @@ journalctl -f -o cat /usr/bin/gnome-shell | grep -i kube    # extension logs / s
 - **License**: GPL-2.0-or-later. The panel icon is the official Kubernetes helm —
   regenerate it by extracting the helm path from the source logo SVG, don't hand-edit the
   path data.
-- **Release**: `npm run pack` builds the installable / EGO-upload zip; CI uploads the same
-  artifact on every push/PR.
+- **Release**: `npm run pack` builds the installable / EGO-upload zip (metadata, the four
+  top-level files, `lib/`, `icons/`, `LICENSE`, and the `.gschema.xml` — **not** the compiled
+  schema). CI can't call it (`gnome-extensions` ships inside the heavy gnome-shell package),
+  so `.github/workflows/ci.yml` hand-rolls a zip whose file set is kept **identical**: it
+  validates the schema with `--dry-run` (writing no `gschemas.compiled`) and excludes that
+  file plus editor leftovers. Change one and change the other.
 
 ## Two execution contexts that cannot share runtime code
 

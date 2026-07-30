@@ -51,15 +51,22 @@ export default class KubeMonitorExtension extends Extension {
         // wrapper as RegisteredPrototype rather than a PanelMenu.Button.
         Main.panel.addToStatusArea(this.uuid, /** @type {any} */ (this._indicator));
 
-        this._indicator.connect('refresh-requested', () => this._poller?.refreshNow());
-        this._indicator.connect('menu-open-changed', (_i, open) => this._poller?.setMenuOpen(open));
-        this._indicator.connect('context-selected', (_i, ctx) => this._settings?.set_string('context', ctx));
-        this._indicator.connect('node-copied', (_i, name) => this._notifier?.notify(
-            'Copied to clipboard', `kubectl describe node ${name}`, {transient: true}));
-        // Snooze: the menu emits seconds to mute for (0 = unmute); persist an
-        // absolute wall-clock deadline the alert machine reads live.
-        this._indicator.connect('snooze-requested', (_i, seconds) => this._settings?.set_int64(
-            'alert-silence-until', seconds > 0 ? Date.now() + seconds * 1000 : 0));
+        // Handler ids are kept and disconnected in disable(). Destroying the
+        // indicator would drop them anyway, but relying on that is the pattern
+        // EGO reviewers query, and being explicit costs an array.
+        /** @type {number[]} */
+        this._indicatorIds = [
+            this._indicator.connect('refresh-requested', () => this._poller?.refreshNow()),
+            this._indicator.connect('menu-open-changed', (_i, open) => this._poller?.setMenuOpen(open)),
+            this._indicator.connect('context-selected',
+                (_i, ctx) => this._settings?.set_string('context', ctx)),
+            this._indicator.connect('node-copied', (_i, name) => this._notifier?.notify(
+                'Copied to clipboard', `kubectl describe node ${name}`, {transient: true})),
+            // Snooze: the menu emits seconds to mute for (0 = unmute); persist an
+            // absolute wall-clock deadline the alert machine reads live.
+            this._indicator.connect('snooze-requested', (_i, seconds) => this._settings?.set_int64(
+                'alert-silence-until', seconds > 0 ? Date.now() + seconds * 1000 : 0)),
+        ];
         this._indicator.setSnoozeUntil(this._settings.get_int64('alert-silence-until'));
 
         this._poller = new KubePoller({
@@ -119,6 +126,9 @@ export default class KubeMonitorExtension extends Extension {
             this._settings?.disconnect(this._settingsChangedId);
             this._settingsChangedId = 0;
         }
+        for (const id of this._indicatorIds ?? [])
+            this._indicator?.disconnect(id);
+        this._indicatorIds = [];
         this._indicator?.destroy();
         this._indicator = null;
         this._notifier?.destroy();

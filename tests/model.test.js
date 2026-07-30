@@ -42,6 +42,11 @@ test('parseMemBytes handles binary, decimal, and bare units', () => {
     assert.equal(parseMemBytes('1024'), 1024);
     assert.equal(parseMemBytes('garbage'), null);
     assert.equal(parseMemBytes(''), null);
+    // The unit group matches any letters, so an inherited Object member must not
+    // be mistaken for a unit (a bare lookup would return a function -> NaN).
+    assert.equal(parseMemBytes('5constructor'), 5);
+    assert.equal(parseMemBytes('5toString'), 5);
+    assert.equal(parseMemBytes('5valueOf'), 5);
 });
 
 test('formatAge buckets seconds/minutes/hours/days from a fixed now', () => {

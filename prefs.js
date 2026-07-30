@@ -111,18 +111,29 @@ export default class KubeMonitorPreferences extends ExtensionPreferences {
 
         // One-click context picker.
         const contextModel = new Gtk.StringList();
-        const contextRow = new Adw.ComboRow({title: 'Context', subtitle: 'Which context to monitor'});
+        // use_markup off: the subtitle interpolates a context name read from the
+        // kubeconfig, which is not ours to trust as markup.
+        const contextRow = new Adw.ComboRow({
+            title: 'Context', subtitle: 'Which context to monitor', use_markup: false,
+        });
         contextRow.model = contextModel;
         connGroup.add(contextRow);
 
-        // Auto-detected kubectl + kubeconfig, with a ✓ / ⚠ status prefix.
+        // Auto-detected kubectl + kubeconfig, with a ✓ / ⚠ status prefix. The
+        // subtitles carry the same meaning in words (the resolved path, or
+        // "Not found…"), so the icon is reinforcement rather than the only
+        // signal; the tooltip names it for anyone hovering or using a reader.
+        // use_markup is off because the subtitles interpolate filesystem paths
+        // and context names, which Adw would otherwise parse as Pango markup.
         const kubectlIcon = new Gtk.Image({icon_name: 'content-loading-symbolic'});
-        const kubectlRow = new Adw.ActionRow({title: 'kubectl'});
+        kubectlIcon.set_tooltip_text('kubectl detection status');
+        const kubectlRow = new Adw.ActionRow({title: 'kubectl', use_markup: false});
         kubectlRow.add_prefix(kubectlIcon);
         connGroup.add(kubectlRow);
 
         const kubeconfigIcon = new Gtk.Image({icon_name: 'content-loading-symbolic'});
-        const kubeconfigRow = new Adw.ActionRow({title: 'kubeconfig'});
+        kubeconfigIcon.set_tooltip_text('kubeconfig detection status');
+        const kubeconfigRow = new Adw.ActionRow({title: 'kubeconfig', use_markup: false});
         kubeconfigRow.add_prefix(kubeconfigIcon);
         connGroup.add(kubeconfigRow);
 
@@ -154,6 +165,8 @@ export default class KubeMonitorPreferences extends ExtensionPreferences {
         const addRow = new Adw.ActionRow({title: 'Add kubeconfig file…'});
         const addBtn = new Gtk.Button({
             icon_name: 'list-add-symbolic', valign: Gtk.Align.CENTER, css_classes: ['flat'],
+            // Icon-only: without this a screen reader announces "button".
+            tooltip_text: 'Add a kubeconfig file',
         });
         addRow.add_suffix(addBtn);
         addRow.activatable_widget = addBtn;
@@ -184,9 +197,14 @@ export default class KubeMonitorPreferences extends ExtensionPreferences {
             if (addRowAdded)
                 advanced.remove(addRow);
             kubeconfigRows = getKubeconfigs().map(path => {
-                const row = new Adw.ActionRow({title: GLib.path_get_basename(path), subtitle: path});
+                // use_markup off: title and subtitle are filesystem paths, which
+                // Adw would otherwise run through the Pango markup parser.
+                const row = new Adw.ActionRow({
+                    title: GLib.path_get_basename(path), subtitle: path, use_markup: false,
+                });
                 const rm = new Gtk.Button({
                     icon_name: 'user-trash-symbolic', valign: Gtk.Align.CENTER, css_classes: ['flat'],
+                    tooltip_text: `Remove ${GLib.path_get_basename(path)}`,
                 });
                 rm.connect('clicked', () => setKubeconfigs(getKubeconfigs().filter(p => p !== path)));
                 row.add_suffix(rm);

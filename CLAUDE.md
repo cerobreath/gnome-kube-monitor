@@ -137,6 +137,19 @@ poller picks a tier by menu state:
 
 `setMenuOpen(true)` triggers an immediate detail poll instead of waiting for the next tick.
 
+**Scale limits (measured, not guessed).** On a real 3-node k3s cluster tier 2 costs
+**~36 KB/node** (`status.images` is 40% of it) against **251 B for the whole cluster** in
+tier 1 — so a 1000-node cluster means ~36 MB `JSON.parse`d on the compositor's main loop
+while the menu is open. Two bounds contain the damage: `MAX_NODE_ROWS` (indicator.js) caps
+rows at 50 (sorted most-severe-first, remainder summarised, never silently dropped) since
+~14 St actors per row is what actually wedges the shell, and `MAX_TRACKED_ALERTS`
+(alerts.js) caps the persisted alert map. Replacing tier 2's `-o json` with jsonpath was
+measured and **rejected**: roles come from label *keys*, jsonpath can't prefix-filter a map,
+and emitting `{.metadata.labels}` wholesale is worse — one kubevirt node carried ~500 labels,
+so the "optimised" query was only 4x smaller. Fixing it properly needs a different
+projection (custom-columns for the scalars + the table output's ROLES column), which is a
+follow-up, not a free win.
+
 ### Invariants in the poll loop — preserve them
 
 - **Reentrancy**: `_polling` guards against overlapping polls; the self-rescheduling

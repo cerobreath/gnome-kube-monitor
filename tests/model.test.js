@@ -204,6 +204,35 @@ test('meterLevel buckets load% into ok/warning/error at 70 and 90', () => {
     assert.equal(meterLevel(100), NodeLevel.ERROR);
 });
 
+test('parsers survive objects missing metadata/status/spec entirely', () => {
+    // Defensive `?? {}` paths: a node object stripped to nothing must not throw.
+    const bare = parseNodesDetail(JSON.stringify({items: [{}]}), NOW);
+    assert.equal(bare.total, 1);
+    assert.equal(bare.nodes[0].name, 'unknown');
+    assert.deepEqual(bare.nodes[0].roles, ['worker']);   // synthesized fallback
+    assert.equal(bare.nodes[0].ready, false);            // no Ready condition -> not ready
+    assert.equal(bare.nodes[0].cpuCapacityMilli, null);
+    assert.equal(bare.nodes[0].age, '');                 // no creationTimestamp
+
+    // A payload with no items list at all.
+    assert.equal(parseNodesDetail(JSON.stringify({}), NOW).total, 0);
+    assert.equal(parseMetrics(JSON.stringify({})).size, 0);
+
+    // Metrics entry with no metadata: keyed undefined rather than throwing.
+    const m = parseMetrics(JSON.stringify({items: [{usage: {cpu: '1', memory: '1Ki'}}]}));
+    assert.equal(m.size, 1);
+});
+
+test('classifyError tolerates empty, whitespace-only and nullish input', () => {
+    assert.deepEqual(classifyError(null), {title: 'kubectl ran into a problem', detail: ''});
+    assert.deepEqual(classifyError(undefined), {title: 'kubectl ran into a problem', detail: ''});
+    assert.equal(classifyError('   \n  \n ').detail, '');   // every line blank -> no detail
+    // Only klog lines: falls back to unwrapping the first one.
+    const klogOnly = classifyError(
+        'E0711 22:10:05.879293  658680 memcache.go:265] "Unhandled Error" err="boom"');
+    assert.equal(klogOnly.detail, 'boom');
+});
+
 test('classifyError buckets each kubectl failure into a human headline', () => {
     const title = raw => classifyError(raw).title;
 

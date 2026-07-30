@@ -251,7 +251,9 @@ export default class KubeMonitorPreferences extends ExtensionPreferences {
             } catch {
                 contexts = [];
             }
-            const current = await fetchCurrentContext(opts(), null).catch(() => '');
+            // No .catch: fetchCurrentContext resolves '' on any failure by
+            // contract (see client.js), so a rejection is not reachable.
+            const current = await fetchCurrentContext(opts(), null);
 
             syncing = true;
             contextModel.splice(0, contextModel.get_n_items(), [AUTO_LABEL, ...contexts]);

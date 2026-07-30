@@ -77,7 +77,7 @@ export default class KubeMonitorExtension extends Extension {
             onObservation: obs => this._onObservation(obs),
         });
 
-        this._settingsChangedId = this._settings.connect('changed', (_s, key) => {
+        this._settingsChangedId = this._settings.connect('changed', (settings, key) => {
             if (key === 'refresh-interval') {
                 this._poller?.intervalChanged();
             } else if (key === 'context' || key === 'kubeconfig-path' || key === 'kubectl-path') {
@@ -88,8 +88,11 @@ export default class KubeMonitorExtension extends Extension {
                 this._refreshContextInfo();
                 this._poller?.refreshNow();
             } else if (key === 'alert-silence-until') {
-                // Keep the menu's snooze label in sync (also fires on our own write).
-                this._indicator?.setSnoozeUntil(this._settings?.get_int64('alert-silence-until') ?? 0);
+                // Keep the menu's snooze label in sync (also fires on our own
+                // write). No null-guards: this handler is disconnected in
+                // disable(), and both the indicator and the settings object
+                // outlive it, so it cannot run once either is gone.
+                this._indicator.setSnoozeUntil(settings.get_int64('alert-silence-until'));
             }
             // 'alert-state' is our own write; alert tunables/toggles are read
             // live when the next observation is reduced. Nothing to do here.
@@ -110,7 +113,9 @@ export default class KubeMonitorExtension extends Extension {
             GLib.source_remove(this._groupTimerId);
             this._groupTimerId = 0;
         }
-        if (this._pendingActions.length) {
+        // Optional: the shell calls disable() even when enable() bailed out, so
+        // nothing here may assume enable() ran.
+        if (this._pendingActions?.length) {
             this._alertState = rollbackDelivery(this._alertState, this._pendingActions);
             this._pendingActions = [];
         }
@@ -159,9 +164,10 @@ export default class KubeMonitorExtension extends Extension {
         const cancellable = this._cancellable;
         if (!cancellable)
             return;
+        // No cancellation check on entry: every caller reaches here synchronously
+        // after one (the guard above, or the one in the current-context handler
+        // below), so only the async continuation can be late.
         const showList = (/** @type {string} */ current) => {
-            if (cancellable.is_cancelled())
-                return;
             fetchContexts(opts, cancellable)
                 .then(list => {
                     if (!cancellable.is_cancelled())
@@ -181,8 +187,9 @@ export default class KubeMonitorExtension extends Extension {
                     if (ctx)
                         this._context = ctx;
                     showList(ctx || this._context || '');
-                })
-                .catch(() => showList(''));
+                });
+            // No .catch here: fetchCurrentContext resolves '' on any failure by
+            // contract (see client.js), so a rejection is not reachable.
         }
     }
 
@@ -207,9 +214,11 @@ export default class KubeMonitorExtension extends Extension {
     // into one banner instead of a wall of them. A 0s wait still batches every
     // action from the same poll (they're all buffered before the idle fires).
     _armGroupTimer() {
+        if (!this._settings)
+            return;   // torn down: never arm a timer nobody owns
         if (this._groupTimerId)
             return;   // a window is already open; let it keep collecting
-        const waitSec = Math.max(0, this._settings?.get_int('alert-group-wait') ?? 0);
+        const waitSec = Math.max(0, this._settings.get_int('alert-group-wait'));
         this._groupTimerId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, waitSec * 1000, () => {
             this._groupTimerId = 0;
             this._flushGroup();

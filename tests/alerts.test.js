@@ -210,6 +210,27 @@ test('settle: a large gap syncs silently -- no re-fire of a still-down node, no 
     assert.equal(recovered.state.alerts['NodeNotReady:a'], undefined);
 });
 
+test('settle re-anchors a still-pending node, carrying its notify-log forward', () => {
+    const bigGap = 20 * 60 * SEC;
+    let now = T0;
+    let s = reduce(null, obs(true, [['a', false]]), cfg(), now);       // cold -> pending
+    now += 10 * SEC;
+    s = reduce(s.state, obs(true, [['a', false]]), cfg(), now);        // still pending (<30s)
+    assert.equal(s.state.alerts['NodeNotReady:a'].phase, 'pending');
+    now += bigGap;
+    s = reduce(s.state, obs(true, [['a', false]]), cfg(), now);        // settle while pending
+    assert.deepEqual(s.actions, []);
+    const rec = s.state.alerts['NodeNotReady:a'];
+    assert.equal(rec.phase, 'pending');
+    assert.equal(rec.since, now);                                     // timer re-anchored
+    assert.equal(rec.lastStatus, 'resolved');                         // log carried forward
+    // And it still has to serve the full `for` from the new anchor.
+    s = reduce(s.state, obs(true, [['a', false]]), cfg(), now + 10 * SEC);
+    assert.deepEqual(s.actions, []);
+    s = reduce(s.state, obs(true, [['a', false]]), cfg(), now + 35 * SEC);
+    assert.deepEqual(types(s.actions), ['fire:NodeNotReady:a']);
+});
+
 test('settle: a backward wall-clock jump is treated as settle', () => {
     let now = T0;
     let s = reduce(null, obs(true, [['a', false]]), cfg(), now);            // cold pending
@@ -382,6 +403,48 @@ test('the tracked-alert map is capped, keeping the cluster alert and firing node
     let u = reduce(null, obs(false, [], {error: err}), cfg(), T0);
     u = reduce(u.state, obs(false, [], {error: err}), cfg(), T0 + 35 * SEC);
     assert.ok(u.state.alerts[CLUSTER_KEY]);
+});
+
+test('deserializeState drops records that do not typecheck', () => {
+    const good = {phase: 'firing', since: 1, lastNotifiedAt: 1, resolveSince: 0, lastStatus: 'firing'};
+    /** @param {object} alerts */
+    const load = alerts => deserializeState(JSON.stringify(
+        {v: 1, context: CTX, lastObservedAt: T0, alerts}));
+
+    assert.deepEqual(Object.keys(load({'NodeNotReady:a': good}).alerts), ['NodeNotReady:a']);
+    // Every invalid shape a crafted dconf value could take.
+    assert.deepEqual(load({'NodeNotReady:a': {...good, phase: 'inactive'}}).alerts, {});
+    assert.deepEqual(load({'NodeNotReady:a': {...good, phase: 'bogus'}}).alerts, {});
+    assert.deepEqual(load({'NodeNotReady:a': {...good, since: NaN}}).alerts, {});
+    assert.deepEqual(load({'NodeNotReady:a': {...good, lastNotifiedAt: 'x'}}).alerts, {});
+    assert.deepEqual(load({'NodeNotReady:a': {...good, resolveSince: Infinity}}).alerts, {});
+    assert.deepEqual(load({'NodeNotReady:a': {...good, lastStatus: 'nope'}}).alerts, {});
+    assert.deepEqual(load({'NodeNotReady:a': null}).alerts, {});
+    assert.deepEqual(load({'NodeNotReady:a': 'a string'}).alerts, {});
+    // Keys outside our namespace are refused, so a crafted key can't become a title.
+    assert.deepEqual(load({'evil<b>key': good}).alerts, {});
+    // A non-finite lastObservedAt invalidates the whole blob.
+    assert.equal(deserializeState(JSON.stringify(
+        {v: 1, context: CTX, lastObservedAt: NaN, alerts: {}})), null);
+});
+
+test('the alert cap keeps the cluster record regardless of sort order', () => {
+    // Exercises both comparator arms: the cluster key reached as `a` and as `b`.
+    const err = {title: "Can't reach the cluster", detail: ''};
+    const many = Array.from({length: 250}, (_, i) => [`node-${String(i).padStart(3, '0')}`, false]);
+    let now = T0;
+    // Cluster alert fires first, then the cluster comes back with 250 bad nodes.
+    let s = reduce(null, obs(false, [], {error: err}), cfg(), now);
+    now += 35 * SEC;
+    s = reduce(s.state, obs(false, [], {error: err}), cfg(), now);
+    assert.ok(s.state.alerts[CLUSTER_KEY]);
+    now += 5 * SEC;
+    s = reduce(s.state, obs(true, many), cfg(), now);        // recovery edge: nodes pend
+    now += 35 * SEC;
+    s = reduce(s.state, obs(true, many), cfg(), now);        // nodes fire, cap applies
+    const keys = Object.keys(s.state.alerts);
+    assert.equal(keys.length, 200);
+    assert.ok(keys.includes(CLUSTER_KEY), 'cluster record must never be the one shed');
 });
 
 test('groupActions coalesces simultaneous fires into one critical banner', () => {

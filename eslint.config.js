@@ -31,6 +31,14 @@ export default [
         },
     },
     {
+        // The test suite and its gi/shell stubs run under node, not GJS: they get
+        // node's globals on top of the shared set above.
+        files: ['tests/**/*.js', 'tests/**/*.mjs'],
+        languageOptions: {
+            globals: {...globals.node},
+        },
+    },
+    {
         ignores: ['node_modules/**', 'schemas/**', 'icons/**', '.codegraph/**'],
     },
 ];

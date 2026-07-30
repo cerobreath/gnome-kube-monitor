@@ -47,7 +47,7 @@ jobs:
       - run: npm run typecheck
 
   test:
-    name: Unit tests
+    name: Unit tests (100% coverage gate)
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
@@ -57,7 +57,9 @@ jobs:
           node-version: '24.x'
           cache: 'npm'
       - run: npm ci --no-audit --no-fund
-      - run: npm test
+      # Enforces 100% line/branch/function coverage over the shipped sources;
+      # the thresholds live in the `coverage` script so local and CI agree.
+      - run: npm run coverage
 
   package:
     name: Package extension

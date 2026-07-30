@@ -188,24 +188,57 @@ follow-up, not a free win.
 
 ## Testing & type-checking
 
-- The pure modules carry the unit tests: `model.js` (`tests/model.test.js` + hand-built
-  `tests/fixtures.js`, covering every node branch) and `schedule.js`
-  (`tests/schedule.test.js`). Run with `npm test`.
-- Types are JSDoc + the `@girs/*` packages (dev-only; the shipped extension is still plain
-  JS with no build). `npm run typecheck` runs two passes: `tsconfig.json` is **strict** over
-  the logic (`model`/`schedule`/`client`/`poller`/`prefs`); `tsconfig.ui.json` relaxes only
-  `strictNullChecks` for the GObject view (`extension.js` + `lib/indicator.js`), because
+**Every shipped source file is held at 100% line / branch / function coverage.**
+`npm run coverage` (part of `npm run check`, and its own CI job) enforces that with
+node's built-in thresholds, so a drop fails the build rather than going unnoticed.
+223 tests, no dependencies, no cluster, no gnome-shell.
+
+- **The gi-free modules** (`model.js`, `schedule.js`, `alerts.js`) are tested directly.
+- **Everything else** (`client.js`, `poller.js`, `indicator.js`, `notifier.js`,
+  `extension.js`, `prefs.js`) imports `gi://…` or `resource:///…`, which node cannot
+  resolve. `tests/hooks.mjs` registers **`node:module` `registerHooks`** (the
+  synchronous form; `module.register()` is deprecated) to redirect those specifiers to
+  fakes in `tests/stubs/`. It is loaded via `--import ./tests/hooks.mjs`, which runs
+  before the test files so their static imports are intercepted. Needs Node ≥ 22.15
+  (see `engines`); the harness throws a clear message on older runtimes.
+- **The fakes are deliberately behavioural, not empty:**
+  `stubs/gi/GLib.js` owns a clock that only moves when a test says so
+  (`__advance` drains timers, `__setClock` moves time alone), so cadence, backoff,
+  the watchdog and `group_wait` are asserted without sleeping.
+  `stubs/gi/Gio.js` makes the subprocess scriptable — `hang`, `defer`, `throws`,
+  non-zero exit, `null` stdout — which is what lets a poll be landed *after*
+  `stop()` on purpose, and carries a GSettings fake seeded with the real schema
+  defaults that emits `changed`/`changed::key` like dconf.
+  `stubs/shell/messageTray.js` can present **either** notification API generation, so
+  the GNOME 45 shim is tested even though nobody develops on 45.
+- **Chasing full branch coverage is a review tool, not a vanity metric.** It has
+  already found: dead code (`wantDetailNow` in the poller, two `.catch` handlers on a
+  function that cannot reject, an entry-time cancellation check), a prototype-chain
+  bug in `parseMemBytes`, `disable()` throwing when `enable()` never ran, a timer
+  armed with no owner, and a mute row shown before anything was muted. When a branch
+  resists covering, decide whether it is genuinely unreachable (delete it) or a real
+  guard (test it white-box, as with the poller's `_tick` re-entry guard) — do not
+  contrive a test to paint it green.
+- Types are JSDoc + the `@girs/*` packages (dev-only; the shipped extension is still
+  plain JS with no build). `npm run typecheck` runs two passes: `tsconfig.json` is
+  **strict** over the logic (`model`/`schedule`/`alerts`/`client`/`poller`/`prefs`);
+  `tsconfig.ui.json` relaxes only `strictNullChecks` for the GObject view
+  (`extension.js` + `lib/indicator.js` + `lib/notifier.js`), because
   `PanelMenu.Button` assigns its fields in `_init` (not a constructor) and JSDoc has no
   definite-assignment `!`, so strict-null reports false "possibly undefined" on every
   `_init`-assigned widget. Everything imported into the view pass rides along, so the
   `null`-typed fallbacks in `poller.js` are pinned with an explicit type.
-- **Never use class fields in a `GObject.registerClass` class** (`_x;` or `_x = …` in the
-  class body). Their initializers run *after* `_init()` and clobber whatever `_init` set
-  back to `undefined` (verified on GJS 1.88). Assign all instance state inside `_init()`.
-- To smoke-test the kubectl edge against a real cluster, a plain-`gjs` script can import
-  `lib/client.js` and call the `fetch*` functions. **Use static `import`, not dynamic
-  `await import()`** — in standalone gjs, top-level `await import()` plus a manually-run
-  `MainLoop` deadlocks (they contend for the main context). Inside gnome-shell this never
-  arises (static imports, always-running loop).
-- `indicator.js` can only run inside gnome-shell (imports `resource:///…`); `node --check`
-  plus the view type-pass are the best static validation.
+- **Never use class fields in a `GObject.registerClass` class** (`_x;` or `_x = …` in
+  the class body). Their initializers run *after* `_init()` and clobber whatever
+  `_init` set back to `undefined` (verified on GJS 1.88). Assign all instance state
+  inside `_init()`.
+- To smoke-test the kubectl edge against a real cluster, a plain-`gjs` script can
+  import `lib/client.js` and call the `fetch*` functions. **Use static `import`, not
+  dynamic `await import()`** — in standalone gjs, top-level `await import()` plus a
+  manually-run `MainLoop` deadlocks (they contend for the main context). Inside
+  gnome-shell this never arises (static imports, always-running loop).
+- The nested-shell run is still worth doing before a release: unit tests prove the
+  logic, but only a real gnome-shell proves the extension *loads* (schema compiled,
+  no `resource:///` typo, no St property that does not exist). Pair
+  `gnome-shell --headless` with `gnome-extensions info <uuid>` and look for
+  `State: ACTIVE` — see Commands above.

@@ -284,6 +284,7 @@ export class Settings {
             'alert-repeat-interval': 0,
             'alert-group-wait': 0,
             'alert-silence-until': 0,
+            'debug-logging': false,
             'alert-state': '',
             'context': '',
             'kubeconfig-path': '',

@@ -73,6 +73,7 @@ test('every control is bound to its schema key', async () => {
         'alert-keep-firing-for:value',
         'alert-node-for:value',
         'alert-repeat-interval:value',
+        'debug-logging:active',
         'kubectl-path:text',
         'notify-cluster-unreachable:active',
         'notify-node-changes:active',

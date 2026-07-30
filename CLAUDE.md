@@ -37,6 +37,9 @@ are seen by the next shell restart — no reinstall unless you touch the schema:
 # extension actually reached State: ACTIVE (silence alone proves nothing).
 dbus-run-session -- gnome-shell --headless --virtual-monitor 1280x800 --wayland
 journalctl -f -o cat /usr/bin/gnome-shell | grep -i kube    # extension logs / stack traces
+# For "why did I (not) get a notification?", turn on diagnostics (Preferences →
+# Advanced, or the key below) and watch the same journal. Off by default.
+gsettings --schemadir schemas set org.gnome.shell.extensions.kube-monitor debug-logging true
 ```
 
 ## Working in this repo (keep the bar here)
@@ -84,6 +87,14 @@ contained. Dependencies point inward toward `model.js`; nothing imports "up".
   Plain data in → plain data out; time-dependent functions take
   an explicit `nowMs`. This runs unchanged under gnome-shell, plain gjs, and node, which is
   why it carries the test coverage. **Keep it gi-free.**
+- **`lib/log.js` — pure, gi-free.** Opt-in diagnostics behind the `debug-logging`
+  key (off by default). Uses `console.log`, **not** `console.debug`: GLib's default
+  log writer discards `LEVEL_DEBUG` unless `G_MESSAGES_DEBUG` is set on the process,
+  and you cannot set an env var on a gnome-shell the user is already running —
+  measured in a nested shell, `console.debug` produced nothing without it. Every line
+  goes through `redactForLog` (model.js) and a length cap, because the journal is
+  readable and long-lived: **never log raw kubectl output**, only classified or
+  already-redacted strings.
 - **`lib/schedule.js` — pure, gi-free.** Poll-cadence math (base-interval clamp,
   exponential backoff) split out of the loop so it's unit-tested. **Keep it gi-free too.**
 - **`lib/alerts.js` — pure, gi-free.** The alert state machine: a `reduce(prevState,

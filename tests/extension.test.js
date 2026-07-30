@@ -13,6 +13,7 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as MessageTray from 'resource:///org/gnome/shell/ui/messageTray.js';
 
 import KubeMonitorExtension from '../extension.js';
+import {isDebugEnabled} from '../lib/log.js';
 
 const HEALTH_ALL_OK = 'n1\tfalse\tReady=True,\n';
 const HEALTH_N1_DOWN = 'n1\tfalse\tReady=False,\n';
@@ -552,6 +553,35 @@ test('a settings change arriving after disable is ignored', async () => {
     settings.emit('changed', 'alert-silence-until');
     await settle();
     assert.equal(GLib.__pendingTimers(), 0);
+});
+
+test('the debug-logging switch turns diagnostics on and off, and disable stops them', async () => {
+    const {ext, settings} = await Promise.resolve(makeExtension());
+    ext.enable();
+    await settle();
+    assert.equal(isDebugEnabled(), false, 'off by default: the journal is shared');
+
+    settings.set_boolean('debug-logging', true);
+    await settle();
+    assert.equal(isDebugEnabled(), true);
+
+    settings.set_boolean('debug-logging', false);
+    await settle();
+    assert.equal(isDebugEnabled(), false);
+
+    // On again, then torn down: logging must not outlive the extension.
+    settings.set_boolean('debug-logging', true);
+    await settle();
+    ext.disable();
+    assert.equal(isDebugEnabled(), false);
+});
+
+test('an extension enabled with debug-logging already on starts logging at once', async () => {
+    const {ext} = makeExtension({'debug-logging': true});
+    ext.enable();
+    await settle();
+    assert.equal(isDebugEnabled(), true);
+    ext.disable();
 });
 
 test('disable() without a prior enable() is harmless', () => {

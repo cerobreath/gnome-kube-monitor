@@ -18,6 +18,7 @@ import {fetchContexts, fetchCurrentContext} from './lib/client.js';
 import {
     reduce, groupActions, rollbackDelivery, needsPersist, serializeState, deserializeState,
 } from './lib/alerts.js';
+import {debug, setDebugEnabled} from './lib/log.js';
 
 // How far the persisted "last observed" stamp may lag before it's worth a dconf
 // write. Well under the alert machine's settle window, and a lagging stamp only
@@ -27,6 +28,9 @@ const STAMP_TOLERANCE_MS = 300_000;   // 5 minutes
 export default class KubeMonitorExtension extends Extension {
     enable() {
         this._settings = this.getSettings();
+        // Diagnostics are opt-in: logged messages go to the shared system journal,
+        // so this stays off unless the user is troubleshooting.
+        setDebugEnabled(this._settings.get_boolean('debug-logging'));
         this._cancellable = new Gio.Cancellable();
         // Fallback label when no explicit context is set; resolved lazily.
         this._context = this._settings.get_string('context');
@@ -87,6 +91,8 @@ export default class KubeMonitorExtension extends Extension {
                 this._alertState = null;
                 this._refreshContextInfo();
                 this._poller?.refreshNow();
+            } else if (key === 'debug-logging') {
+                setDebugEnabled(settings.get_boolean('debug-logging'));
             } else if (key === 'alert-silence-until') {
                 // Keep the menu's snooze label in sync (also fires on our own
                 // write). No null-guards: this handler is disconnected in
@@ -140,6 +146,7 @@ export default class KubeMonitorExtension extends Extension {
         this._notifier = null;
         this._settings = null;
         this._alertState = null;
+        setDebugEnabled(false);   // never keep logging after teardown
     }
 
     _readOpts() {
@@ -204,6 +211,10 @@ export default class KubeMonitorExtension extends Extension {
         const {state, actions} = reduce(this._alertState, obs, this._alertConfig(), Date.now());
         this._alertState = state;
         if (actions.length) {
+            debug('alert', 'actions produced', {
+                actions: actions.map(a => `${a.type}:${a.key}`),
+                reachable: obs.reachable,
+            });
             this._pendingActions.push(...actions);
             this._armGroupTimer();
         }
@@ -229,8 +240,10 @@ export default class KubeMonitorExtension extends Extension {
     _flushGroup() {
         const actions = this._pendingActions;
         this._pendingActions = [];
-        for (const n of groupActions(actions))
+        for (const n of groupActions(actions)) {
+            debug('alert', 'posting banner', {title: n.title, urgency: n.urgency});
             this._notifier?.notify(n.title, n.body, {urgency: n.urgency});
+        }
     }
 
     /** @returns {import('./lib/alerts.js').AlertConfig} */

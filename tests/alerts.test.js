@@ -364,6 +364,26 @@ test('needsPersist skips storage entirely while there is nothing to remember', (
     assert.equal(needsPersist(null, null, TOL), false);
 });
 
+test('the tracked-alert map is capped, keeping the cluster alert and firing nodes', () => {
+    // 400 nodes all NotReady: more than the 200 cap.
+    const many = Array.from({length: 400}, (_, i) => [`node-${String(i).padStart(3, '0')}`, false]);
+    let now = T0;
+    let s = reduce(null, obs(true, many), cfg(), now);          // cold -> all pending
+    now += 35 * SEC;
+    s = reduce(s.state, obs(true, many), cfg(), now);           // all fire
+    const keys = Object.keys(s.state.alerts);
+    assert.equal(keys.length, 200);                            // capped
+    assert.ok(keys.every(k => s.state.alerts[k].phase === 'firing'));
+    // Serialized state stays small enough for a settings key.
+    assert.ok(serializeState(s.state).length < 40_000, serializeState(s.state).length);
+
+    // The cluster alert is never the one shed.
+    const err = {title: "Can't reach the cluster", detail: ''};
+    let u = reduce(null, obs(false, [], {error: err}), cfg(), T0);
+    u = reduce(u.state, obs(false, [], {error: err}), cfg(), T0 + 35 * SEC);
+    assert.ok(u.state.alerts[CLUSTER_KEY]);
+});
+
 test('groupActions coalesces simultaneous fires into one critical banner', () => {
     const mk = (type, label, title) => ({type, key: label, label, title, body: ''});
     assert.deepEqual(groupActions([]), []);

@@ -1,0 +1,20 @@
+# Every shipped JavaScript file, whether or not it currently holds a
+# translatable string. Listing them all means a string added to a module that
+# had none is picked up by the next `npm run i18n:pot` instead of silently
+# staying English; `npm run i18n:check` fails if this list and the tree disagree.
+#
+# The GSettings schema is deliberately absent. Its summaries would only ever be
+# read by dconf-editor, a separate process that never calls bindtextdomain() for
+# this extension's locale/ directory, so translating them would produce entries
+# no user could ever see.
+extension.js
+prefs.js
+lib/alerts.js
+lib/client.js
+lib/i18n.js
+lib/indicator.js
+lib/log.js
+lib/model.js
+lib/notifier.js
+lib/poller.js
+lib/schedule.js

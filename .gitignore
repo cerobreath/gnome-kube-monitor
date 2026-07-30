@@ -1,4 +1,6 @@
 schemas/gschemas.compiled
+# Build output: compiled from po/ by `npm run i18n:compile`.
+locale/
 *.zip
 node_modules/
 .eslintcache

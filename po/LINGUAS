@@ -1,0 +1,20 @@
+# Languages with a complete catalogue, one per line, sorted.
+# `npm run i18n:check` fails if this list and the .po files on disk disagree.
+ar
+de
+es
+fr
+it
+ja
+ko
+nl
+pl
+pt
+pt_BR
+ru
+tr
+uk
+zh_CN
+zh_HK
+zh_SG
+zh_TW

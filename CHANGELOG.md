@@ -14,6 +14,32 @@ when publishing.
 
 ### Added
 
+- **Translations into 14 languages, 18 catalogues**: Arabic, Chinese
+  (Simplified, Traditional, Hong Kong, Singapore), Dutch, French, German,
+  Italian, Japanese, Korean, Polish, Portuguese (Portugal and Brazil), Russian,
+  Spanish, Turkish and Ukrainian.
+  Every one of the 101 messages is translated in every catalogue, with each
+  language's own plural rule — from one form (ja, ko, zh) through three (pl, ru,
+  uk) to six (ar). Regional variants resolve through gettext's own fallback
+  (`de_AT` → `de`), verified across 30 locales; Portuguese and Chinese ship one
+  catalogue per region because that fallback never moves sideways. Kubernetes' own vocabulary
+  (`Ready`, `NotReady`, `SchedulingDisabled`, the pressure conditions, role names)
+  is deliberately left as it is, so the menu keeps agreeing with `kubectl get
+  nodes`.
+- **Gettext infrastructure**: `gettext-domain` in `metadata.json`, catalogue
+  sources in `po/`, and `npm run i18n:{pot,update,compile,check}`. `npm run pack`
+  compiles the catalogues into `locale/` via `--podir=po`; the CI zip does the same
+  so the two archives still carry the same 34 files. `npm run i18n:check` joins the
+  quality gate: it fails on a stale `.pot`, a `POTFILES.in` that has fallen behind
+  the tree, a format specifier a translation dropped, or any untranslated or fuzzy
+  message.
+- **`lib/i18n.js`**, gi-free like the rest of the core: injectable
+  gettext/ngettext/pgettext bindings, the `N_()` extraction marker, and a `format()`
+  that supports positional `%1$s`. It exists because `String.prototype.format` is
+  installed by gnome-shell but **not** by the preferences process, so `.format()`
+  would have thrown there and nowhere else; positional arguments are needed because
+  French, Turkish, Japanese, Korean and Chinese all reorder "N of M nodes ready",
+  and Turkish writes the percent sign before the number.
 - **Alert state machine** (`lib/alerts.js`), replacing the previous one-bit
   readiness diff. Prometheus-style `inactive → pending → firing` lifecycle with a
   `for` debounce and a `keep_firing_for` hold, an Alertmanager-style notification
@@ -45,12 +71,35 @@ when publishing.
 ### Changed
 
 - **Test suite**: every shipped file is now held at 100% line, branch and function
-  coverage (233 tests), enforced by `npm run coverage` in `npm run check` and as
+  coverage (252 tests), enforced by `npm run coverage` in `npm run check` and as
   its own CI job. `tests/hooks.mjs` redirects `gi://` and `resource:///` imports to
   behavioural fakes so the IO, view, wiring and preferences layers are testable
-  under plain node.
+  under plain node. The Extension fake carries a real catalogue and a pluggable
+  plural rule, so a bound locale is proven to reach the panel, the menu and the
+  gi-free alert machine.
+- `classifyError` now returns the machine-readable `key` alongside the translated
+  `title` and kubectl's own `detail`, so callers can branch on the cause instead of
+  matching prose that changes with the locale.
+
+### Fixed (this cycle)
+
+- **Right-to-left layout was broken in three places.** `.kube-caret`,
+  `.kube-context-icon` and `.kube-node-meters` each used a bare `margin-left`
+  or `margin-right`. St has no logical CSS properties — gnome-shell's own theme
+  uses the `:ltr`/`:rtl` pseudo-classes in 28 places and `margin-inline-*` in
+  none — while `StBoxLayout` does reverse its children under RTL, so in Arabic
+  those margins pushed toward the neighbour they were meant to clear. Each rule
+  is now written for both directions, and a test fails the build if a
+  directional property appears without its counterpart.
+- A `kubectl` that exited non-zero without writing anything put an English
+  sentence of ours — "kubectl exited with an error" — into the error *detail*,
+  whose contract is that it carries kubectl's own words verbatim and is therefore
+  never translated. The detail is now simply empty in that case, so the menu shows
+  the translated headline alone, exactly as the watchdog path already did.
 - **Menu width is now bounded.** A long single-line error used to stretch the popup
-  across the screen; error text wraps and the context title ellipsizes.
+  across the screen; error text wraps and the context title ellipsizes. The pod
+  counts are bounded the same way, since every locale spells them longer than
+  English does.
 - CI now builds a zip whose file set is identical to `npm run pack` (it previously
   included the compiled schema and swept directories blindly).
 

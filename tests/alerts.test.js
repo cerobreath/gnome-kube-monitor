@@ -455,7 +455,7 @@ test('groupActions coalesces simultaneous fires into one critical banner', () =>
     const many = groupActions([
         mk('fire', 'a', 'a is down'), mk('fire', 'b', 'b is down'), mk('fire', 'cluster', "Can't reach the cluster"),
     ]);
-    assert.deepEqual(many, [{title: '3 firing', body: 'a, b, cluster', urgency: 'critical'}]);
+    assert.deepEqual(many, [{title: '3 alerts firing', body: 'a, b, cluster', urgency: 'critical'}]);
 });
 
 test('rollbackDelivery re-arms an undelivered fire so the next tick notifies again', () => {
@@ -497,6 +497,6 @@ test('groupActions splits fires (critical) and resolves (normal) into two banner
     ]);
     assert.deepEqual(out, [
         {title: 'a is down', body: '', urgency: 'critical'},
-        {title: '2 recovered', body: 'b, c', urgency: 'normal'},
+        {title: '2 alerts recovered', body: 'b, c', urgency: 'normal'},
     ]);
 });

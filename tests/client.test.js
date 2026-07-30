@@ -179,9 +179,13 @@ test('a non-zero exit surfaces stderr, falling back to stdout', async () => {
     Gio.__setSpawn(() => ({stdout: 'only stdout', stderr: '', ok: false}));
     await assert.rejects(fetchHealth(opts(), null), /only stdout/);
 
+    // Said nothing at all: the message stays empty rather than being filled with
+    // a sentence of ours. classifyError turns that into the generic headline with
+    // no detail line -- the detail slot only ever carries kubectl's own words, so
+    // it must not become a place where untranslatable English leaks to the user.
     reset();
     Gio.__setSpawn(() => ({stdout: '', stderr: '', ok: false}));
-    await assert.rejects(fetchHealth(opts(), null), /kubectl exited with an error/);
+    await assert.rejects(fetchHealth(opts(), null), e => e.message === '');
 });
 
 test('cancellation kills the child, so a blocked exec plugin cannot linger', async () => {

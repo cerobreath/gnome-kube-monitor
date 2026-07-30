@@ -224,8 +224,10 @@ test('parsers survive objects missing metadata/status/spec entirely', () => {
 });
 
 test('classifyError tolerates empty, whitespace-only and nullish input', () => {
-    assert.deepEqual(classifyError(null), {title: 'kubectl ran into a problem', detail: ''});
-    assert.deepEqual(classifyError(undefined), {title: 'kubectl ran into a problem', detail: ''});
+    assert.deepEqual(classifyError(null),
+        {key: 'unknown', title: 'kubectl ran into a problem', detail: ''});
+    assert.deepEqual(classifyError(undefined),
+        {key: 'unknown', title: 'kubectl ran into a problem', detail: ''});
     assert.equal(classifyError('   \n  \n ').detail, '');   // every line blank -> no detail
     // Only klog lines: falls back to unwrapping the first one.
     const klogOnly = classifyError(
@@ -285,6 +287,7 @@ test('classifyError prefers kubectl\'s human summary over the repeated klog nois
     const raw = `${klog}\n${klog}\n${klog}\n` +
         'The connection to the server 127.0.0.1:8080 was refused - did you specify the right host or port?';
     assert.deepEqual(classifyError(raw), {
+        key: 'unreachable',
         title: "Can't reach the cluster",
         detail: 'The connection to the server 127.0.0.1:8080 was refused - did you specify the right host or port?',
     });
@@ -342,5 +345,5 @@ test('classifyError caps the detail length and honours the watchdog flag', () =>
     assert.equal(classifyError('x'.repeat(500)).detail.length, 200);   // 199 + ellipsis
     // The watchdog killed the poll: timeout headline, no misleading detail.
     assert.deepEqual(classifyError('Operation was cancelled', {timedOut: true}),
-        {title: "The cluster didn't answer in time", detail: ''});
+        {key: 'timeout', title: "The cluster didn't answer in time", detail: ''});
 });

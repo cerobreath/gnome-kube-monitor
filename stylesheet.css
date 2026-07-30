@@ -33,9 +33,22 @@
     background-color: rgba(128, 128, 128, 0.22);
 }
 
+/* Direction-sensitive spacing.
+   St's CSS subset has no logical properties -- gnome-shell's own theme uses the
+   :ltr / :rtl pseudo-classes in 28 places and margin-inline-* in none -- while
+   StBoxLayout *does* reverse its children under RTL. So every margin that pushes
+   away from a neighbour has to be stated for both directions, or it lands on the
+   wrong side in Arabic and the layout collapses inward. */
 .kube-caret {
-    margin-left: 6px;
     opacity: 0.45;
+}
+
+.kube-caret:ltr {
+    margin-left: 6px;
+}
+
+.kube-caret:rtl {
+    margin-right: 6px;
 }
 
 .kube-icon-button {
@@ -64,8 +77,12 @@
     background-color: rgba(128, 128, 128, 0.22);
 }
 
-.kube-context-icon {
+.kube-context-icon:ltr {
     margin-right: 10px;
+}
+
+.kube-context-icon:rtl {
+    margin-left: 10px;
 }
 
 .kube-context-empty {
@@ -73,10 +90,15 @@
     opacity: 0.45;
 }
 
-/* Pods summary: centred, labelled, spaced (no dot separators) */
+/* Pods summary: centred, labelled, spaced (no dot separators).
+   max-width bounds the row the way .kube-error bounds the error text: up to four
+   counts sit here, and translations run longer than the English words, so
+   without a cap a long locale would stretch the whole popup past the header's
+   340px. The labels ellipsize (indicator.js), so the overflow trims instead. */
 .kube-pods {
     spacing: 14px;
     font-size: 1.05em;
+    max-width: 320px;
 }
 
 .kube-pods-ok {
@@ -140,8 +162,17 @@
    NB: .kube-meter-track width must match METER_WIDTH in indicator.js. */
 .kube-node-meters {
     spacing: 22px;
-    margin-left: 20px;
     margin-top: 2px;
+}
+
+/* Indents the meters under the node name, which starts on the opposite side
+   once the row is mirrored. */
+.kube-node-meters:ltr {
+    margin-left: 20px;
+}
+
+.kube-node-meters:rtl {
+    margin-right: 20px;
 }
 
 .kube-meter {

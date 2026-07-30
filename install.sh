@@ -9,6 +9,12 @@ DEST_DIR="$EXT_ROOT/$UUID"
 echo "==> Compiling GSettings schema"
 glib-compile-schemas "$SRC_DIR/schemas"
 
+# The install is a symlink, so gnome-shell's bindtextdomain() looks for
+# locale/ inside this checkout. po/ holds the sources; the .mo files are build
+# output (gitignored), which is why they are compiled here rather than committed.
+echo "==> Compiling translations"
+"$SRC_DIR/po/i18n.sh" compile
+
 echo "==> Symlink $DEST_DIR -> $SRC_DIR"
 mkdir -p "$EXT_ROOT"
 if [ -e "$DEST_DIR" ] && [ ! -L "$DEST_DIR" ]; then

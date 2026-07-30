@@ -19,7 +19,12 @@ gnome-extensions prefs   kube-monitor@cerobreath.dev  # open preferences window
 glib-compile-schemas schemas/                         # MUST re-run after editing the gschema.xml
 
 npm install                                           # dev tooling only (eslint, typescript, @girs types)
-npm run check                                         # lint + typecheck + test — the pre-commit & CI gate
+npm run check                                         # lint + typecheck + coverage + i18n — the pre-commit & CI gate
+
+npm run i18n:pot                                      # re-extract po/<uuid>.pot from the sources
+npm run i18n:update                                   # merge the .pot into all 14 po/*.po
+npm run i18n:compile                                  # po/ → locale/<lang>/LC_MESSAGES/<uuid>.mo (install.sh runs it)
+npm run i18n:check                                    # the gate: POTFILES/LINGUAS consistent, .pot current, catalogues complete
 npm test                                              # pure-logic unit tests (node --test); no deps, no cluster
 npm run lint                                          # eslint (flat config)
 npm run typecheck                                     # tsc --checkJs against @girs types (no emit; two passes)
@@ -45,8 +50,13 @@ gsettings --schemadir schemas set org.gnome.shell.extensions.kube-monitor debug-
 ## Working in this repo (keep the bar here)
 
 - **Quality gate**: every change must pass `npm run check` (eslint + `tsc --checkJs` ×2 +
-  `node --test`). A husky pre-commit hook and GitHub Actions (`.github/workflows/ci.yml`)
-  both run it — don't bypass with `git commit --no-verify`.
+  `node --test` at 100% coverage + the i18n check). A husky pre-commit hook and GitHub
+  Actions (`.github/workflows/ci.yml`) both run it — don't bypass with `git commit
+  --no-verify`. The i18n step needs GNU gettext installed; it says so if it is missing.
+- **New user-facing strings**: wrap them (see Translations below) and run
+  `npm run i18n:pot && npm run i18n:update`, then fill in the 14 catalogues. `npm run
+  check` fails on an untranslated or fuzzy message, the same way it fails on a coverage
+  drop — "shipped" and "actually translated" are not allowed to diverge.
 - **Where new logic goes**: parsing, severity, scheduling and formatting are pure and live
   in `lib/model.js` / `lib/schedule.js` (**no `gi://` imports**) — that is what makes them
   testable, so put new logic there and cover it with a `tests/*.test.js`. IO stays in
@@ -58,11 +68,13 @@ gsettings --schemadir schemas set org.gnome.shell.extensions.kube-monitor debug-
   regenerate it by extracting the helm path from the source logo SVG, don't hand-edit the
   path data.
 - **Release**: `npm run pack` builds the installable / EGO-upload zip (metadata, the four
-  top-level files, `lib/`, `icons/`, `LICENSE`, and the `.gschema.xml` — **not** the compiled
-  schema). CI can't call it (`gnome-extensions` ships inside the heavy gnome-shell package),
-  so `.github/workflows/ci.yml` hand-rolls a zip whose file set is kept **identical**: it
-  validates the schema with `--dry-run` (writing no `gschemas.compiled`) and excludes that
-  file plus editor leftovers. Change one and change the other.
+  top-level files, `lib/`, `icons/`, `LICENSE`, the `.gschema.xml` — **not** the compiled
+  schema — and `locale/`, which `--podir=po` compiles from the catalogues; `po/` itself is
+  not shipped). CI can't call it (`gnome-extensions` ships inside the heavy gnome-shell
+  package), so `.github/workflows/ci.yml` hand-rolls a zip whose file set is kept
+  **identical**: it validates the schema with `--dry-run` (writing no `gschemas.compiled`),
+  runs `./po/i18n.sh compile` to produce the same `locale/`, and excludes that compiled
+  schema plus editor leftovers. Change one and change the other — 34 files, both sides.
 
 ## Two execution contexts that cannot share runtime code
 
@@ -73,8 +85,81 @@ gsettings --schemadir schemas set org.gnome.shell.extensions.kube-monitor debug-
   and `lib/client.js` (prefs reuses `client.js` to list contexts) — but never the shell-only
   `lib/indicator.js` / `lib/notifier.js`.
 
-The only thing they share is the **GSettings schema**. All cross-context state (context,
-kubeconfig/kubectl paths, interval, notify toggle) flows through settings keys.
+They share the **GSettings schema** and the **gettext domain**. All cross-context state
+(context, kubeconfig/kubectl paths, interval, notify toggle) flows through settings keys;
+translations flow through `metadata.json`'s `gettext-domain` and the bundled `locale/`,
+which each process binds for itself.
+
+## Translations
+
+`gettext-domain` is the UUID; `ExtensionBase.initTranslations()` binds it to the
+extension's own `locale/` directory. Catalogue sources live in `po/` (14 languages);
+`locale/` is **build output** and gitignored — `gnome-extensions pack --podir=po` and
+`install.sh` both compile it. The decisions worth keeping:
+
+- **Bind through the extension instance**, `bindTranslations(this)`, not the module-level
+  `gettext` exported by `resource:///…/extension.js`. That export resolves the domain by
+  walking an `Error` stack for a path under `/gnome-shell/extensions/`; the instance
+  methods take the domain straight from the metadata and skip the guesswork.
+- **`format()`, never `String.prototype.format`.** That method is not a language feature:
+  gnome-shell's `ui/environment.js` installs it from `imports.format`, and the
+  preferences process does **not** (verified — `typeof ''.format` is `undefined` there),
+  so a `.format()` call anywhere `prefs.js` reaches would throw in that process alone,
+  and again under node. `format()` also supports `%1$s`, which several catalogues need:
+  fr, tr, ja, ko and zh_CN all reorder the arguments of "N of M nodes ready", and Turkish
+  writes the percent sign *before* the number (`CPU %%%d`).
+- **`N_()` for static tables.** `model.js`'s error headlines and `indicator.js`'s spoken
+  severity words are built at module load, before any locale is bound, so they store the
+  English source and go through `_()` at lookup. This also keeps the 100% coverage gate
+  honest: a table of thunks would need every entry *called* to count as covered.
+- **Kubernetes vocabulary stays untranslated** — `Ready`, `NotReady`,
+  `SchedulingDisabled`, the pressure condition types, role names. They are API
+  identifiers printed verbatim by `kubectl get nodes`; translating them would make the
+  menu disagree with the command it is a window onto. `classifyError` now also returns
+  the machine `key` alongside the translated `title`.
+- **The gschema is deliberately not translated.** Its summaries are only ever read by
+  dconf-editor, a separate process that never calls `bindtextdomain()` for this
+  extension's `locale/`, so the entries would be unreachable. `po/POTFILES.in` says so.
+- **Width is part of the translation.** The menu's width is fixed by `.kube-header`, and
+  every locale is longer than English: the pods row is capped (`.kube-pods` max-width)
+  with ellipsizing labels, and the meter labels carry a "keep it to three characters"
+  translator note. Long strings must reflow or trim, never widen the popup.
+- **Which locales actually resolve.** gettext falls back from a regional locale to the
+  bare language (`de_AT`→`de`, `fr_CA`→`fr`, `es_MX`→`es`, `nl_BE`→`nl`, `ru_UA`→`ru`,
+  `ar_MA`→`ar`, `uk_UA`→`uk`) but **never sideways**. That is the whole reason 18
+  catalogues exist for 14 languages: `pt_PT` found nothing behind `pt_BR`, and `zh_TW`,
+  `zh_HK`, `zh_SG` each found nothing behind `zh_CN`. `zh_HK` is `zh_TW` adapted for Hong
+  Kong (連接 for a connection, not Taiwan's 連線) and `zh_SG` is `zh_CN` unchanged, since
+  Singapore follows mainland simplification — both are labelled as derivations in the
+  file that generates them rather than passed off as independent work. Measured across
+  30 locales, not assumed.
+- **RTL is a stylesheet problem, not a translation one.** St's CSS subset has no logical
+  properties: gnome-shell's own theme uses the `:ltr` / `:rtl` pseudo-classes in 28
+  places and `margin-inline-*` in none. Meanwhile `StBoxLayout` *does* reverse its
+  children under RTL, so a bare `margin-left` keeps pushing right in Arabic while the
+  neighbour it was clearing has moved. Three of our rules had exactly that bug
+  (`.kube-caret`, `.kube-context-icon`, `.kube-node-meters`); they are now split per
+  direction, and `tests/stylesheet.test.js` fails the build if a directional property
+  ever appears outside an `:ltr`/`:rtl` selector, or if one side is declared without the
+  other.
+- **Verified at runtime, not only in tests.** The decisive one: a headless GNOME 50 with
+  an isolated dconf store (`XDG_CONFIG_HOME` set **before** `dbus-run-session`, so the
+  activated dconf service inherits it — setting it inside the script leaks to the real
+  store) and a deliberately broken `kubectl-path`, which made the shell log
+  `poll: failed … reason=У kubectl виникла помилка` and
+  `alert: posting banner title=kubectl ist auf ein Problem gestoßen` — i.e. both gi-free
+  modules rendering through the real shell process. Also: the pure modules driven under
+  standalone `gjs` against the compiled `.mo` (uk picks all three plural forms, ar all
+  six), and the preferences window built end-to-end in a real Adw process for uk/de/ar/ja.
+  GNOME 45's `ExtensionBase` was checked against upstream and carries the same three
+  instance methods and the same `initTranslations`, so the binding works across 45–50.
+  A real `ar_EG` locale (built with `localedef` into a `LOCPATH`, since the machine has
+  none) makes GTK report `TextDirection.RTL`, and the extension still reaches the shell
+  and logs Arabic with the direction-split stylesheet in place. What is **not** verified:
+  the *pixels* of an RTL layout — GNOME 50's mutter dropped `--x11`, so no window manager
+  is available under Xvfb to place a mirrored window on screen, and the shell refuses
+  screenshots outside unsafe mode. That last gap is toolkit behaviour rather than ours.
+  Also unverified: no native speaker has reviewed the catalogues.
 
 ## Architecture: a pure core with thin IO/UI edges
 
@@ -87,6 +172,13 @@ contained. Dependencies point inward toward `model.js`; nothing imports "up".
   Plain data in → plain data out; time-dependent functions take
   an explicit `nowMs`. This runs unchanged under gnome-shell, plain gjs, and node, which is
   why it carries the test coverage. **Keep it gi-free.**
+- **`lib/i18n.js` — pure, gi-free.** The translation plumbing: `_`, `ngettext`,
+  `pgettext`, the `N_` extraction marker, and `format()`. Both processes inject their own
+  backend once at start-up (`bindTranslations(this)` from `enable()` and from
+  `fillPreferencesWindow()`), which is what lets the gi-free modules carry their own
+  wording without importing gnome-shell's gettext. Unbound it is the identity, so the
+  unit tests read in plain English and a mis-ordered start-up shows English rather than
+  throwing. See Translations below for why `format()` exists at all.
 - **`lib/log.js` — pure, gi-free.** Opt-in diagnostics behind the `debug-logging`
   key (off by default). Uses `console.log`, **not** `console.debug`: GLib's default
   log writer discards `LEVEL_DEBUG` unless `G_MESSAGES_DEBUG` is set on the process,
@@ -186,6 +278,10 @@ follow-up, not a free win.
 - **Actor reuse**: node rows are keyed by name in `_nodeRows`; a full rebuild happens only
   when the signature (sorted names + levels) changes. Otherwise only dynamic bits (up/down
   duration, CPU/MEM) are updated in place — no teardown churn while the menu is open.
+- **Direction-sensitive CSS must be split.** `margin-left`/`margin-right` (and the
+  padding/border equivalents) have to be written twice, under `:ltr` and `:rtl` — St has
+  no logical properties, and `StBoxLayout` reverses child order under RTL. A test
+  enforces it; see Translations.
 - Status color is class-based (`kube-dot-<level>` / `kube-meter-<level>`, level ∈
   `ok|warning|error|unknown`), not inline. The one exception is the panel logo color:
   `_syncIconColor()` pins the symbolic icon to the panel's foreground and re-runs on
@@ -202,9 +298,10 @@ follow-up, not a free win.
 **Every shipped source file is held at 100% line / branch / function coverage.**
 `npm run coverage` (part of `npm run check`, and its own CI job) enforces that with
 node's built-in thresholds, so a drop fails the build rather than going unnoticed.
-223 tests, no dependencies, no cluster, no gnome-shell.
+252 tests, no dependencies, no cluster, no gnome-shell.
 
-- **The gi-free modules** (`model.js`, `schedule.js`, `alerts.js`) are tested directly.
+- **The gi-free modules** (`model.js`, `schedule.js`, `alerts.js`, `i18n.js`) are tested
+  directly.
 - **Everything else** (`client.js`, `poller.js`, `indicator.js`, `notifier.js`,
   `extension.js`, `prefs.js`) imports `gi://…` or `resource:///…`, which node cannot
   resolve. `tests/hooks.mjs` registers **`node:module` `registerHooks`** (the
@@ -222,6 +319,20 @@ node's built-in thresholds, so a drop fails the build rather than going unnotice
   defaults that emits `changed`/`changed::key` like dconf.
   `stubs/shell/messageTray.js` can present **either** notification API generation, so
   the GNOME 45 shim is tested even though nobody develops on 45.
+  `stubs/shell/extension.js` carries a real gettext catalogue (`__catalog`) plus a
+  pluggable plural rule (`__pluralIndex`), so one test in `extension.test.js` drives the
+  whole stack in Ukrainian and proves a bound locale reaches the panel, the menu **and**
+  the gi-free alert machine — with a three-form plural rule, which is the assumption most
+  worth breaking. It is empty by default, so every other test still reads in English.
+- **Two test files read source rather than run it**, because nothing executes them
+  here: `tests/stylesheet.test.js` holds the `:ltr`/`:rtl` invariant over
+  `stylesheet.css` (gnome-shell parses that file, not node), and
+  `tests/catalogues.test.js` holds what gettext's tools cannot express over `po/*.po`
+  — that translations stay inside the printf subset `format()` implements, keep the
+  whitespace and ellipsis a caller depends on, and that the meter labels and duration
+  abbreviations still fit the columns they sit in. Both were checked by injecting a
+  violation and watching them fail; the first attempt at the catalogue parser dropped
+  every `msgctxt`, which made two of its checks vacuous until that bite-test caught it.
 - **Chasing full branch coverage is a review tool, not a vanity metric.** It has
   already found: dead code (`wantDetailNow` in the poller, two `.catch` handlers on a
   function that cannot reject, an entry-time cancellation check), a prototype-chain

@@ -170,6 +170,21 @@ test('nodeQualifier: role when healthy, reason when degraded, empty when down', 
     assert.equal(
         nodeQualifier({ready: true, level: NodeLevel.WARNING, roles: ['worker'], issues: ['MemoryPressure']}),
         'MemoryPressure');
+    // A down node reports its raw status: this is the ONLY text saying it is
+    // down, so state is not carried by the red dot alone (WCAG 1.4.1).
+    assert.equal(
+        nodeQualifier({
+            ready: false, level: NodeLevel.ERROR, roles: ['worker'], issues: [],
+            statusText: 'NotReady',
+        }),
+        'NotReady');
+    assert.equal(
+        nodeQualifier({
+            ready: false, level: NodeLevel.ERROR, roles: ['worker'], issues: [],
+            statusText: 'NotReady,SchedulingDisabled',
+        }),
+        'NotReady,SchedulingDisabled');
+    // Health-tier nodes without statusText degrade to empty rather than throwing.
     assert.equal(
         nodeQualifier({ready: false, level: NodeLevel.ERROR, roles: ['worker'], issues: []}),
         '');

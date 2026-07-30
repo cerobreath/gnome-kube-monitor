@@ -59,6 +59,11 @@
       <summary>Muted until (wall-clock ms)</summary>
       <description>Internal: notifications are muted until this Unix time in milliseconds. Set from the panel menu's snooze control; 0 means not muted.</description>
     </key>
+    <key name="debug-logging" type="b">
+      <default>false</default>
+      <summary>Log diagnostics to the journal</summary>
+      <description>Write why each poll and alert decision was made to the system journal, for troubleshooting. Off by default: logged messages are shared with every other application's logs. Credential material is redacted, and raw kubectl output is never logged.</description>
+    </key>
     <key name="alert-state" type="s">
       <default>''</default>
       <summary>Persisted alert state</summary>

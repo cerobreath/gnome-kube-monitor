@@ -4,3 +4,17 @@
 // `resource:///org/gnome/shell/…` module specifiers our .js files import.
 import '@girs/gnome-shell/ambient';
 import '@girs/gnome-shell/extensions/global';
+
+// GJS implements the WHATWG console API, but the strict pass runs with
+// `types: []` and `lib: ES2022`, neither of which declares it (and pulling in
+// "dom" would wrongly hand the logic layer a browser's worth of globals). Only
+// the members lib/log.js actually uses are declared.
+declare global {
+    const console: {
+        log(...args: unknown[]): void;
+        debug(...args: unknown[]): void;
+        info(...args: unknown[]): void;
+        warn(...args: unknown[]): void;
+        error(...args: unknown[]): void;
+    };
+}

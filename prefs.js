@@ -155,6 +155,16 @@ export default class KubeMonitorPreferences extends ExtensionPreferences {
         advanced.add_row(kubectlEntry);
         settings.bind('kubectl-path', kubectlEntry, 'text', Gio.SettingsBindFlags.DEFAULT);
 
+        // Troubleshooting switch, so it lives behind Advanced rather than in the
+        // main flow. Off by default; see lib/log.js for what it does and does not
+        // write.
+        const debugRow = new Adw.SwitchRow({
+            title: 'Log diagnostics to the journal',
+            subtitle: 'For troubleshooting: journalctl -f -o cat /usr/bin/gnome-shell',
+        });
+        advanced.add_row(debugRow);
+        settings.bind('debug-logging', debugRow, 'active', Gio.SettingsBindFlags.DEFAULT);
+
         // Kubeconfig files: a list that kubectl merges via KUBECONFIG. Add with a
         // file picker, remove with the trash button. Empty = default ~/.kube/config.
         const getKubeconfigs = () =>

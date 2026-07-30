@@ -15,7 +15,14 @@ import {KubeIndicator} from './lib/indicator.js';
 import {KubePoller} from './lib/poller.js';
 import {KubeNotifier} from './lib/notifier.js';
 import {fetchContexts, fetchCurrentContext} from './lib/client.js';
-import {reduce, groupActions, serializeState, deserializeState} from './lib/alerts.js';
+import {
+    reduce, groupActions, rollbackDelivery, needsPersist, serializeState, deserializeState,
+} from './lib/alerts.js';
+
+// How far the persisted "last observed" stamp may lag before it's worth a dconf
+// write. Well under the alert machine's settle window, and a lagging stamp only
+// makes a gap look bigger (which settles silently), so this is the safe knob.
+const STAMP_TOLERANCE_MS = 300_000;   // 5 minutes
 
 export default class KubeMonitorExtension extends Extension {
     enable() {
@@ -26,12 +33,14 @@ export default class KubeMonitorExtension extends Extension {
         this._notifier = new KubeNotifier(this);
 
         // Alert state machine: load the persisted blob so a restart resumes the
-        // lifecycle instead of replaying. _lastSerialized tracks what's on disk
+        // lifecycle instead of replaying. _persistedState tracks what's on disk
         // so we only write GSettings when the state actually changes.
-        /** @type {string} */
-        this._lastSerialized = this._settings.get_string('alert-state');
         /** @type {import('./lib/alerts.js').AlertState | null} */
-        this._alertState = deserializeState(this._lastSerialized);
+        this._alertState = deserializeState(this._settings.get_string('alert-state'));
+        // What's currently on disk, so needsPersist can tell a real change from
+        // the observation stamp merely advancing.
+        /** @type {import('./lib/alerts.js').AlertState | null} */
+        this._persistedState = this._alertState;
         // group_wait buffer: actions collect here and flush as coalesced banners.
         /** @type {import('./lib/alerts.js').AlertAction[]} */
         this._pendingActions = [];
@@ -86,13 +95,18 @@ export default class KubeMonitorExtension extends Extension {
     disable() {
         this._poller?.stop();
         this._poller = null;
-        // Deliver any buffered banners before teardown so a just-fired alert
-        // isn't silently dropped, then drop the group-wait timer.
+        // Teardown must not post banners: the tray source is about to be
+        // destroyed, and allocating one inside disable() is an EGO anti-pattern.
+        // Instead roll the notify-log back for anything still buffered, so the
+        // next enable() delivers it rather than assuming the user saw it.
         if (this._groupTimerId) {
             GLib.source_remove(this._groupTimerId);
             this._groupTimerId = 0;
         }
-        this._flushGroup();
+        if (this._pendingActions.length) {
+            this._alertState = rollbackDelivery(this._alertState, this._pendingActions);
+            this._pendingActions = [];
+        }
         // Flush the latest alert state so a warm restart (e.g. screen lock)
         // resumes exactly where we left off. Each observation already persists,
         // so this is belt-and-suspenders.
@@ -125,9 +139,24 @@ export default class KubeMonitorExtension extends Extension {
     // the cluster switcher. Best-effort; failures leave the UI as-is.
     _refreshContextInfo() {
         const opts = this._readOpts();
+        // Capture the cancellable once. disable() nulls it, and reading it late
+        // (inside a .then) would hand client.js a null one -- spawning a kubectl
+        // nobody can kill. It also gates the continuations: gnome-shell reuses
+        // this Extension instance across lock/unlock, so a late callback would
+        // otherwise write the previous cycle's context list into the new menu.
+        // NB: fetchCurrentContext swallows cancellation and resolves '', so the
+        // is_cancelled() checks below are what actually stop the chain.
+        const cancellable = this._cancellable;
+        if (!cancellable)
+            return;
         const showList = (/** @type {string} */ current) => {
-            fetchContexts(opts, this._cancellable)
-                .then(list => this._indicator?.setContexts(list, current))
+            if (cancellable.is_cancelled())
+                return;
+            fetchContexts(opts, cancellable)
+                .then(list => {
+                    if (!cancellable.is_cancelled())
+                        this._indicator?.setContexts(list, current);
+                })
                 .catch(() => {});
         };
         // Resolve the effective current context first so the switcher can mark it
@@ -135,8 +164,10 @@ export default class KubeMonitorExtension extends Extension {
         if (opts.context) {
             showList(opts.context);
         } else {
-            fetchCurrentContext(opts, this._cancellable)
+            fetchCurrentContext(opts, cancellable)
                 .then(ctx => {
+                    if (cancellable.is_cancelled())
+                        return;
                     if (ctx)
                         this._context = ctx;
                     showList(ctx || this._context || '');
@@ -200,16 +231,16 @@ export default class KubeMonitorExtension extends Extension {
         };
     }
 
-    // Persist only when the serialized state actually changed, so a steady
-    // cluster doesn't churn dconf every poll.
+    // Persist only when the alert records actually changed (or the observation
+    // stamp has drifted far enough to matter), so a steady cluster doesn't churn
+    // dconf on every poll. needsPersist owns that decision and is unit-tested.
     _persistAlertState() {
         if (!this._settings)
             return;
-        /** @type {string} */
-        const json = this._alertState ? serializeState(this._alertState) : '';
-        if (json !== this._lastSerialized) {
-            this._settings.set_string('alert-state', json);
-            this._lastSerialized = json;
-        }
+        if (!needsPersist(this._persistedState, this._alertState, STAMP_TOLERANCE_MS))
+            return;
+        this._settings.set_string('alert-state',
+            this._alertState ? serializeState(this._alertState) : '');
+        this._persistedState = this._alertState;
     }
 }

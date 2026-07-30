@@ -5,7 +5,10 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 
-import {reduce, groupActions, serializeState, deserializeState, CLUSTER_KEY} from '../lib/alerts.js';
+import {
+    reduce, groupActions, rollbackDelivery, needsPersist, serializeState, deserializeState,
+    CLUSTER_KEY,
+} from '../lib/alerts.js';
 
 const CTX = 'ctx';
 const T0 = 1_700_000_000_000;   // fixed wall-ms base
@@ -309,6 +312,55 @@ test('silence: a resolve is withheld while muted', () => {
     assert.deepEqual(s.actions, []);
 });
 
+test('needsPersist ignores the advancing stamp so a steady cluster does not churn storage', () => {
+    const TOL = 300 * SEC;
+    // Two ticks 10s apart with a firing node: identical records, stamp advanced.
+    let now = T0;
+    let s = reduce(null, obs(true, [['a', false]]), cfg(), now);
+    now += 35 * SEC;
+    s = reduce(s.state, obs(true, [['a', false]]), cfg(), now);   // fires
+    const persisted = s.state;
+    now += 10 * SEC;
+    const next = reduce(persisted, obs(true, [['a', false]]), cfg(), now).state;
+    assert.notEqual(next.lastObservedAt, persisted.lastObservedAt);   // stamp did move
+    assert.equal(needsPersist(persisted, next, TOL), false);          // ...but no write
+
+    // Once the stamp has drifted past the tolerance, refresh it.
+    const drifted = {...next, lastObservedAt: persisted.lastObservedAt + TOL};
+    assert.equal(needsPersist(persisted, drifted, TOL), true);
+});
+
+test('needsPersist writes whenever the records, context or version change', () => {
+    const TOL = 300 * SEC;
+    let now = T0;
+    let s = reduce(null, obs(true, [['a', false]]), cfg(), now);
+    now += 35 * SEC;
+    s = reduce(s.state, obs(true, [['a', false]]), cfg(), now);
+    const persisted = s.state;
+
+    // A node recovering clears its record -> must be written.
+    now += 100 * SEC;
+    const cleared = reduce(persisted, obs(true, [['a', true]]), cfg(), now).state;
+    assert.equal(needsPersist(persisted, cleared, TOL), true);
+    assert.equal(needsPersist(persisted, {...persisted, context: 'other'}, TOL), true);
+    assert.equal(needsPersist(persisted, {...persisted, v: 99}, TOL), true);
+    // Record order must not matter.
+    const two = reduce(null, obs(true, [['a', false], ['b', false]]), cfg(), T0).state;
+    const reordered = {...two, alerts: Object.fromEntries(Object.entries(two.alerts).reverse())};
+    assert.equal(needsPersist(two, reordered, TOL), false);
+});
+
+test('needsPersist skips storage entirely while there is nothing to remember', () => {
+    const TOL = 300 * SEC;
+    const healthy = reduce(null, obs(true, [['a', true]]), cfg(), T0).state;
+    assert.deepEqual(healthy.alerts, {});
+    assert.equal(needsPersist(null, healthy, TOL), false);      // healthy cold start: no write
+    const later = reduce(healthy, obs(true, [['a', true]]), cfg(), T0 + 10 * SEC).state;
+    assert.equal(needsPersist(healthy, later, TOL), false);     // still nothing on the books
+    assert.equal(needsPersist(healthy, null, TOL), true);       // clearing a stored blob
+    assert.equal(needsPersist(null, null, TOL), false);
+});
+
 test('groupActions coalesces simultaneous fires into one critical banner', () => {
     const mk = (type, label, title) => ({type, key: label, label, title, body: ''});
     assert.deepEqual(groupActions([]), []);
@@ -318,6 +370,38 @@ test('groupActions coalesces simultaneous fires into one critical banner', () =>
         mk('fire', 'a', 'a is down'), mk('fire', 'b', 'b is down'), mk('fire', 'cluster', "Can't reach the cluster"),
     ]);
     assert.deepEqual(many, [{title: '3 firing', body: 'a, b, cluster', urgency: 'critical'}]);
+});
+
+test('rollbackDelivery re-arms an undelivered fire so the next tick notifies again', () => {
+    // Fire, but pretend teardown happened before the banner was dispatched.
+    let now = T0;
+    let s = reduce(null, obs(true, [['a', false]]), cfg(), now);
+    now += 35 * SEC;
+    s = reduce(s.state, obs(true, [['a', false]]), cfg(), now);
+    assert.deepEqual(types(s.actions), ['fire:NodeNotReady:a']);
+
+    const rolledBack = rollbackDelivery(s.state, s.actions);
+    // The outage start is preserved; only the delivery bookkeeping is reset.
+    assert.equal(rolledBack.alerts['NodeNotReady:a'].phase, 'firing');
+    assert.equal(rolledBack.alerts['NodeNotReady:a'].since, s.state.alerts['NodeNotReady:a'].since);
+    assert.equal(rolledBack.alerts['NodeNotReady:a'].lastStatus, 'resolved');
+
+    // Next observation after re-enable: the user finally gets the banner.
+    now += 5 * SEC;
+    const resumed = reduce(rolledBack, obs(true, [['a', false]]), cfg(), now);
+    assert.deepEqual(types(resumed.actions), ['fire:NodeNotReady:a']);
+});
+
+test('rollbackDelivery is a no-op for resolves, empty batches and null state', () => {
+    assert.equal(rollbackDelivery(null, []), null);
+    let now = T0;
+    let s = reduce(null, obs(true, [['a', false]]), cfg(), now);
+    now += 35 * SEC;
+    s = reduce(s.state, obs(true, [['a', false]]), cfg(), now);
+    assert.equal(rollbackDelivery(s.state, []), s.state);   // same object, nothing changed
+    // A resolve has no record left to re-arm, so the state is untouched.
+    const resolveAction = [{type: 'resolve', key: 'NodeNotReady:a', label: 'a', title: '', body: ''}];
+    assert.equal(rollbackDelivery(s.state, resolveAction), s.state);
 });
 
 test('groupActions splits fires (critical) and resolves (normal) into two banners', () => {

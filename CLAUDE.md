@@ -31,7 +31,11 @@ reloads code changes only after a shell restart). The install is a **symlink**, 
 are seen by the next shell restart — no reinstall unless you touch the schema:
 
 ```bash
-dbus-run-session -- gnome-shell --nested --wayland          # test in a nested shell
+# Test in a throwaway shell. Nested is the default when --display-server is absent;
+# --nested was REMOVED in GNOME 50. --headless doesn't steal focus, and pairing it
+# with `gnome-extensions info <uuid>` in the same dbus-run-session proves the
+# extension actually reached State: ACTIVE (silence alone proves nothing).
+dbus-run-session -- gnome-shell --headless --virtual-monitor 1280x800 --wayland
 journalctl -f -o cat /usr/bin/gnome-shell | grep -i kube    # extension logs / stack traces
 ```
 

@@ -21,7 +21,7 @@
 
 .kube-time {
     font-size: 0.8em;
-    opacity: 0.5;
+    opacity: 0.65;
 }
 
 .kube-context-button {
@@ -30,7 +30,7 @@
 }
 
 .kube-context-button:hover {
-    background-color: rgba(255, 255, 255, 0.07);
+    background-color: rgba(128, 128, 128, 0.22);
 }
 
 .kube-caret {
@@ -44,7 +44,7 @@
 }
 
 .kube-icon-button:hover {
-    background-color: rgba(255, 255, 255, 0.07);
+    background-color: rgba(128, 128, 128, 0.22);
 }
 
 /* Collapsible context list (buttons that keep the menu open) */
@@ -53,14 +53,15 @@
     padding-bottom: 2px;
 }
 
+/* No explicit colour: inherit the theme's foreground. Hardcoding #ffffff here
+   made these rows white-on-white (1.0:1, invisible) under GNOME's Light style. */
 .kube-context-row {
     padding: 5px 8px;
     border-radius: 8px;
-    color: #ffffff;
 }
 
 .kube-context-row:hover {
-    background-color: rgba(255, 255, 255, 0.07);
+    background-color: rgba(128, 128, 128, 0.22);
 }
 
 .kube-context-icon {
@@ -110,9 +111,11 @@
     font-size: 1.02em;
 }
 
+/* Carries the failure reason / "NotReady", so it must be properly legible:
+   opacity 0.45 measured ~3.8:1 on a dark popup, under the 4.5:1 AA floor. */
 .kube-node-qual {
     font-size: 0.85em;
-    opacity: 0.45;
+    opacity: 0.7;
 }
 
 .kube-node-duration {
@@ -152,17 +155,19 @@
     min-width: 30px;
 }
 
+/* Mid-grey rather than a white wash, so the track is visible on both the dark
+   and light popup backgrounds. */
 .kube-meter-track {
     width: 64px;
     height: 7px;
     border-radius: 4px;
-    background-color: rgba(255, 255, 255, 0.13);
+    background-color: rgba(128, 128, 128, 0.35);
 }
 
 .kube-meter-fill {
     height: 7px;
     border-radius: 4px;
-    background-color: rgba(255, 255, 255, 0.5);
+    background-color: rgba(128, 128, 128, 0.7);
 }
 
 .kube-meter-fill.kube-meter-ok {
@@ -174,7 +179,19 @@
 }
 
 .kube-meter-fill.kube-meter-error {
-    background-color: #e01b24;
+    background-color: #ff5c5c;
+}
+
+/* Focus rings. These are custom classes, so the shell's own
+   popup-menu-item:focus styling never reaches them -- without these a keyboard
+   user tabbing through the menu sees nothing at all (WCAG 2.4.7).
+   NB: an inset box-shadow, not `outline`: St's CSS subset does not implement
+   outline (gnome-shell's own theme uses this exact pattern, 121 times). */
+.kube-context-button:focus,
+.kube-icon-button:focus,
+.kube-context-row:focus {
+    background-color: rgba(128, 128, 128, 0.3);
+    box-shadow: inset 0 0 0 2px rgba(120, 145, 255, 0.85);
 }
 
 .kube-meter-value {
@@ -199,8 +216,10 @@
     background-color: #e5a50a;
 }
 
+/* Lifted from #e01b24, which measured ~2.5:1 against a dark popup -- under the
+   3:1 floor for a non-text indicator, and this is the most important one. */
 .kube-dot-error {
-    background-color: #e01b24;
+    background-color: #ff5c5c;
 }
 
 .kube-dot-unknown {

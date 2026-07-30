@@ -78,24 +78,47 @@ contained. Dependencies point inward toward `model.js`; nothing imports "up".
   why it carries the test coverage. **Keep it gi-free.**
 - **`lib/schedule.js` — pure, gi-free.** Poll-cadence math (base-interval clamp,
   exponential backoff) split out of the loop so it's unit-tested. **Keep it gi-free too.**
+- **`lib/alerts.js` — pure, gi-free.** The alert state machine: a `reduce(prevState,
+  observation, config, nowMs)` reducer that turns each poll observation (node readiness +
+  cluster reachability) into `fire`/`resolve` actions, with a Prometheus-style
+  `inactive→pending→firing` lifecycle (`for` debounce, `keep_firing_for` hold), an
+  Alertmanager-style notify-log for dedup + persistence, cluster-unreachable inhibition of
+  node alerts, a settle guard for cold start / suspend / long screen-lock, and a
+  `silencedUntilMs` mute that withholds without marking (so a still-firing alert delivers
+  when the silence expires). `nowMs` is wall-clock (must survive reboot). State is serialized
+  to the `alert-state` GSettings key. `groupActions(actions)` coalesces a batch into at most
+  two banners (fires = critical, resolves = normal) — Alertmanager grouping. **Keep it
+  gi-free**; all firing wording + tests live here, not in the view.
 - **`lib/client.js` — the kubectl IO edge.** The only file that shells out
   (`Gio.Subprocess`). Builds the environment explicitly (gnome-shell has a trimmed PATH and
   no `KUBECONFIG`), always passes `--request-timeout=5s` and `--context` when set, and
   delegates all parsing to `model.js`.
 - **`lib/poller.js` — the poll loop.** Owns tier selection, backoff (delays from
   `schedule.js`), the watchdog, and reentrancy (see invariants below). Pushes render state
-  out via callbacks.
+  out via `onState`, and an `AlertObservation` (`{reachable, context, nodes, error}`) via
+  `onObservation` from **both** the success and the error path — the error path is what lets
+  the alert machine see an unreachable cluster. A `stop()`-cancellation emits neither.
 - **`lib/indicator.js` — the view.** `PanelMenu.Button` + menu. Decoupled from settings:
   it emits `refresh-requested`, `context-selected(string)`, `menu-open-changed(bool)`,
-  `node-copied(string)` and never reads GSettings itself. Notifications are the extension's
-  job, so the copy-to-clipboard row emits `node-copied` rather than posting a banner itself.
+  `node-copied(string)`, `snooze-requested(int seconds)` and never reads GSettings itself.
+  Notifications are the extension's job, so the copy row emits `node-copied` and the "Mute
+  alerts" submenu emits `snooze-requested`; the extension pushes mute state back via
+  `setSnoozeUntil(ms)`.
 - **`lib/notifier.js` — the notification edge.** Shell-only (imports `resource:///`, like
   `indicator.js`). Owns a dedicated `MessageTray.Source` titled "Kube Node Monitor" with the
   helm icon, so banners are attributed to the extension, not the generic "System" source.
   Bridges the MessageTray API split at GNOME 46 (45: positional ctors + `showNotification`;
   46–50+: params-object ctors + `addNotification`) by feature-detecting `addNotification` on
-  the `Source` prototype. Persistent-source pattern: recreated after the shell destroys it.
-- **`extension.js` — thin wiring** + node up/down transitions routed through `notifier.js`.
+  the `Source` prototype. `notify(title, body, {transient, urgency})` maps `urgency` to
+  `MessageTray.Urgency` (`critical` = sticky, shown under DND — used for fires). Persistent-
+  source pattern: recreated after the shell destroys it.
+- **`extension.js` — thin wiring.** Feeds each `onObservation` through `alerts.reduce`,
+  buffers the returned actions through a `group_wait` timer, then dispatches them coalesced
+  (`alerts.groupActions`) to `notifier.js`, and persists the machine's state to the
+  `alert-state` GSettings key (only when it changes). Snooze: `snooze-requested` writes an
+  absolute `alert-silence-until` deadline the reducer reads live. The `changed` handler uses a
+  connection-key allowlist (`context`/`kubeconfig-path`/`kubectl-path`) so writing
+  `alert-state` doesn't self-trigger a re-poll; alert tunables are read live per observation.
 
 ### Two-tier polling (the core optimization)
 

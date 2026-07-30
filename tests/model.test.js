@@ -19,7 +19,6 @@ import {
     compareNodes,
     nodeQualifier,
     meterLevel,
-    diffReadiness,
     classifyError,
 } from '../lib/model.js';
 
@@ -182,18 +181,6 @@ test('meterLevel buckets load% into ok/warning/error at 70 and 90', () => {
     assert.equal(meterLevel(89), NodeLevel.WARNING);
     assert.equal(meterLevel(90), NodeLevel.ERROR);     // error boundary
     assert.equal(meterLevel(100), NodeLevel.ERROR);
-});
-
-test('diffReadiness reports down/up transitions (the notify logic)', () => {
-    const prev = new Map([['a', true], ['b', true], ['c', false]]);
-    const cur = new Map([['a', true], ['b', false], ['c', true], ['d', true]]);
-    // b went down, c recovered, a unchanged, d is new (no baseline → ignored)
-    assert.deepEqual(diffReadiness(prev, cur), {down: ['b'], up: ['c']});
-});
-
-test('diffReadiness yields nothing on the first poll (null baseline)', () => {
-    // This is why already-down nodes at startup never notify — they only set the baseline.
-    assert.deepEqual(diffReadiness(null, new Map([['a', false], ['b', true]])), {down: [], up: []});
 });
 
 test('classifyError buckets each kubectl failure into a human headline', () => {

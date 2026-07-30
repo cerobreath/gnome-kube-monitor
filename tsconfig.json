@@ -19,6 +19,7 @@
     "lib/schedule.js",
     "lib/client.js",
     "lib/poller.js",
+    "lib/alerts.js",
     "types/**/*.d.ts"
   ]
 }

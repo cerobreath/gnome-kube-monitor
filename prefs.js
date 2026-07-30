@@ -40,6 +40,67 @@ export default class KubeMonitorPreferences extends ExtensionPreferences {
         monitorGroup.add(notify);
         settings.bind('notify-node-changes', notify, 'active', Gio.SettingsBindFlags.DEFAULT);
 
+        // ---------------- Notifications ----------------
+        const notifyGroup = new Adw.PreferencesGroup({
+            title: 'Notifications',
+            description: 'How and when alerts fire. Debounce and hold windows ride out brief blips.',
+        });
+        page.add(notifyGroup);
+
+        const cluster = new Adw.SwitchRow({
+            title: 'Notify when the cluster is unreachable',
+            subtitle: 'When kubectl can’t reach the cluster past the debounce window',
+        });
+        notifyGroup.add(cluster);
+        settings.bind('notify-cluster-unreachable', cluster, 'active', Gio.SettingsBindFlags.DEFAULT);
+
+        const recovery = new Adw.SwitchRow({
+            title: 'Notify on recovery',
+            subtitle: 'Also notify when a node or the cluster comes back',
+        });
+        notifyGroup.add(recovery);
+        settings.bind('notify-on-recovery', recovery, 'active', Gio.SettingsBindFlags.DEFAULT);
+
+        const nodeFor = new Adw.SpinRow({
+            title: 'Node debounce',
+            subtitle: 'Seconds a node must stay NotReady before it notifies',
+            adjustment: new Gtk.Adjustment({lower: 0, upper: 3600, step_increment: 5, page_increment: 30}),
+        });
+        notifyGroup.add(nodeFor);
+        settings.bind('alert-node-for', nodeFor, 'value', Gio.SettingsBindFlags.DEFAULT);
+
+        const clusterFor = new Adw.SpinRow({
+            title: 'Cluster debounce',
+            subtitle: 'Seconds the cluster must stay unreachable before it notifies',
+            adjustment: new Gtk.Adjustment({lower: 0, upper: 3600, step_increment: 5, page_increment: 30}),
+        });
+        notifyGroup.add(clusterFor);
+        settings.bind('alert-cluster-for', clusterFor, 'value', Gio.SettingsBindFlags.DEFAULT);
+
+        const keepFiring = new Adw.SpinRow({
+            title: 'Keep firing for',
+            subtitle: 'Seconds to hold a firing alert after it clears, so a flap doesn’t re-fire',
+            adjustment: new Gtk.Adjustment({lower: 0, upper: 3600, step_increment: 5, page_increment: 30}),
+        });
+        notifyGroup.add(keepFiring);
+        settings.bind('alert-keep-firing-for', keepFiring, 'value', Gio.SettingsBindFlags.DEFAULT);
+
+        const repeat = new Adw.SpinRow({
+            title: 'Repeat interval',
+            subtitle: 'Seconds before re-notifying a still-firing alert (0 never repeats)',
+            adjustment: new Gtk.Adjustment({lower: 0, upper: 86400, step_increment: 60, page_increment: 300}),
+        });
+        notifyGroup.add(repeat);
+        settings.bind('alert-repeat-interval', repeat, 'value', Gio.SettingsBindFlags.DEFAULT);
+
+        const groupWait = new Adw.SpinRow({
+            title: 'Group wait',
+            subtitle: 'Seconds to batch alerts firing together into one banner (0 groups per poll)',
+            adjustment: new Gtk.Adjustment({lower: 0, upper: 300, step_increment: 1, page_increment: 5}),
+        });
+        notifyGroup.add(groupWait);
+        settings.bind('alert-group-wait', groupWait, 'value', Gio.SettingsBindFlags.DEFAULT);
+
         // ---------------- Connection ----------------
         const connGroup = new Adw.PreferencesGroup({
             title: 'Connection',

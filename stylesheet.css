@@ -73,6 +73,10 @@
     border-radius: 8px;
 }
 
+/* The rows highlight, the list around them does not. That split is the whole
+   point: a fill behind the individual row says "this is what you would click",
+   while a fill behind the entire block says nothing and only adds a box. The
+   container is kept from ever hovering in indicator.js (track_hover). */
 .kube-context-row:hover {
     background-color: rgba(128, 128, 128, 0.22);
 }

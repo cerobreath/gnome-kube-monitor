@@ -301,6 +301,32 @@ follow-up, not a free win.
   padding/border equivalents) have to be written twice, under `:ltr` and `:rtl` — St has
   no logical properties, and `StBoxLayout` reverses child order under RTL. A test
   enforces it; see Translations.
+- **`reactive: false` on a `PopupBaseMenuItem` makes the theme grey it out.** St ties its
+  `:insensitive` pseudo-class to an actor's reactivity, and gnome-shell's theme paints
+  `.popup-inactive-menu-item:insensitive` in the disabled colour (#9b9b9d dark, #78787b
+  light) — which the item then *inherits down* to everything inside it, live buttons
+  included. Measured in a real shell: the whole menu was rendering in the disabled
+  colour. Where a container holds working controls, build it as
+  `{reactive: true, activate: false, hover: false}` instead: `_activatable` is
+  `reactive && activate`, so it still matches plain `.popup-inactive-menu-item` (the
+  theme's ordinary foreground, correct in both styles) while its click gesture and
+  hover-to-active binding stay unwired. Never fix this with a colour of your own — a
+  hardcoded `#ffffff` here is the exact regression that once made rows white-on-white
+  under Light. `_contextItem` does it this way and a test pins it.
+  Purely informational rows (`_podsItem`, the header, the error item) are deliberately
+  left dim: there the disabled colour reads as "secondary", which is what they are.
+  **`reactive: true` also turns on `track_hover`**, which is how the theme would then
+  paint `.popup-menu-item:hover` (#535359, measured) across a whole container.
+- **Hover marks the element, never the block.** A fill behind the row under the pointer
+  says "this is what you would click"; the same fill behind an entire container says
+  nothing and just adds a box. So `_contextItem` sets `track_hover = false` right after
+  construction, while the rows inside it keep `.kube-context-row:hover` — and everything
+  else that is clickable (the header button, the refresh button, the shell's own menu
+  rows) keeps its highlight untouched. A test pins both halves; removing a per-row fill
+  leaves that control with no mouse affordance at all, which is not a tidy-up.
+  Should a shell-theme rule ever need beating, note that it takes **specificity, not load
+  order**: `.popup-menu-item:hover, :selected, :checked` is one rule at (0,2,0), so a
+  single-class override only ties.
 - Status color is class-based (`kube-dot-<level>` / `kube-meter-<level>`, level ∈
   `ok|warning|error|unknown`), not inline. The one exception is the panel logo color:
   `_syncIconColor()` pins the symbolic icon to the panel's foreground and re-runs on

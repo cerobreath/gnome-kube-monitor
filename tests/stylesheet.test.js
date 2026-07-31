@@ -54,6 +54,18 @@ test('every :ltr rule has an :rtl counterpart, and the other way round', () => {
     assert.deepEqual(ltr, rtl, 'a one-sided direction rule silently drops the spacing');
 });
 
+test('every row a pointer can land on still says so', () => {
+    // The container's highlight was removed because a fill that spans a whole
+    // block marks nothing; the per-row fills are the ones that do the work, and
+    // deleting one leaves that control with no mouse affordance at all.
+    for (const selector of ['.kube-context-row:hover', '.kube-context-button:hover',
+        '.kube-icon-button:hover']) {
+        const rule = rules().find(r => r.selector === selector);
+        assert.ok(rule, `${selector} is missing — that control would be silent under the pointer`);
+        assert.match(rule.body, /background-color:/);
+    }
+});
+
 test('the meter track width still matches METER_WIDTH in indicator.js', () => {
     // Not an i18n concern, but the same class of defect: a constant duplicated
     // across a file the tests do execute and one they do not.

@@ -83,6 +83,20 @@ when publishing.
 
 ### Fixed (this cycle)
 
+- The cluster switcher no longer highlights as a whole block on hover. Making its
+  container reactive (above) had turned on `track_hover`, so the theme painted
+  `.popup-menu-item:hover` across the entire list behind whichever row the
+  pointer was actually on. The per-row highlights are untouched: hover marks the
+  element you would click, not the container around it.
+
+- **The cluster switcher rendered as if it were disabled.** Its container was a
+  `PopupBaseMenuItem` with `reactive: false`, and St ties `:insensitive` to
+  reactivity, so gnome-shell's theme painted it (and, by inheritance, the working
+  buttons inside it) in the disabled grey — #9b9b9d on Dark, #78787b on Light,
+  measured against the resolved theme nodes in a running shell. Rebuilding it as
+  reactive-but-not-activatable moves it to the theme's ordinary foreground,
+  #ffffff and #222226, without this extension naming a colour at all.
+
 - **Right-to-left layout was broken in three places.** `.kube-caret`,
   `.kube-context-icon` and `.kube-node-meters` each used a bare `margin-left`
   or `margin-right`. St has no logical CSS properties — gnome-shell's own theme

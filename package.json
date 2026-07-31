@@ -13,8 +13,12 @@
     "coverage": "node --test --import ./tests/hooks.mjs --experimental-test-coverage --test-coverage-exclude=tests/** --test-coverage-lines=100 --test-coverage-branches=100 --test-coverage-functions=100 tests/*.test.js",
     "lint": "eslint --cache --cache-location .eslintcache .",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.ui.json",
-    "check": "npm run lint && npm run typecheck && npm run coverage",
-    "pack": "glib-compile-schemas schemas/ && gnome-extensions pack --force --extra-source=lib --extra-source=icons --extra-source=LICENSE .",
+    "check": "npm run lint && npm run typecheck && npm run coverage && npm run i18n:check",
+    "pack": "glib-compile-schemas schemas/ && gnome-extensions pack --force --podir=po --extra-source=lib --extra-source=icons --extra-source=LICENSE .",
+    "i18n:pot": "./po/i18n.sh pot",
+    "i18n:update": "./po/i18n.sh update",
+    "i18n:compile": "./po/i18n.sh compile",
+    "i18n:check": "./po/i18n.sh check",
     "prepare": "husky"
   },
   "lint-staged": {

@@ -11,92 +11,105 @@ import GLib from 'gi://GLib';
 import {ExtensionPreferences} from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 import {fetchContexts, fetchCurrentContext} from './lib/client.js';
 import {classifyError} from './lib/model.js';
-
-const AUTO_LABEL = 'Current context (auto)';
+import {bindTranslations, _, ngettext, format} from './lib/i18n.js';
 
 export default class KubeMonitorPreferences extends ExtensionPreferences {
     /** @param {Adw.PreferencesWindow} window */
     async fillPreferencesWindow(window) {
+        // This is a different process from the shell, with its own module state,
+        // so it binds its own backend. ExtensionPreferences derives from the same
+        // ExtensionBase, so the instance carries the same gettext methods.
+        bindTranslations(this);
         const settings = this.getSettings();
 
-        const page = new Adw.PreferencesPage({title: 'General', icon_name: 'preferences-system-symbolic'});
+        // Translators: the only page of the preferences window.
+        const page = new Adw.PreferencesPage({title: _('General'), icon_name: 'preferences-system-symbolic'});
         window.add(page);
 
         // ---------------- Monitoring ----------------
-        const monitorGroup = new Adw.PreferencesGroup({title: 'Monitoring'});
+        // Translators: preferences group covering how often the cluster is polled.
+        const monitorGroup = new Adw.PreferencesGroup({title: _('Monitoring')});
         page.add(monitorGroup);
 
         const interval = new Adw.SpinRow({
-            title: 'Refresh interval',
-            subtitle: 'Seconds between kubectl polls',
+            title: _('Refresh interval'),
+            subtitle: _('Seconds between kubectl polls'),
             adjustment: new Gtk.Adjustment({lower: 2, upper: 3600, step_increment: 1, page_increment: 5}),
         });
         monitorGroup.add(interval);
         settings.bind('refresh-interval', interval, 'value', Gio.SettingsBindFlags.DEFAULT);
 
         const notify = new Adw.SwitchRow({
-            title: 'Notify on node up/down',
-            subtitle: 'Alert when a node goes down or recovers',
+            title: _('Notify on node up/down'),
+            subtitle: _('Alert when a node goes down or recovers'),
         });
         monitorGroup.add(notify);
         settings.bind('notify-node-changes', notify, 'active', Gio.SettingsBindFlags.DEFAULT);
 
         // ---------------- Notifications ----------------
         const notifyGroup = new Adw.PreferencesGroup({
-            title: 'Notifications',
-            description: 'How and when alerts fire. Debounce and hold windows ride out brief blips.',
+            title: _('Notifications'),
+            // Translators: "Debounce" and "hold" are the two waiting periods
+            // configured by the rows below.
+            description: _('How and when alerts fire. Debounce and hold windows ride out brief blips.'),
         });
         page.add(notifyGroup);
 
         const cluster = new Adw.SwitchRow({
-            title: 'Notify when the cluster is unreachable',
-            subtitle: 'When kubectl can’t reach the cluster past the debounce window',
+            title: _('Notify when the cluster is unreachable'),
+            subtitle: _('When kubectl can’t reach the cluster past the debounce window'),
         });
         notifyGroup.add(cluster);
         settings.bind('notify-cluster-unreachable', cluster, 'active', Gio.SettingsBindFlags.DEFAULT);
 
         const recovery = new Adw.SwitchRow({
-            title: 'Notify on recovery',
-            subtitle: 'Also notify when a node or the cluster comes back',
+            title: _('Notify on recovery'),
+            subtitle: _('Also notify when a node or the cluster comes back'),
         });
         notifyGroup.add(recovery);
         settings.bind('notify-on-recovery', recovery, 'active', Gio.SettingsBindFlags.DEFAULT);
 
         const nodeFor = new Adw.SpinRow({
-            title: 'Node debounce',
-            subtitle: 'Seconds a node must stay NotReady before it notifies',
+            // Translators: how long a node must stay down before it notifies.
+            title: _('Node debounce'),
+            // Translators: "NotReady" is a Kubernetes node state, keep it as it is.
+            subtitle: _('Seconds a node must stay NotReady before it notifies'),
             adjustment: new Gtk.Adjustment({lower: 0, upper: 3600, step_increment: 5, page_increment: 30}),
         });
         notifyGroup.add(nodeFor);
         settings.bind('alert-node-for', nodeFor, 'value', Gio.SettingsBindFlags.DEFAULT);
 
         const clusterFor = new Adw.SpinRow({
-            title: 'Cluster debounce',
-            subtitle: 'Seconds the cluster must stay unreachable before it notifies',
+            // Translators: how long the cluster must stay unreachable before it notifies.
+            title: _('Cluster debounce'),
+            subtitle: _('Seconds the cluster must stay unreachable before it notifies'),
             adjustment: new Gtk.Adjustment({lower: 0, upper: 3600, step_increment: 5, page_increment: 30}),
         });
         notifyGroup.add(clusterFor);
         settings.bind('alert-cluster-for', clusterFor, 'value', Gio.SettingsBindFlags.DEFAULT);
 
         const keepFiring = new Adw.SpinRow({
-            title: 'Keep firing for',
-            subtitle: 'Seconds to hold a firing alert after it clears, so a flap doesn’t re-fire',
+            // Translators: an alert stays active this long after its cause clears.
+            title: _('Keep firing for'),
+            // Translators: a "flap" is a node switching state repeatedly.
+            subtitle: _('Seconds to hold a firing alert after it clears, so a flap doesn’t re-fire'),
             adjustment: new Gtk.Adjustment({lower: 0, upper: 3600, step_increment: 5, page_increment: 30}),
         });
         notifyGroup.add(keepFiring);
         settings.bind('alert-keep-firing-for', keepFiring, 'value', Gio.SettingsBindFlags.DEFAULT);
 
         const repeat = new Adw.SpinRow({
-            title: 'Repeat interval',
-            subtitle: 'Seconds before re-notifying a still-firing alert (0 never repeats)',
+            title: _('Repeat interval'),
+            subtitle: _('Seconds before re-notifying a still-firing alert (0 never repeats)'),
             adjustment: new Gtk.Adjustment({lower: 0, upper: 86400, step_increment: 60, page_increment: 300}),
         });
         notifyGroup.add(repeat);
         settings.bind('alert-repeat-interval', repeat, 'value', Gio.SettingsBindFlags.DEFAULT);
 
         const groupWait = new Adw.SpinRow({
-            title: 'Group wait',
-            subtitle: 'Seconds to batch alerts firing together into one banner (0 groups per poll)',
+            // Translators: alerts firing within this window become one banner.
+            title: _('Group wait'),
+            subtitle: _('Seconds to batch alerts firing together into one banner (0 groups per poll)'),
             adjustment: new Gtk.Adjustment({lower: 0, upper: 300, step_increment: 1, page_increment: 5}),
         });
         notifyGroup.add(groupWait);
@@ -104,8 +117,8 @@ export default class KubeMonitorPreferences extends ExtensionPreferences {
 
         // ---------------- Connection ----------------
         const connGroup = new Adw.PreferencesGroup({
-            title: 'Connection',
-            description: 'Auto-detected. Change these only if needed.',
+            title: _('Connection'),
+            description: _('Auto-detected. Change these only if needed.'),
         });
         page.add(connGroup);
 
@@ -114,7 +127,9 @@ export default class KubeMonitorPreferences extends ExtensionPreferences {
         // use_markup off: the subtitle interpolates a context name read from the
         // kubeconfig, which is not ours to trust as markup.
         const contextRow = new Adw.ComboRow({
-            title: 'Context', subtitle: 'Which context to monitor', use_markup: false,
+            // Translators: "context" is the kubectl term for a saved cluster
+            // connection; use whatever kubectl's own translation uses.
+            title: _('Context'), subtitle: _('Which context to monitor'), use_markup: false,
         });
         contextRow.model = contextModel;
         connGroup.add(contextRow);
@@ -125,33 +140,41 @@ export default class KubeMonitorPreferences extends ExtensionPreferences {
         // signal; the tooltip names it for anyone hovering or using a reader.
         // use_markup is off because the subtitles interpolate filesystem paths
         // and context names, which Adw would otherwise parse as Pango markup.
+        // "kubectl" and "kubeconfig" are the tool's own names and stay untranslated
+        // in the row titles; only what we say *about* them is translated.
         const kubectlIcon = new Gtk.Image({icon_name: 'content-loading-symbolic'});
-        kubectlIcon.set_tooltip_text('kubectl detection status');
+        // Translators: tooltip on the ✓/⚠ icon beside the kubectl row.
+        kubectlIcon.set_tooltip_text(_('kubectl detection status'));
         const kubectlRow = new Adw.ActionRow({title: 'kubectl', use_markup: false});
         kubectlRow.add_prefix(kubectlIcon);
         connGroup.add(kubectlRow);
 
         const kubeconfigIcon = new Gtk.Image({icon_name: 'content-loading-symbolic'});
-        kubeconfigIcon.set_tooltip_text('kubeconfig detection status');
+        // Translators: tooltip on the ✓/⚠ icon beside the kubeconfig row.
+        kubeconfigIcon.set_tooltip_text(_('kubeconfig detection status'));
         const kubeconfigRow = new Adw.ActionRow({title: 'kubeconfig', use_markup: false});
         kubeconfigRow.add_prefix(kubeconfigIcon);
         connGroup.add(kubeconfigRow);
 
         // One-click connection test.
-        const testBtn = new Gtk.Button({label: 'Test', valign: Gtk.Align.CENTER});
-        const testRow = new Adw.ActionRow({title: 'Test connection', subtitle: 'Run kubectl and list contexts'});
+        // Translators: button that tries the connection. Keep it to one word if
+        // you can -- it is a compact button in a row.
+        const testBtn = new Gtk.Button({label: _('Test'), valign: Gtk.Align.CENTER});
+        const testRow = new Adw.ActionRow({
+            title: _('Test connection'), subtitle: _('Run kubectl and list contexts'),
+        });
         testRow.add_suffix(testBtn);
         testRow.activatable_widget = testBtn;
         connGroup.add(testRow);
 
         // Manual overrides, tucked away; empty means auto-detect.
         const advanced = new Adw.ExpanderRow({
-            title: 'Advanced',
-            subtitle: 'Extra kubeconfig files and a custom kubectl path.',
+            title: _('Advanced'),
+            subtitle: _('Extra kubeconfig files and a custom kubectl path.'),
         });
         connGroup.add(advanced);
 
-        const kubectlEntry = new Adw.EntryRow({title: 'kubectl path'});
+        const kubectlEntry = new Adw.EntryRow({title: _('kubectl path')});
         advanced.add_row(kubectlEntry);
         settings.bind('kubectl-path', kubectlEntry, 'text', Gio.SettingsBindFlags.DEFAULT);
 
@@ -159,8 +182,10 @@ export default class KubeMonitorPreferences extends ExtensionPreferences {
         // main flow. Off by default; see lib/log.js for what it does and does not
         // write.
         const debugRow = new Adw.SwitchRow({
-            title: 'Log diagnostics to the journal',
-            subtitle: 'For troubleshooting: journalctl -f -o cat /usr/bin/gnome-shell',
+            title: _('Log diagnostics to the journal'),
+            // Translators: %s is a shell command; it is not translated.
+            subtitle: format(_('For troubleshooting: %s'),
+                'journalctl -f -o cat /usr/bin/gnome-shell'),
         });
         advanced.add_row(debugRow);
         settings.bind('debug-logging', debugRow, 'active', Gio.SettingsBindFlags.DEFAULT);
@@ -172,16 +197,16 @@ export default class KubeMonitorPreferences extends ExtensionPreferences {
         const setKubeconfigs = (/** @type {string[]} */ list) =>
             settings.set_string('kubeconfig-path', list.join(':'));
 
-        const addRow = new Adw.ActionRow({title: 'Add kubeconfig file…'});
+        const addRow = new Adw.ActionRow({title: _('Add kubeconfig file…')});
         const addBtn = new Gtk.Button({
             icon_name: 'list-add-symbolic', valign: Gtk.Align.CENTER, css_classes: ['flat'],
             // Icon-only: without this a screen reader announces "button".
-            tooltip_text: 'Add a kubeconfig file',
+            tooltip_text: _('Add a kubeconfig file'),
         });
         addRow.add_suffix(addBtn);
         addRow.activatable_widget = addBtn;
         addBtn.connect('clicked', () => {
-            const dialog = new Gtk.FileDialog({title: 'Select a kubeconfig file'});
+            const dialog = new Gtk.FileDialog({title: _('Select a kubeconfig file')});
             dialog.open(window, null, (_source, res) => {
                 let file;
                 try {
@@ -214,7 +239,9 @@ export default class KubeMonitorPreferences extends ExtensionPreferences {
                 });
                 const rm = new Gtk.Button({
                     icon_name: 'user-trash-symbolic', valign: Gtk.Align.CENTER, css_classes: ['flat'],
-                    tooltip_text: `Remove ${GLib.path_get_basename(path)}`,
+                    // Translators: tooltip on the trash button beside a kubeconfig
+                    // file. %s is the file's name.
+                    tooltip_text: format(_('Remove %s'), GLib.path_get_basename(path)),
                 });
                 rm.connect('clicked', () => setKubeconfigs(getKubeconfigs().filter(p => p !== path)));
                 row.add_suffix(rm);
@@ -237,18 +264,24 @@ export default class KubeMonitorPreferences extends ExtensionPreferences {
             const o = opts();
             const kubectl = o.kubectlPath || GLib.find_program_in_path('kubectl') || '';
             kubectlIcon.icon_name = kubectl ? 'emblem-ok-symbolic' : 'dialog-warning-symbolic';
-            kubectlRow.subtitle = kubectl || 'Not found on PATH. Set it under Advanced.';
+            // Translators: shown when kubectl is not on PATH. "Advanced" is the
+            // expander below -- use the same wording you used for its title.
+            kubectlRow.subtitle = kubectl || _('Not found on PATH. Set it under Advanced.');
 
             const list = o.kubeconfig ? o.kubeconfig.split(':').filter(Boolean) : [];
             if (list.length > 1) {
                 kubeconfigIcon.icon_name = 'emblem-ok-symbolic';
-                kubeconfigRow.subtitle = `${list.length} files`;
+                // Translators: how many kubeconfig files kubectl will merge into
+                // one configuration. %d is the count.
+                const files = ngettext('%d file', '%d files', list.length);
+                kubeconfigRow.subtitle = format(files, list.length);
             } else {
                 const kc = list[0] || GLib.getenv('KUBECONFIG') ||
                     GLib.build_filenamev([GLib.get_home_dir(), '.kube', 'config']);
                 const exists = GLib.file_test(kc, GLib.FileTest.EXISTS);
                 kubeconfigIcon.icon_name = exists ? 'emblem-ok-symbolic' : 'dialog-warning-symbolic';
-                kubeconfigRow.subtitle = exists ? kc : `${kc}  (missing)`;
+                // Translators: %s is a file path that does not exist.
+                kubeconfigRow.subtitle = exists ? kc : format(_('%s  (missing)'), kc);
             }
         };
 
@@ -266,15 +299,21 @@ export default class KubeMonitorPreferences extends ExtensionPreferences {
             const current = await fetchCurrentContext(opts(), null);
 
             syncing = true;
-            contextModel.splice(0, contextModel.get_n_items(), [AUTO_LABEL, ...contexts]);
+            // Translators: first entry of the context picker -- follow whichever
+            // context kubectl currently has selected instead of pinning one.
+            const auto = _('Current context (auto)');
+            contextModel.splice(0, contextModel.get_n_items(), [auto, ...contexts]);
             const setCtx = settings.get_string('context');
             const idx = setCtx ? contexts.indexOf(setCtx) + 1 : 0;
             contextRow.selected = idx > 0 ? idx : 0;
             syncing = false;
 
-            contextRow.subtitle = setCtx
-                ? 'Which context to monitor'
-                : (current ? `Following current-context (${current})` : 'Which context to monitor');
+            contextRow.subtitle = (!setCtx && current)
+                // Translators: shown when no context is pinned, so the extension
+                // follows kubectl's selection. %s is that context's name;
+                // "current-context" is the kubeconfig field -- keep it as it is.
+                ? format(_('Following current-context (%s)'), current)
+                : _('Which context to monitor');
         };
 
         contextRow.connect('notify::selected', () => {
@@ -288,7 +327,10 @@ export default class KubeMonitorPreferences extends ExtensionPreferences {
             testBtn.sensitive = false;
             fetchContexts(opts(), null)
                 .then(list => window.add_toast(new Adw.Toast({
-                    title: `Connected. Found ${list.length} context${list.length === 1 ? '' : 's'}.`,
+                    // Translators: toast after a successful connection test.
+                    // %d is how many contexts the kubeconfig defines.
+                    title: format(ngettext('Connected. Found %d context.',
+                        'Connected. Found %d contexts.', list.length), list.length),
                     use_markup: false,
                 })))
                 // Route through the shared classifier rather than printing raw

@@ -150,29 +150,55 @@ If the cluster goes unreachable it backs off instead of hammering the network: 1
 ## Layout
 
 ```
-extension.js     enable/disable, wiring, node up/down notifications
+extension.js     enable/disable, wiring, alert dispatch
 prefs.js         preferences window (libadwaita)
-lib/model.js     pure parsers + severity/formatting; no gi imports, unit-tested
-lib/schedule.js  poll-cadence math (interval clamp, backoff), unit-tested
+lib/model.js     pure parsers + severity/formatting/error classification; no gi imports
+lib/alerts.js    pure alert state machine: debounce, dedup, grouping, silences
+lib/schedule.js  poll-cadence math (interval clamp, backoff)
+lib/i18n.js      pure translation plumbing: gettext wrappers and a %1$s formatter
+lib/log.js       pure opt-in diagnostics, redacted
 lib/client.js    runs kubectl (Gio.Subprocess): health, detail, metrics, pods
 lib/poller.js    the poll loop: two-tier fetch, backoff, watchdog, reentrancy
 lib/indicator.js panel button + dropdown menu (St/Clutter)
-tests/           node --test over lib/model.js and lib/schedule.js; no cluster needed
+lib/notifier.js  the extension's own notification source
+tests/           node --test over every shipped file, at 100% coverage; no cluster needed
+po/              translation catalogues (14 languages) and the extraction tooling
 schemas/         GSettings schema
 stylesheet.css   Adwaita palette, light and dark
 icons/           the symbolic helm
 ```
 
-Everything worth testing is pure and free of `gi://` imports, so the parsing and severity logic runs identically under Node, plain gjs, and gnome-shell. That is what the test suite covers.
+Everything worth testing is pure and free of `gi://` imports, so parsing, severity, alerting and formatting run identically under Node, plain gjs, and gnome-shell. That is what the test suite covers.
+
+## Translations
+
+The interface is available in Arabic, Chinese (Simplified, Traditional, Hong Kong and Singapore), Dutch, English, French, German, Italian, Japanese, Korean, Polish, Portuguese (Portugal and Brazil), Russian, Spanish, Turkish and Ukrainian. It follows your desktop's language; nothing to configure.
+
+Regional variants fall back to the base language, so `de_AT`, `fr_CA`, `es_MX`, `nl_BE` and the rest are covered by `de`, `fr`, `es` and `nl`. Chinese and Portuguese get a catalogue per region because gettext never falls back sideways — `zh_HK` would otherwise land on English rather than on `zh_TW`.
+
+Kubernetes' own words — `Ready`, `NotReady`, `SchedulingDisabled`, `MemoryPressure`, node roles — stay in English on purpose, so what the menu says still matches what `kubectl get nodes` prints.
+
+To correct or add a language:
+
+```bash
+npm run i18n:pot           # re-extract the template from the sources
+npm run i18n:update        # merge it into every po/*.po
+$EDITOR po/uk.po           # translate; msgstr "" and #, fuzzy both fail the build
+npm run i18n:check         # completeness + format-string check, part of npm run check
+```
+
+New languages also need a line in `po/LINGUAS`. The catalogues were produced by the maintainer with machine assistance and reviewed for terminology, not by native speakers — corrections are welcome, and the `Last-Translator` field is yours to claim.
 
 ## Develop
 
 ```bash
 npm install       # dev tooling only: eslint, typescript, @girs types. Not shipped.
 npm test          # unit tests (node --test)
+npm run coverage  # the same tests with the 100% line/branch/function gate
 npm run lint      # eslint
 npm run typecheck # tsc --checkJs over JSDoc + @girs types
-npm run check     # all three; the pre-commit and CI gate
+npm run i18n:check # catalogues complete, template current (needs GNU gettext)
+npm run check     # all of the above; the pre-commit and CI gate
 ```
 
 There is no build step. The extension ships as the same plain `.js` gnome-shell loads; TypeScript only type-checks through JSDoc. `tsconfig.json` runs strict over the logic, and `tsconfig.ui.json` relaxes strict-null for the GObject view, because widgets are assigned in `_init` and JSDoc cannot mark them definitely-assigned.

@@ -19,6 +19,7 @@ import {
     reduce, groupActions, rollbackDelivery, needsPersist, serializeState, deserializeState,
 } from './lib/alerts.js';
 import {debug, setDebugEnabled} from './lib/log.js';
+import {bindTranslations, unbindTranslations, _, format} from './lib/i18n.js';
 
 // How far the persisted "last observed" stamp may lag before it's worth a dconf
 // write. Well under the alert machine's settle window, and a lagging stamp only
@@ -27,6 +28,11 @@ const STAMP_TOLERANCE_MS = 300_000;   // 5 minutes
 
 export default class KubeMonitorExtension extends Extension {
     enable() {
+        // First, before anything can build a string. Extension itself is the
+        // backend: ExtensionBase.gettext/ngettext/pgettext are bound to the
+        // domain from metadata.json's gettext-domain and read the catalogues
+        // from this extension's locale/ directory.
+        bindTranslations(this);
         this._settings = this.getSettings();
         // Diagnostics are opt-in: logged messages go to the shared system journal,
         // so this stays off unless the user is troubleshooting.
@@ -64,8 +70,12 @@ export default class KubeMonitorExtension extends Extension {
             this._indicator.connect('menu-open-changed', (_i, open) => this._poller?.setMenuOpen(open)),
             this._indicator.connect('context-selected',
                 (_i, ctx) => this._settings?.set_string('context', ctx)),
+            // Translators: notification shown after clicking a node row. The body
+            // is the shell command that was put on the clipboard, so it is not
+            // translated.
             this._indicator.connect('node-copied', (_i, name) => this._notifier?.notify(
-                'Copied to clipboard', `kubectl describe node ${name}`, {transient: true})),
+                _('Copied to clipboard'), format('kubectl describe node %s', name),
+                {transient: true})),
             // Snooze: the menu emits seconds to mute for (0 = unmute); persist an
             // absolute wall-clock deadline the alert machine reads live.
             this._indicator.connect('snooze-requested', (_i, seconds) => this._settings?.set_int64(
@@ -147,6 +157,10 @@ export default class KubeMonitorExtension extends Extension {
         this._settings = null;
         this._alertState = null;
         setDebugEnabled(false);   // never keep logging after teardown
+        // Drop the gettext backend last: it is this extension object, and module
+        // state holding it would outlive the disable() that is meant to release
+        // everything (gnome-shell keeps the instance across lock/unlock).
+        unbindTranslations();
     }
 
     _readOpts() {

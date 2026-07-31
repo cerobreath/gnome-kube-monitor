@@ -18,8 +18,11 @@ import {isDebugEnabled} from '../lib/log.js';
 const HEALTH_ALL_OK = 'n1\tfalse\tReady=True,\n';
 const HEALTH_N1_DOWN = 'n1\tfalse\tReady=False,\n';
 
-/** @param {object} [settingsInitial] */
-function makeExtension(settingsInitial = {}) {
+/**
+ * @param {object} [settingsInitial]
+ * @param {object} [meta]  extra metadata, e.g. a __catalog for the gettext fake
+ */
+function makeExtension(settingsInitial = {}, meta = {}) {
     Gio.__reset();
     GLib.__reset();
     Main.__reset();
@@ -39,6 +42,7 @@ function makeExtension(settingsInitial = {}) {
         uuid: 'kube-monitor@cerobreath.dev',
         path: '/ext',
         __settingsInitial: settingsInitial,
+        ...meta,
     });
     return {ext, settings: ext.getSettings()};
 }
@@ -164,7 +168,7 @@ test('several nodes flipping together are coalesced into one banner', async () =
     await flushBanners();
 
     assert.equal(banners().length, 1, 'one banner, not a wall of them');
-    assert.equal(banners()[0].title, '2 firing');
+    assert.equal(banners()[0].title, '2 alerts firing');
     assert.match(banners()[0].body, /a, b/);
     ext.disable();
 });
@@ -186,7 +190,7 @@ test('group_wait batches alerts that fire in separate polls', async () => {
     await flushBanners(40_000);           // window closes
 
     assert.equal(banners().length, 1, 'both fires arrived in one banner');
-    assert.equal(banners()[0].title, '2 firing');
+    assert.equal(banners()[0].title, '2 alerts firing');
     ext.disable();
 });
 
@@ -640,4 +644,66 @@ test('a corrupt persisted state is discarded rather than trusted', async () => {
     await settle();
     assert.ok(Main.panel.statusArea['kube-monitor@cerobreath.dev'], 'enable still succeeds');
     ext.disable();
+});
+
+test('a bound locale reaches the view, the pure alert machine and the banners', async () => {
+    // The point of the whole i18n wiring, end to end: enable() binds the
+    // extension itself as the gettext backend, and every string built afterwards
+    // comes out of the catalogue -- including the ones produced inside the
+    // gi-free modules, which is the part that could plausibly have been missed.
+    //
+    // The catalogue is Ukrainian, so it also proves nothing assumes English's
+    // two plural forms: 3 nodes selects the second of three.
+    const catalog = {
+        'critical': 'критичний',
+        'Mute alerts': 'Вимкнути сповіщення',
+        '%s is down': '%s не відповідає',
+        '%1$s, %2$d of %3$d node ready': [
+            '%1$s, %2$d з %3$d вузла готовий',
+            '%1$s, %2$d з %3$d вузлів готові',
+            '%1$s, %2$d з %3$d вузлів готових',
+        ],
+    };
+    /** Ukrainian: 1 -> 0; 2..4 -> 1; 5+ and the teens -> 2. */
+    const pluralIndex = (/** @type {number} */ n) => {
+        if (n % 10 === 1 && n % 100 !== 11)
+            return 0;
+        if (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14))
+            return 1;
+        return 2;
+    };
+
+    const {ext} = makeExtension(
+        {'alert-node-for': 0, 'alert-keep-firing-for': 0},
+        {__catalog: catalog, __pluralIndex: pluralIndex});
+    Gio.__setSpawn(({argv}) => {
+        if (argv.includes('current-context') || argv.includes('get-contexts'))
+            return {stdout: 'ctx\n'};
+        return {stdout: 'n1\tfalse\tReady=True,\nn2\tfalse\tReady=True,\nn3\tfalse\tReady=False,\n'};
+    });
+    ext.enable();
+    await settle();
+
+    const indicator = Main.panel.statusArea['kube-monitor@cerobreath.dev'];
+    // indicator.js: the severity word, the plural form and the positional
+    // arguments all had to survive to get this sentence out.
+    assert.equal(indicator.accessible_name,
+        'Kube Node Monitor: критичний, 2 з 3 вузлів готові');
+    assert.equal(indicator._muteItem.label.text, 'Вимкнути сповіщення');
+
+    // alerts.js is gi-free and cannot import gnome-shell's gettext at all; this
+    // is what proves the injected backend reaches it.
+    await pollCycles(2);
+    await flushBanners();
+    assert.deepEqual(banners().map(b => b.title), ['n3 не відповідає']);
+
+    // disable() releases the backend, so a later English process is not left
+    // speaking Ukrainian through stale module state.
+    ext.disable();
+    const {ext: plain} = makeExtension();
+    plain.enable();
+    await settle();
+    assert.match(Main.panel.statusArea['kube-monitor@cerobreath.dev'].accessible_name,
+        /^Kube Node Monitor: healthy, /);
+    plain.disable();
 });

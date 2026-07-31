@@ -355,6 +355,39 @@ test('the context list marks the current one for both eye and reader', () => {
     assert.equal(dev.get_children()[0].get_children()[0].opacity, 0);
 });
 
+test('the context list is reactive but not activatable, so the theme cannot grey it out', () => {
+    // St ties its `:insensitive` pseudo-class to an actor's reactivity, and the
+    // shell's theme paints `.popup-inactive-menu-item:insensitive` in its
+    // disabled grey -- which this container then passes down to the live buttons
+    // inside it, so the cluster switcher rendered as though it were unavailable.
+    // Measured in a real shell: with `reactive: false` every label resolved to
+    // #9b9b9d on dark and #78787b on light; this way they resolve to #ffffff and
+    // #222226, the theme's own foreground, with no colour of ours involved --
+    // which is what keeps the Light style from going white-on-white.
+    const {indicator} = makeIndicator();
+    const item = indicator._contextItem;
+    assert.equal(item.reactive, true, 'reactive:false is what marks it insensitive');
+    assert.equal(item.activate, false, 'but it must not become an activatable menu item');
+    assert.equal(item.hover, false, 'nor take the hover highlight of one');
+    assert.equal(item.can_focus, false, 'the rows inside it are the focusable things');
+});
+
+test('the rows highlight on hover but the block around them never does', () => {
+    const {indicator} = makeIndicator();
+    // PopupBaseMenuItem hands `track_hover: params.reactive` straight to St, so
+    // the reactive container would otherwise have the theme paint
+    // `.popup-menu-item:hover` (#535359, measured) across the whole list, behind
+    // whichever row the pointer is actually on. A fill that size marks nothing.
+    assert.equal(indicator._contextItem.track_hover, false,
+        'the list container must never take a hover highlight of its own');
+    // The rows are the things being pointed at, and they are St.Buttons, which
+    // track hover themselves -- `.kube-context-row:hover` in the stylesheet is
+    // what makes that visible.
+    indicator.setContexts(['a', 'b'], 'a');
+    for (const row of indicator._contextList.get_children())
+        assert.equal(row.track_hover ?? true, true, 'every row must respond to the pointer');
+});
+
 test('the context list always offers a way into preferences', () => {
     const {indicator, prefsOpened} = makeIndicator();
     indicator.setContexts([], '');

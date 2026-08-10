@@ -1,7 +1,7 @@
 # Media checklist
 
 Drop the files here with these exact names and the README picks them up. Shoot on a
-**dark** GNOME theme unless a light twin is noted. Keep GIFs under ~4 MB.
+dark GNOME theme unless a light twin is noted. Keep GIFs under ~4 MB.
 
 | File | Type | Priority | What to capture |
 |------|------|----------|-----------------|

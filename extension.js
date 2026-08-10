@@ -34,9 +34,6 @@ export default class KubeMonitorExtension extends Extension {
         this._context = this._settings.get_string('context');
         this._notifier = new KubeNotifier(this);
 
-        // Polling never pauses while offline (a localhost cluster stays
-        // reachable), but a reconnect re-polls at once instead of sitting out
-        // the backoff an offline stretch built up.
         this._netMonitor = Gio.NetworkMonitor.get_default();
         // No null-guard on the poller: the handler is disconnected in disable()
         // and enable() finishes building the poller before the loop can dispatch.
@@ -63,8 +60,6 @@ export default class KubeMonitorExtension extends Extension {
         // wrapper as RegisteredPrototype rather than a PanelMenu.Button.
         Main.panel.addToStatusArea(this.uuid, /** @type {any} */ (this._indicator));
 
-        // Disconnected explicitly in disable(), which is the pattern EGO review
-        // looks for.
         /** @type {number[]} */
         this._indicatorIds = [
             this._indicator.connect('refresh-requested', () => this._poller?.refreshNow()),
@@ -120,8 +115,8 @@ export default class KubeMonitorExtension extends Extension {
     disable() {
         this._poller?.stop();
         this._poller = null;
-        // Teardown must not post banners (an EGO anti-pattern), so buffered
-        // actions are rolled back in the notify-log for the next enable().
+        // Teardown must not post banners, so buffered actions are rolled back
+        // in the notify-log for the next enable().
         if (this._groupTimerId) {
             GLib.source_remove(this._groupTimerId);
             this._groupTimerId = 0;

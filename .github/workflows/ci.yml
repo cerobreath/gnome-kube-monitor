@@ -19,11 +19,13 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: '24.x'
           cache: 'npm'
-      - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: .eslintcache
           key: eslint-${{ hashFiles('eslint.config.js', 'package-lock.json') }}-${{ github.sha }}
@@ -39,7 +41,9 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: '24.x'
           cache: 'npm'
@@ -47,19 +51,39 @@ jobs:
       - run: npm run typecheck
 
   test:
-    name: Unit tests (100% coverage gate)
+    name: Unit tests, Node ${{ matrix.node }} (100% coverage gate)
     runs-on: ubuntu-24.04
     timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      # 24 is the engines floor (Active LTS); 26 is Current, so a change in
+      # node:test or registerHooks shows up here before it reaches LTS.
+      matrix:
+        node: ['24.x', '26.x']
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: ${{ matrix.node }}
+          cache: 'npm'
+      - run: npm ci --no-audit --no-fund
+      - run: npm run coverage
+
+  audit:
+    name: Dependency audit
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: '24.x'
           cache: 'npm'
-      - run: npm ci --no-audit --no-fund
-      # Enforces 100% line/branch/function coverage over the shipped sources;
-      # the thresholds live in the `coverage` script so local and CI agree.
-      - run: npm run coverage
+      - run: npm audit --audit-level=high
 
   i18n:
     name: Translations
@@ -67,17 +91,18 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: '24.x'
       - name: Install gettext
         run: |
           sudo apt-get update
           sudo apt-get install -y gettext
-      # Checks that POTFILES.in still names every source file, that LINGUAS and
-      # po/*.po agree, that the committed .pot matches a fresh extraction, and
-      # that every catalogue is complete and its format strings line up with the
-      # msgid's. A dropped %s would otherwise ship as a missing node name.
+      # Checks POTFILES.in against the source tree, LINGUAS against po/*.po, the
+      # committed .pot against a fresh extraction, and every catalogue for
+      # completeness and format strings matching the msgid.
       - run: npm run i18n:check
 
   package:
@@ -89,32 +114,14 @@ jobs:
       UUID: kube-monitor@cerobreath.dev
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-      # Validate only: --dry-run leaves no gschemas.compiled behind. That matters
-      # because `gnome-extensions pack` (npm run pack, the artifact actually
-      # uploaded to EGO) ships the .gschema.xml alone and compiles nothing, so
-      # writing a compiled file here would make the CI zip differ from it.
-      - name: Validate GSettings schema
+        with:
+          persist-credentials: false
+      - name: Install packaging tools
         run: |
           sudo apt-get update
           sudo apt-get install -y libglib2.0-bin gettext
-          glib-compile-schemas --strict --dry-run schemas/
-      # `gnome-extensions pack --podir=po` compiles the catalogues into
-      # locale/<lang>/LC_MESSAGES/<uuid>.mo and ships that, not po/. Do the same
-      # here so the two zips still hold the same files.
-      - name: Compile translations
-        run: ./po/i18n.sh compile
-      # Mirrors `npm run pack` exactly. We don't call it directly because
-      # `gnome-extensions` lives in the gnome-shell package, which is a very
-      # heavy install for a CI runner. Keep this list in step with the pack
-      # script in package.json, and exclude the compiled schema plus editor
-      # leftovers so a stray file in lib/ or icons/ can never ship.
       - name: Pack extension zip
-        run: |
-          zip -r "$UUID.shell-extension.zip" \
-            metadata.json extension.js prefs.js stylesheet.css LICENSE \
-            lib icons schemas locale \
-            -x 'schemas/gschemas.compiled' '*/.*' '*~' '*.orig' '*.rej'
-          unzip -l "$UUID.shell-extension.zip"
+        run: ./.github/pack-zip.sh
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: extension-zip

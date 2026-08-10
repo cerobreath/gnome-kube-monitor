@@ -1,7 +1,5 @@
-// Curated, hand-built fixtures covering every branch the parsers can take:
-// healthy / pressured / cordoned / NotReady / Unknown / network-down nodes,
-// roles vs default worker, present vs missing metrics, and each pod phase.
-// A fixed NOW keeps age/since assertions deterministic.
+// Fixtures covering every branch the parsers can take. A fixed NOW keeps the
+// age and since assertions deterministic.
 
 export const NOW = Date.parse('2026-01-10T00:00:00Z');
 
@@ -16,7 +14,7 @@ export const HEALTH_TEXT = [
     '',   // trailing blank line, as kubectl emits
 ].join('\n');
 
-// Tier-2 detail: a `kubectl get nodes -o json` payload as a JS object.
+// Tier-2 detail: a kubectl get nodes -o json payload as a JS object.
 export const DETAIL_OBJ = {
     items: [
         {

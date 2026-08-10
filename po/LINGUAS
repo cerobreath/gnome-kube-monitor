@@ -1,5 +1,5 @@
-# Languages with a complete catalogue, one per line, sorted.
-# `npm run i18n:check` fails if this list and the .po files on disk disagree.
+# Languages with a complete catalogue, one per line, sorted. i18n.sh reads this
+# list to drive update, compile and check.
 ar
 de
 es

@@ -1,18 +1,10 @@
-// Fake Extension base class. Mirrors the real contract: getSettings() hands back
-// a Gio.Settings for the schema, uuid/path/metadata come from the extension
-// directory, and gettext/ngettext/pgettext are instance methods over a catalogue
-// -- which is exactly how lib/i18n.js is wired in both real processes.
-//
-// The catalogue is behavioural rather than an identity stub, so a test can prove
-// a bound locale actually reaches the widgets, and that a plural form is chosen
-// by the language's own rule rather than by English's n === 1. It is empty by
-// default, which leaves every wrapper as the identity and keeps the rest of the
-// suite reading in plain English.
+// Fake Extension base class: getSettings() hands back a Gio.Settings, and
+// gettext/ngettext/pgettext are instance methods over a catalogue that is empty
+// by default, so the suite reads in plain English unless a test supplies one.
 
 import {Settings} from '../gi/Gio.js';
 
-// gettext joins a context to its message id with U+0004, so matching that here
-// lets pgettext() be exercised through the same map.
+// gettext joins a context to its message id with U+0004.
 const CONTEXT_GLUE = '\u0004';
 
 export class Extension {
@@ -24,14 +16,12 @@ export class Extension {
         this.__settings = meta.__settings ?? new Settings(meta.__settingsInitial ?? {});
         this.__prefsOpened = 0;
         /**
-         * msgid -> translation. A string translates directly; an array holds the
-         * plural forms, indexed by __pluralIndex.
+         * msgid -> translation; an array holds the plural forms.
          * @type {Record<string, string | string[]>}
          */
         this.__catalog = meta.__catalog ?? {};
         /**
-         * The language's plural rule. Defaults to English's two forms; a test can
-         * pass Ukrainian's three to check nothing assumes otherwise.
+         * The language's plural rule; defaults to English's two forms.
          * @type {(n: number) => number}
          */
         this.__pluralIndex = meta.__pluralIndex ?? (n => (n === 1 ? 0 : 1));

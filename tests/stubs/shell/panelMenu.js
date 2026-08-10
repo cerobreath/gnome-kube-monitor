@@ -1,6 +1,5 @@
-// Fake PanelMenu.Button. Real one initialises in _init (not a constructor),
-// which is exactly why this codebase forbids class fields in registerClass
-// classes -- the stub keeps that shape so the constraint stays honest.
+// Fake PanelMenu.Button. The real one initialises in _init, not a constructor,
+// which is why this codebase forbids class fields in registerClass classes.
 
 import {Actor} from '../actor.js';
 import {PopupMenu} from './popupMenu.js';

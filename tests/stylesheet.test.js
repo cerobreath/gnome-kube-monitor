@@ -1,12 +1,6 @@
-// Guards on stylesheet.css that no JavaScript test can express, because the file
-// is never executed here -- gnome-shell parses it.
-//
-// The one that matters is right-to-left. St's CSS subset has no logical
-// properties (gnome-shell's own theme uses the :ltr / :rtl pseudo-classes in 28
-// places and margin-inline-* in none), while StBoxLayout *does* reverse its
-// children under RTL. A bare `margin-left` therefore keeps pushing right in
-// Arabic, where the neighbour it was meant to clear has moved to the other side.
-// Nothing in the suite would notice, so this checks the source directly.
+// Guards on stylesheet.css, which gnome-shell parses and nothing here executes,
+// so this reads the source. St's CSS subset has no logical properties while
+// StBoxLayout reverses its children under RTL, hence the :ltr / :rtl split.
 
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
@@ -17,15 +11,14 @@ import {dirname, join} from 'node:path';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const CSS = readFileSync(join(ROOT, 'stylesheet.css'), 'utf8');
 
-// Physical properties that mean "the left/right edge" and so have to be stated
-// per direction. Shorthands (`margin: a b`) are symmetric across the axis and
-// are fine as they are.
+// Physical properties meaning "the left/right edge", which have to be stated per
+// direction. Shorthands (margin: a b) are symmetric across the axis.
 const DIRECTIONAL = /(?:^|[\s;{])(margin|padding|border)-(left|right)\b|(?:^|[\s;{])(left|right)\s*:/;
 
 /** @returns {{selector: string, body: string}[]} */
 function rules() {
     const out = [];
-    // Comments first: they contain the words we grep for.
+    // Strip comments first: they contain the words the regexes match.
     const css = CSS.replace(/\/\*[\s\S]*?\*\//g, '');
     for (const m of css.matchAll(/([^{}]+)\{([^{}]*)\}/g))
         out.push({selector: m[1].trim(), body: m[2]});
@@ -55,20 +48,18 @@ test('every :ltr rule has an :rtl counterpart, and the other way round', () => {
 });
 
 test('every row a pointer can land on still says so', () => {
-    // The container's highlight was removed because a fill that spans a whole
-    // block marks nothing; the per-row fills are the ones that do the work, and
-    // deleting one leaves that control with no mouse affordance at all.
+    // A fill spanning a whole block marks nothing, so only the rows highlight;
+    // deleting a per-row fill leaves that control with no mouse affordance.
     for (const selector of ['.kube-context-row:hover', '.kube-context-button:hover',
         '.kube-icon-button:hover']) {
         const rule = rules().find(r => r.selector === selector);
-        assert.ok(rule, `${selector} is missing — that control would be silent under the pointer`);
+        assert.ok(rule, `${selector} is missing, so that control would be silent under the pointer`);
         assert.match(rule.body, /background-color:/);
     }
 });
 
 test('the meter track width still matches METER_WIDTH in indicator.js', () => {
-    // Not an i18n concern, but the same class of defect: a constant duplicated
-    // across a file the tests do execute and one they do not.
+    // A constant duplicated across a file the tests execute and one they do not.
     const css = /\.kube-meter-track\s*\{[^}]*width:\s*(\d+)px/.exec(CSS);
     const js = /const METER_WIDTH = (\d+);/
         .exec(readFileSync(join(ROOT, 'lib', 'indicator.js'), 'utf8'));

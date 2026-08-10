@@ -1,6 +1,5 @@
-// Fake GObject. registerClass reproduces the one behaviour the view depends on:
-// construction runs _init(...) rather than a constructor, which is why this
-// codebase assigns all instance state there (class fields would be clobbered).
+// Fake GObject. registerClass reproduces the behaviour the view depends on:
+// construction runs _init() rather than a constructor.
 export const TYPE_STRING = 'gchararray';
 export const TYPE_BOOLEAN = 'gboolean';
 export const TYPE_INT = 'gint';
@@ -16,8 +15,7 @@ export const ParamSpec = {
     boxed: (name) => ({name, type: 'boxed'}),
 };
 
-// NB: named GObjectBase, not Object -- exporting `Object` would shadow the global
-// inside this module.
+// Named GObjectBase because exporting Object would shadow the global here.
 export class GObjectBase {}
 export {GObjectBase as Object};
 

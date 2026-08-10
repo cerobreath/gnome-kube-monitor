@@ -1,13 +1,13 @@
-/* Panel: Kubernetes helm + corner status dot.
-   Logo size/colour are set in code (indicator.js); dot colours below. */
+/* Panel corner status dot. The helm logo's size and colour are set in
+   indicator.js. */
 .kube-panel-dot {
     width: 10px;
     height: 10px;
     border-radius: 6px;
 }
 
-/* Menu header: context name + caret, "updated" time beneath.
-   min-width widens the whole popup so node rows and meters have room. */
+/* Menu header. min-width widens the whole popup, not just this row, so node
+   rows and meters have room. */
 .kube-header {
     spacing: 8px;
     min-width: 340px;
@@ -33,12 +33,9 @@
     background-color: rgba(128, 128, 128, 0.22);
 }
 
-/* Direction-sensitive spacing.
-   St's CSS subset has no logical properties -- gnome-shell's own theme uses the
-   :ltr / :rtl pseudo-classes in 28 places and margin-inline-* in none -- while
-   StBoxLayout *does* reverse its children under RTL. So every margin that pushes
-   away from a neighbour has to be stated for both directions, or it lands on the
-   wrong side in Arabic and the layout collapses inward. */
+/* Direction-sensitive spacing. St's CSS subset has no logical properties, and
+   StBoxLayout reverses its children under RTL, so a margin that clears a
+   neighbour must be stated for both directions or it lands on the wrong side. */
 .kube-caret {
     opacity: 0.45;
 }
@@ -66,17 +63,15 @@
     padding-bottom: 2px;
 }
 
-/* No explicit colour: inherit the theme's foreground. Hardcoding #ffffff here
-   made these rows white-on-white (1.0:1, invisible) under GNOME's Light style. */
+/* No explicit colour: inherit the theme's foreground. A hardcoded #ffffff makes
+   these rows white-on-white under GNOME's Light style. */
 .kube-context-row {
     padding: 5px 8px;
     border-radius: 8px;
 }
 
-/* The rows highlight, the list around them does not. That split is the whole
-   point: a fill behind the individual row says "this is what you would click",
-   while a fill behind the entire block says nothing and only adds a box. The
-   container is kept from ever hovering in indicator.js (track_hover). */
+/* The rows highlight, the list around them does not: indicator.js clears the
+   container's track_hover so the fill marks the row under the pointer. */
 .kube-context-row:hover {
     background-color: rgba(128, 128, 128, 0.22);
 }
@@ -94,11 +89,8 @@
     opacity: 0.45;
 }
 
-/* Pods summary: centred, labelled, spaced (no dot separators).
-   max-width bounds the row the way .kube-error bounds the error text: up to four
-   counts sit here, and translations run longer than the English words, so
-   without a cap a long locale would stretch the whole popup past the header's
-   340px. The labels ellipsize (indicator.js), so the overflow trims instead. */
+/* Pods summary. max-width stops a longer locale stretching the popup past the
+   header's 340px; the labels ellipsize (indicator.js), so overflow trims. */
 .kube-pods {
     spacing: 14px;
     font-size: 1.05em;
@@ -137,8 +129,8 @@
     font-size: 1.02em;
 }
 
-/* Carries the failure reason / "NotReady", so it must be properly legible:
-   opacity 0.45 measured ~3.8:1 on a dark popup, under the 4.5:1 AA floor. */
+/* Carries the failure reason, so it has to stay legible: opacity 0.45 gives
+   ~3.8:1 on a dark popup, under the 4.5:1 AA floor. */
 .kube-node-qual {
     font-size: 0.85em;
     opacity: 0.7;
@@ -161,16 +153,14 @@
     color: #ff7b72;
 }
 
-/* Per-node CPU/MEM meters; min-widths keep the CPU and MEM columns aligned
-   across rows, and the row is indented to sit under the node name.
-   NB: .kube-meter-track width must match METER_WIDTH in indicator.js. */
+/* Per-node CPU/MEM meters. The min-widths below keep the columns aligned across
+   rows; .kube-meter-track width must match METER_WIDTH in indicator.js. */
 .kube-node-meters {
     spacing: 22px;
     margin-top: 2px;
 }
 
-/* Indents the meters under the node name, which starts on the opposite side
-   once the row is mirrored. */
+/* Indents the meters under the node name, which mirrors with the row. */
 .kube-node-meters:ltr {
     margin-left: 20px;
 }
@@ -190,8 +180,8 @@
     min-width: 30px;
 }
 
-/* Mid-grey rather than a white wash, so the track is visible on both the dark
-   and light popup backgrounds. */
+/* Mid-grey rather than a white wash, so the track shows on both the dark and
+   light popup backgrounds. */
 .kube-meter-track {
     width: 64px;
     height: 7px;
@@ -217,11 +207,9 @@
     background-color: #ff5c5c;
 }
 
-/* Focus rings. These are custom classes, so the shell's own
-   popup-menu-item:focus styling never reaches them -- without these a keyboard
-   user tabbing through the menu sees nothing at all (WCAG 2.4.7).
-   NB: an inset box-shadow, not `outline`: St's CSS subset does not implement
-   outline (gnome-shell's own theme uses this exact pattern, 121 times). */
+/* Focus rings. The shell's popup-menu-item:focus never reaches these custom
+   classes, so without them keyboard focus is invisible (WCAG 2.4.7). Inset
+   box-shadow, not outline: St's CSS subset does not implement outline. */
 .kube-context-button:focus,
 .kube-icon-button:focus,
 .kube-context-row:focus {
@@ -251,8 +239,8 @@
     background-color: #e5a50a;
 }
 
-/* Lifted from #e01b24, which measured ~2.5:1 against a dark popup -- under the
-   3:1 floor for a non-text indicator, and this is the most important one. */
+/* Lightened from #e01b24, which gives ~2.5:1 against a dark popup, under the
+   3:1 floor for a non-text indicator. */
 .kube-dot-error {
     background-color: #ff5c5c;
 }
@@ -261,10 +249,9 @@
     background-color: #9a9996;
 }
 
-/* Error state: a human headline plus kubectl's de-noised detail. max-width
-   caps the labels' preferred width (St clamps to it), so a long single-line
-   error wraps inside the menu instead of stretching it past its standard
-   width; the value stays under the header's 340px min-width. */
+/* Error state: headline plus kubectl's de-noised detail. St clamps a label's
+   preferred width to max-width, so a long error wraps instead of stretching the
+   menu past the header's 340px. */
 .kube-error {
     spacing: 3px;
     max-width: 300px;

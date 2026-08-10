@@ -1,6 +1,5 @@
-// Fake Gtk for the prefs process: widgets carry their properties and record
-// signal handlers, and Gtk.FileDialog is scriptable so both the "picked a file"
-// and "dismissed the dialog" paths can be driven.
+// Fake Gtk for the prefs process; Gtk.FileDialog is scriptable, so both the
+// picked and dismissed paths can be driven.
 
 import {Emitter} from '../actor.js';
 

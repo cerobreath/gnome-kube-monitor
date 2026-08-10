@@ -1,8 +1,5 @@
-// Unit tests for the kubectl IO edge. Runs under node via tests/hooks.mjs, which
-// redirects `gi://…` to the fakes in tests/stubs/gi. These lock down the
-// properties that were previously only ever checked by hand: the argv we build,
-// the environment we hand to kubectl (and therefore to its exec credential
-// plugins), kubectl-path validation, and cancellation behaviour.
+// Tests for the kubectl IO edge: argv, the environment kubectl and its exec
+// credential plugins see, kubectl-path validation, and cancellation.
 
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
@@ -41,8 +38,7 @@ test('argv: always bounded by a request timeout, context passed as one --flag=va
     assert.ok(argv.includes('--request-timeout=5s'), argv.join(' '));
     assert.ok(!argv.some(a => a.startsWith('--context')), 'no context set -> no flag');
 
-    // A context that looks like a flag must still be one argv element, so no arg
-    // parser can re-read it as a flag.
+    // A context that looks like a flag must stay one argv element.
     reset();
     respond('');
     await fetchContexts(opts({context: '--kubeconfig=/tmp/evil.yaml'}), null);
@@ -179,10 +175,8 @@ test('a non-zero exit surfaces stderr, falling back to stdout', async () => {
     Gio.__setSpawn(() => ({stdout: 'only stdout', stderr: '', ok: false}));
     await assert.rejects(fetchHealth(opts(), null), /only stdout/);
 
-    // Said nothing at all: the message stays empty rather than being filled with
-    // a sentence of ours. classifyError turns that into the generic headline with
-    // no detail line -- the detail slot only ever carries kubectl's own words, so
-    // it must not become a place where untranslatable English leaks to the user.
+    // kubectl said nothing: the message stays empty. The detail slot only ever
+    // carries kubectl's own words, so untranslatable English cannot leak into it.
     reset();
     Gio.__setSpawn(() => ({stdout: '', stderr: '', ok: false}));
     await assert.rejects(fetchHealth(opts(), null), e => e.message === '');

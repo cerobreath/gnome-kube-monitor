@@ -1,12 +1,7 @@
-// Guards on po/*.po that gettext's own tools cannot express.
-//
-// `msgfmt --check --check-format` already catches a malformed catalogue and a
-// translation that dropped or renumbered a placeholder, and `po/i18n.sh check`
-// catches a stale template or an incomplete language. What neither knows is what
-// *this* extension needs from a string: that our formatter understands only a
-// subset of printf, that two labels have to fit a 30px column, and that a
-// translation must not quietly gain or lose the whitespace a caller concatenates
-// against. Those are checked here, against the real catalogues.
+// Guards on po/*.po that gettext's own tools cannot express: that translations
+// stay inside the printf subset format() implements, keep the whitespace and
+// ellipsis a caller depends on, and still fit the columns they sit in. Reads the
+// catalogue sources rather than executing anything.
 
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
@@ -24,8 +19,7 @@ const PO_DIR = join(dirname(fileURLToPath(import.meta.url)), '..', 'po');
  */
 
 /**
- * A deliberately small .po reader: enough for `msgctxt`/`msgid`/`msgid_plural`/
- * `msgstr[n]` with continuation lines, which is all these files contain.
+ * A small .po reader: msgctxt/msgid/msgid_plural/msgstr[n] with continuation lines.
  * @param {string} text
  * @returns {Entry[]}
  */
@@ -34,9 +28,8 @@ function parsePo(text) {
     const entries = [];
     /** @type {Entry | null} */
     let entry = null;
-    // msgctxt precedes its msgid, so it has to be held until the msgid arrives
-    // rather than opening an entry of its own -- getting that wrong silently
-    // strips every context and makes the checks that key off one vacuous.
+    // msgctxt precedes its msgid, so it is held until the msgid arrives rather
+    // than opening an entry of its own; otherwise every context is stripped.
     let pendingContext = '';
     /** @type {'context' | 'id' | 'plural' | 'string' | null} */
     let field = null;
@@ -55,7 +48,7 @@ function parsePo(text) {
                 entries.push(entry);
                 field = 'id';
             } else if (keyword === 'msgid_plural') {
-                field = 'plural';   // the English plural is not ours to check
+                field = 'plural';   // the English plural is not checked
             } else {
                 entry?.strings.push(value);
                 field = 'string';
@@ -75,7 +68,7 @@ function parsePo(text) {
         if (!line)
             field = null;
     }
-    // The header is `msgid ""`; it is metadata, not a message.
+    // The header is msgid ""; it is metadata, not a message.
     return entries.filter(e => e.id !== '');
 }
 
@@ -112,9 +105,8 @@ test('the catalogues are found and non-trivial', () => {
 });
 
 test('translations use only the printf subset lib/i18n.js implements', () => {
-    // format() knows %s, %d, %% and the positional %N$s / %N$d. Anything else --
-    // %i, %f, a bare trailing % -- is passed through untouched and would reach
-    // the panel as literal punctuation. msgfmt accepts several of these.
+    // format() knows %s, %d, %% and the positional %N$s / %N$d. Anything else
+    // (%i, %f, a bare trailing %) reaches the panel as literal punctuation.
     const KNOWN = /%(?:\d+\$)?[%sd]/g;
     const problems = sweep((_lang, entry, str) => {
         const leftovers = str.replace(KNOWN, '');
@@ -138,8 +130,7 @@ test('translations keep the leading and trailing whitespace of their message', (
 });
 
 test('an ellipsis in the message survives translation', () => {
-    // "Loading…", "Add connection…" and friends: the ellipsis is the convention
-    // that says "this continues" or "this opens a dialog", not decoration.
+    // The ellipsis says "this continues" or "this opens a dialog", not decoration.
     const problems = sweep((_lang, entry, str) =>
         entry.id.endsWith('…') !== str.endsWith('…')
             ? `"${entry.id}" -> "${str}" gains or loses its ellipsis`
@@ -158,9 +149,8 @@ test('the meter labels still fit the column they sit in', () => {
 });
 
 test('the duration abbreviations stay abbreviations', () => {
-    // They share a node row with the node name and are re-used by the "updated N
-    // ago" label and the mute countdown, so they have to stay tiny -- and they
-    // must keep their number.
+    // They share a node row with the node name and are reused by the "updated N
+    // ago" label and the mute countdown, so they must stay tiny and keep %d.
     const problems = sweep((_lang, entry, str) => {
         if (entry.context !== 'duration')
             return null;

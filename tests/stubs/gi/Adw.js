@@ -1,6 +1,5 @@
-// Fake Adw rows/groups/pages. Rows record the properties prefs.js sets (title,
-// subtitle, use_markup) and the group/expander keep an ordered child list, so
-// row rebuilds and removals are observable.
+// Fake Adw rows, groups and pages, recording the properties prefs.js sets and
+// keeping an ordered child list.
 
 import {Emitter} from '../actor.js';
 

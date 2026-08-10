@@ -1,7 +1,4 @@
-// Unit tests for the view. Runs under node against the St/Clutter/PopupMenu
-// fakes, so the parts that used to be verifiable only by opening the menu on a
-// real desktop -- row reuse, the row cap, accessibility names, the mute submenu,
-// width bounding -- are now regression-tested.
+// Tests for the view, run under node against the St/Clutter/PopupMenu fakes.
 
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
@@ -58,9 +55,8 @@ function classesUnder(actor) {
 }
 
 /**
- * Depth-first search over the indicator AND its menu. The popup is a sibling
- * actor tree, not a child of the panel button, so a search rooted only at the
- * button misses everything in the menu.
+ * Depth-first search over the indicator and its menu. The popup is a sibling
+ * actor tree, so a search rooted at the button alone misses the menu.
  * @param {any} indicator
  * @param {(a: any) => boolean} pred
  */
@@ -356,14 +352,9 @@ test('the context list marks the current one for both eye and reader', () => {
 });
 
 test('the context list is reactive but not activatable, so the theme cannot grey it out', () => {
-    // St ties its `:insensitive` pseudo-class to an actor's reactivity, and the
-    // shell's theme paints `.popup-inactive-menu-item:insensitive` in its
-    // disabled grey -- which this container then passes down to the live buttons
-    // inside it, so the cluster switcher rendered as though it were unavailable.
-    // Measured in a real shell: with `reactive: false` every label resolved to
-    // #9b9b9d on dark and #78787b on light; this way they resolve to #ffffff and
-    // #222226, the theme's own foreground, with no colour of ours involved --
-    // which is what keeps the Light style from going white-on-white.
+    // St ties :insensitive to an actor's reactivity, and the theme paints
+    // .popup-inactive-menu-item:insensitive grey, which the container passes down
+    // to the live buttons inside it. reactive:true keeps the theme's foreground.
     const {indicator} = makeIndicator();
     const item = indicator._contextItem;
     assert.equal(item.reactive, true, 'reactive:false is what marks it insensitive');
@@ -374,15 +365,11 @@ test('the context list is reactive but not activatable, so the theme cannot grey
 
 test('the rows highlight on hover but the block around them never does', () => {
     const {indicator} = makeIndicator();
-    // PopupBaseMenuItem hands `track_hover: params.reactive` straight to St, so
-    // the reactive container would otherwise have the theme paint
-    // `.popup-menu-item:hover` (#535359, measured) across the whole list, behind
-    // whichever row the pointer is actually on. A fill that size marks nothing.
+    // PopupBaseMenuItem derives track_hover from reactive, which would paint the
+    // theme's hover fill across the whole block. Rows highlight themselves.
     assert.equal(indicator._contextItem.track_hover, false,
         'the list container must never take a hover highlight of its own');
-    // The rows are the things being pointed at, and they are St.Buttons, which
-    // track hover themselves -- `.kube-context-row:hover` in the stylesheet is
-    // what makes that visible.
+    // The rows are St.Buttons; .kube-context-row:hover is what makes that visible.
     indicator.setContexts(['a', 'b'], 'a');
     for (const row of indicator._contextList.get_children())
         assert.equal(row.track_hover ?? true, true, 'every row must respond to the pointer');
@@ -450,12 +437,20 @@ test('the refresh button is reachable by keyboard, named, and emits a refresh', 
     const {indicator} = makeIndicator();
     let refreshes = 0;
     indicator.connect('refresh-requested', () => refreshes++);
+    // Give the label an age first, so the click visibly resets it below.
+    indicator.update(detailState({monotonic: GLib.get_monotonic_time()}));
+    GLib.__setClock(120_000);
+    indicator._updateTime();
+    assert.equal(indicator._timeLabel.text, '2m');
+
     // Find it by its accessible name rather than by tree position.
     const btn = findActor(indicator, a => a.accessible_name === 'Refresh now');
     assert.ok(btn, 'the refresh control must be discoverable');
     assert.equal(btn.can_focus, true, 'St defaults can_focus to false');
     btn.emit('clicked');
     assert.equal(refreshes, 1);
+    assert.equal(indicator._timeLabel.text, 'updating…',
+        'the click must acknowledge itself before the poll answers');
 });
 
 test('activating a node row copies its describe command and asks for a toast', () => {

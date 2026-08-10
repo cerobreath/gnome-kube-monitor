@@ -1,5 +1,4 @@
-// Fake PopupMenu family. Item containment and removeAll() semantics matter here:
-// the view's row-reuse fast path and its teardown both depend on them.
+// Fake PopupMenu family; the view's row reuse depends on removeAll() semantics.
 
 import {Actor} from '../actor.js';
 

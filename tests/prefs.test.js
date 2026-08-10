@@ -1,8 +1,5 @@
-// Unit tests for the preferences window. It runs in a separate process from the
-// shell, so nothing here could previously be checked without opening the dialog
-// by hand: that every control is bound to the right key, that paths and context
-// names are never handed to the Pango markup parser, and that a failed test
-// connection reports a classified reason instead of raw stderr.
+// Tests for the preferences window, which runs in a separate process from the
+// shell, against the Adw/Gtk fakes.
 
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
@@ -15,8 +12,7 @@ import GLib from 'gi://GLib';
 import KubeMonitorPreferences from '../prefs.js';
 
 /**
- * Build the preferences window. `env` is applied after the fakes are reset, so
- * callers can stage a machine without kubectl, a missing kubeconfig, and so on.
+ * Build the preferences window. env is applied after the fakes are reset.
  * @param {object} [settingsInitial]
  * @param {{programs?: Record<string, string | null>, files?: string[], getenv?: Record<string, string>}} [env]
  */
@@ -87,11 +83,11 @@ test('spin ranges match the schema, so the UI cannot write an out-of-range value
     /** @type {[string, number, number][]} */
     const expected = [
         ['Refresh interval', 2, 3600],
-        ['Node debounce', 0, 3600],
-        ['Cluster debounce', 0, 3600],
-        ['Keep firing for', 0, 3600],
-        ['Repeat interval', 0, 86400],
-        ['Group wait', 0, 300],
+        ['Node delay', 0, 3600],
+        ['Cluster delay', 0, 3600],
+        ['Hold time', 0, 3600],
+        ['Repeat reminder', 0, 86400],
+        ['Batch window', 0, 300],
     ];
     for (const [title, lower, upper] of expected) {
         const row = rowByTitle(page, title);
@@ -103,8 +99,7 @@ test('spin ranges match the schema, so the UI cannot write an out-of-range value
 
 test('rows carrying untrusted text disable Pango markup', async () => {
     // Adw parses row titles/subtitles as markup by default. These interpolate
-    // filesystem paths and context names, so markup must be off or a stray '<'
-    // mangles the text (and could be used to spoof the UI).
+    // paths and context names, so a stray '<' would mangle or spoof the text.
     const {page} = await openPrefs({'kubeconfig-path': '/home/tester/a.yaml'});
     for (const title of ['kubectl', 'kubeconfig', 'Context', 'a.yaml']) {
         const row = rowByTitle(page, title);
@@ -120,7 +115,7 @@ test('the icon-only buttons carry tooltips, so they are not unlabelled to a read
     const file = rowByTitle(page, 'a.yaml');
     assert.match(file.__suffixes[0].tooltip_text, /Remove a\.yaml/);
     // The status icons are labelled too.
-    assert.match(rowByTitle(page, 'kubectl').__suffixes[0].tooltip_text, /detection status/);
+    assert.match(rowByTitle(page, 'kubectl').__suffixes[0].tooltip_text, /Whether kubectl was found/);
 });
 
 test('detection reports kubectl found on PATH, and says where to fix it when not', async () => {
@@ -339,8 +334,7 @@ test('the Advanced section is collapsed detail, not a top-level group', async ()
 });
 
 test('a picker handing back nothing at all is ignored', async () => {
-    // Not a documented Gtk outcome, but the guard exists so a surprise from the
-    // portal cannot write an empty entry into KUBECONFIG.
+    // Not a documented Gtk outcome; the guard stops an empty KUBECONFIG entry.
     const {page, settings} = await openPrefs({'kubeconfig-path': '/keep.yaml'});
     const addBtn = rowByTitle(page, 'Add kubeconfig file…').__suffixes[0];
     Gtk.__setFileDialogResult({nullFile: true});

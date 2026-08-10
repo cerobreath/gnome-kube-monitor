@@ -5,18 +5,18 @@
     <key name="refresh-interval" type="i">
       <default>10</default>
       <range min="2" max="3600"/>
-      <summary>Refresh interval (sec)</summary>
+      <summary>Refresh interval (seconds)</summary>
       <description>How often to poll kubectl for node status.</description>
     </key>
     <key name="notify-node-changes" type="b">
       <default>true</default>
-      <summary>Notify on node up/down</summary>
-      <description>Show a desktop notification when a node becomes NotReady or recovers.</description>
+      <summary>Notify about node problems</summary>
+      <description>Notify when a node stops being Ready, and when it comes back.</description>
     </key>
     <key name="notify-cluster-unreachable" type="b">
       <default>true</default>
       <summary>Notify when the cluster is unreachable</summary>
-      <description>Show a notification when kubectl can't reach the cluster for longer than the debounce window.</description>
+      <description>Notify when kubectl cannot reach the cluster for longer than the cluster delay.</description>
     </key>
     <key name="notify-on-recovery" type="b">
       <default>true</default>
@@ -26,63 +26,63 @@
     <key name="alert-node-for" type="i">
       <default>30</default>
       <range min="0" max="3600"/>
-      <summary>Node alert debounce (sec)</summary>
-      <description>A node must stay NotReady this long before it notifies. Rides out brief blips.</description>
+      <summary>Node delay (seconds)</summary>
+      <description>How long a node must stay NotReady before it notifies.</description>
     </key>
     <key name="alert-cluster-for" type="i">
-      <default>30</default>
+      <default>120</default>
       <range min="0" max="3600"/>
-      <summary>Cluster alert debounce (sec)</summary>
-      <description>The cluster must stay unreachable this long before it notifies.</description>
+      <summary>Cluster delay (seconds)</summary>
+      <description>How long the cluster must stay unreachable before it notifies.</description>
     </key>
     <key name="alert-keep-firing-for" type="i">
       <default>60</default>
       <range min="0" max="3600"/>
-      <summary>Keep firing for (sec)</summary>
-      <description>Hold a firing alert this long after its condition clears, so a flapping node or a one-poll blip doesn't resolve and re-fire.</description>
+      <summary>Hold time (seconds)</summary>
+      <description>How long an alert stays active after its condition clears, so a flapping node notifies once.</description>
     </key>
     <key name="alert-repeat-interval" type="i">
       <default>0</default>
       <range min="0" max="86400"/>
-      <summary>Repeat interval (sec)</summary>
-      <description>Re-notify about a still-firing alert this often. Zero never repeats.</description>
+      <summary>Repeat reminder (seconds)</summary>
+      <description>How often to notify again about a still-active alert. Zero notifies once.</description>
     </key>
     <key name="alert-group-wait" type="i">
       <default>0</default>
       <range min="0" max="300"/>
-      <summary>Group wait (sec)</summary>
-      <description>Batch alerts that fire within this window into one banner. Zero coalesces only those from the same poll.</description>
+      <summary>Batch window (seconds)</summary>
+      <description>How long to wait so alerts firing together arrive as one notification. Zero batches only those from the same poll.</description>
     </key>
     <key name="alert-silence-until" type="x">
       <default>0</default>
       <range min="0" max="4102444800000"/>
-      <summary>Muted until (wall-clock ms)</summary>
-      <description>Internal: notifications are muted until this Unix time in milliseconds. Set from the panel menu's snooze control; 0 means not muted.</description>
+      <summary>Muted until (Unix milliseconds)</summary>
+      <description>Internal. Notifications are muted until this time; zero means not muted. Set from the panel menu.</description>
     </key>
     <key name="debug-logging" type="b">
       <default>false</default>
-      <summary>Log diagnostics to the journal</summary>
-      <description>Write why each poll and alert decision was made to the system journal, for troubleshooting. Off by default: logged messages are shared with every other application's logs. Credential material is redacted, and raw kubectl output is never logged.</description>
+      <summary>Log diagnostics</summary>
+      <description>Record poll and alert decisions in the system log. Off by default, since the log is shared with every other application. Credential material is redacted and raw kubectl output is never written.</description>
     </key>
     <key name="alert-state" type="s">
       <default>''</default>
       <summary>Persisted alert state</summary>
-      <description>Internal: the serialized alert state machine, so restarts don't replay or forget alerts. Not user-editable.</description>
+      <description>Internal. The serialized alert state machine, so a restart neither replays nor forgets alerts.</description>
     </key>
     <key name="context" type="s">
       <default>''</default>
       <summary>kubectl context</summary>
-      <description>Context name. Empty means the current context is used.</description>
+      <description>Context to monitor. Empty follows the current context.</description>
     </key>
     <key name="kubeconfig-path" type="s">
       <default>''</default>
       <summary>kubeconfig path</summary>
-      <description>Path to the kubeconfig file. Empty means the default (~/.kube/config).</description>
+      <description>Colon-separated kubeconfig paths. Empty uses ~/.kube/config.</description>
     </key>
     <key name="kubectl-path" type="s">
       <default>''</default>
       <summary>kubectl path</summary>
-      <description>Full path to the kubectl binary. Empty means look it up in PATH.</description>
+      <description>Full path to the kubectl binary. Empty looks it up on PATH.</description>
     </key>
   </schema>
 </schemalist>

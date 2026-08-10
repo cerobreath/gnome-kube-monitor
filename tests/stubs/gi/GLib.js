@@ -1,6 +1,5 @@
-// Fake GLib for the node test harness. Deterministic: time only moves when a
-// test says so, so timer-driven code (poller cadence, watchdog, group_wait) can
-// be asserted without sleeping. Never shipped -- tests/ is excluded from the zip.
+// Fake GLib whose clock only moves when a test advances it, so timer-driven code
+// can be asserted without sleeping.
 
 export const PRIORITY_DEFAULT = 0;
 export const PRIORITY_LOW = 300;
@@ -18,7 +17,7 @@ let programs = {kubectl: '/usr/bin/kubectl'};
 /** @type {string[]} */
 let baseEnviron = ['PATH=/usr/bin:/bin', 'HOME=/home/tester', 'LANG=C'];
 
-// ---- control surface (tests only) ----------------------------------------
+// Control surface (tests only)
 
 export function __reset() {
     nowMs = 0;
@@ -46,9 +45,7 @@ export function __now() {
 }
 
 /**
- * Move the clock without running any timers. For code that only reads
- * get_monotonic_time() (the "updated N ago" label), where the async timer-draining
- * __advance would be both unnecessary and awkward.
+ * Move the clock without running any timers, for code that only reads the time.
  * @param {number} ms
  */
 export function __setClock(ms) {
@@ -60,10 +57,8 @@ export function __pendingTimers() {
 }
 
 /**
- * Advance the clock, firing every timer that comes due (in time order) and
- * re-arming none -- our production code always returns SOURCE_REMOVE and
- * re-schedules explicitly, so a callback asking to continue is a test failure
- * waiting to happen and is surfaced as one.
+ * Advance the clock, firing every timer that comes due in time order. Production
+ * code always returns SOURCE_REMOVE and re-schedules explicitly.
  * @param {number} ms
  */
 export async function __advance(ms) {
@@ -77,8 +72,7 @@ export async function __advance(ms) {
         const again = due.cb();
         if (again === SOURCE_CONTINUE)
             timers.push({...due, at: nowMs + (due.at - nowMs || 1)});
-        // Let any promise continuations the callback kicked off settle before the
-        // next timer fires, so an async _tick() completes within its slot.
+        // Let the callback's promise continuations settle before the next timer.
         await Promise.resolve();
         await new Promise(r => setImmediate(r));
     }
@@ -91,7 +85,7 @@ export async function __settle() {
         await new Promise(r => setImmediate(r));
 }
 
-// ---- GLib surface --------------------------------------------------------
+// GLib surface
 
 /** @param {number} _prio @param {number} ms @param {() => boolean} cb */
 export function timeout_add(_prio, ms, cb) {

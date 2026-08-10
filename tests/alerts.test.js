@@ -1,6 +1,5 @@
-// Unit tests for the pure alert state machine. Run with `npm test` (node --test)
-// -- no deps, no gnome-shell. A fake, explicit clock (nowMs) drives every step,
-// so the whole lifecycle is deterministic.
+// Tests for the pure alert state machine. An explicit nowMs clock drives every
+// step, so the whole lifecycle is deterministic.
 
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
@@ -28,6 +27,7 @@ function cfg(over = {}) {
 function obs(reachable, nodeSpecs, opts = {}) {
     return {
         reachable,
+        offline: opts.offline ?? false,
         context: opts.context ?? CTX,
         nodes: nodeSpecs.map(([name, ready]) => ({name, ready})),
         error: opts.error ?? null,
@@ -35,8 +35,7 @@ function obs(reachable, nodeSpecs, opts = {}) {
 }
 
 /**
- * Drive a sequence of steps through the reducer, threading state + wall clock.
- * Each step: {dt, obs, config?}. dt is ms added to the clock before the reduce.
+ * Drive steps through the reducer; each step's dt is milliseconds of wall clock.
  * @param {{dt?: number, obs: any, config?: any}[]} steps
  * @param {any} [start]
  */
@@ -101,7 +100,6 @@ test('repeat_interval 0 never re-fires a still-down node', () => {
 });
 
 test('keep_firing_for: resolve only after the hold; a flap back within it stays firing', () => {
-    // Fire, recover, flap back down before keep_firing_for, then recover for good.
     const {out} = run([
         {dt: 0, obs: obs(true, [['a', false]])},
         {dt: 35 * SEC, obs: obs(true, [['a', false]])},   // fire
@@ -141,9 +139,8 @@ test('cluster-unreachable: pends under `for`, fires once, resolves on reconnect'
     ]);
     assert.deepEqual(types(out[1]), [`fire:${CLUSTER_KEY}`]);
     assert.equal(out[1][0].title, "Can't reach the cluster");
-    // The kubectl detail is deliberately NOT in the banner body: it can carry
-    // credential material from an exec plugin, and GNOME shows notification
-    // bodies on the lock screen. It stays in the menu instead.
+    // The kubectl detail can carry credential material from an exec plugin, and
+    // GNOME shows notification bodies on the lock screen, so it stays in the menu.
     assert.equal(out[1][0].body, '');
     assert.deepEqual(out[2], []);
     assert.deepEqual(types(out[3]), [`resolve:${CLUSTER_KEY}`]);
@@ -176,7 +173,7 @@ test('inhibition: an unreachable poll freezes node records instead of resolving 
 
 test('recovery edge: reconnect re-anchors a pending node (no instant fire) and never false-resolves', () => {
     const err = {title: "Can't reach the cluster", detail: ''};
-    // node b was mid-pending when the cluster went unreachable; node a is Ready throughout.
+    // Node b was mid-pending when the cluster went unreachable; node a stays Ready.
     const {out} = run([
         {dt: 0, obs: obs(true, [['a', true], ['b', false]])},     // cold: b pending
         {dt: 20 * SEC, obs: obs(true, [['a', true], ['b', false]])}, // b 20s into `for`
@@ -184,13 +181,13 @@ test('recovery edge: reconnect re-anchors a pending node (no instant fire) and n
         {dt: 20 * SEC, obs: obs(true, [['a', true], ['b', false]])}, // reconnect: b re-anchored
         {dt: 20 * SEC, obs: obs(true, [['a', true], ['b', false]])}, // only 20s since re-anchor
     ]);
-    // a never alerted (always Ready) -> never a resolve; b re-anchored so it hasn't fired yet.
+    // a never alerted, so never resolves; b was re-anchored and has not fired yet.
     assert.deepEqual(out.flat(), []);
 });
 
 test('settle: a large gap syncs silently -- no re-fire of a still-down node, no stale resolve', () => {
     const bigGap = 20 * 60 * SEC;   // 20 min > 15 min settle window
-    // still-down across the gap: preserved firing, no re-fire.
+    // Still down across the gap: preserved firing, no re-fire.
     const stillDown = run([
         {dt: 0, obs: obs(true, [['a', false]])},
         {dt: 35 * SEC, obs: obs(true, [['a', false]])},   // fire
@@ -200,7 +197,7 @@ test('settle: a large gap syncs silently -- no re-fire of a still-down node, no 
     assert.deepEqual(stillDown.out[2], []);
     assert.equal(stillDown.state.alerts['NodeNotReady:a'].phase, 'firing');
 
-    // recovered across the gap: silently cleared, no stale "recovered".
+    // Recovered across the gap: silently cleared, no stale "recovered".
     const recovered = run([
         {dt: 0, obs: obs(true, [['a', false]])},
         {dt: 35 * SEC, obs: obs(true, [['a', false]])},   // fire
@@ -224,7 +221,7 @@ test('settle re-anchors a still-pending node, carrying its notify-log forward', 
     assert.equal(rec.phase, 'pending');
     assert.equal(rec.since, now);                                     // timer re-anchored
     assert.equal(rec.lastStatus, 'resolved');                         // log carried forward
-    // And it still has to serve the full `for` from the new anchor.
+    // It still has to serve the full debounce from the new anchor.
     s = reduce(s.state, obs(true, [['a', false]]), cfg(), now + 10 * SEC);
     assert.deepEqual(s.actions, []);
     s = reduce(s.state, obs(true, [['a', false]]), cfg(), now + 35 * SEC);
@@ -421,7 +418,7 @@ test('deserializeState drops records that do not typecheck', () => {
     assert.deepEqual(load({'NodeNotReady:a': {...good, lastStatus: 'nope'}}).alerts, {});
     assert.deepEqual(load({'NodeNotReady:a': null}).alerts, {});
     assert.deepEqual(load({'NodeNotReady:a': 'a string'}).alerts, {});
-    // Keys outside our namespace are refused, so a crafted key can't become a title.
+    // Keys outside the alert namespace are refused, so one cannot become a title.
     assert.deepEqual(load({'evil<b>key': good}).alerts, {});
     // A non-finite lastObservedAt invalidates the whole blob.
     assert.equal(deserializeState(JSON.stringify(
@@ -429,7 +426,7 @@ test('deserializeState drops records that do not typecheck', () => {
 });
 
 test('the alert cap keeps the cluster record regardless of sort order', () => {
-    // Exercises both comparator arms: the cluster key reached as `a` and as `b`.
+    // Exercises both comparator arms: the cluster key reached as a and as b.
     const err = {title: "Can't reach the cluster", detail: ''};
     const many = Array.from({length: 250}, (_, i) => [`node-${String(i).padStart(3, '0')}`, false]);
     let now = T0;
@@ -447,15 +444,40 @@ test('the alert cap keeps the cluster record regardless of sort order', () => {
     assert.ok(keys.includes(CLUSTER_KEY), 'cluster record must never be the one shed');
 });
 
-test('groupActions coalesces simultaneous fires into one critical banner', () => {
+test('groupActions coalesces simultaneous fires into one high-urgency banner', () => {
     const mk = (type, label, title) => ({type, key: label, label, title, body: ''});
     assert.deepEqual(groupActions([]), []);
     assert.deepEqual(groupActions([mk('fire', 'a', 'a is down')]),
-        [{title: 'a is down', body: '', urgency: 'critical'}]);
+        [{kind: 'fire', title: 'a is down', body: '', urgency: 'high'}]);
     const many = groupActions([
         mk('fire', 'a', 'a is down'), mk('fire', 'b', 'b is down'), mk('fire', 'cluster', "Can't reach the cluster"),
     ]);
-    assert.deepEqual(many, [{title: '3 alerts firing', body: 'a, b, cluster', urgency: 'critical'}]);
+    assert.deepEqual(many,
+        [{kind: 'fire', title: '3 alerts firing', body: 'a, b, cluster', urgency: 'high'}]);
+});
+
+test('offline: an unreachable stretch while the machine is offline never fires', () => {
+    const {out} = run([
+        {dt: 0, obs: obs(true, [['a', true]])},               // healthy baseline
+        {dt: 10 * SEC, obs: obs(false, [], {offline: true})},  // the machine lost its network
+        {dt: 60 * SEC, obs: obs(false, [], {offline: true})},  // far past clusterForSec by now
+        {dt: 120 * SEC, obs: obs(false, [], {offline: true})},
+    ]);
+    assert.deepEqual(out.flat(), [], 'a local outage must not read as a cluster alert');
+});
+
+test('offline: a firing cluster alert survives the stretch and resolves once back', () => {
+    const {out} = run([
+        {dt: 0, obs: obs(false, [])},                          // cold start: pending
+        {dt: 35 * SEC, obs: obs(false, [])},                    // real outage fires
+        {dt: 10 * SEC, obs: obs(false, [], {offline: true})},   // then the machine drops offline
+        {dt: 10 * SEC, obs: obs(true, [['a', true]])},          // back online, cluster answers
+        {dt: 65 * SEC, obs: obs(true, [['a', true]])},          // keep_firing_for elapses
+    ]);
+    assert.deepEqual(types(out[1]), [`fire:${CLUSTER_KEY}`]);
+    assert.deepEqual(out[2], [], 'offline neither re-fires nor resolves it');
+    assert.deepEqual(types(out[4]), [`resolve:${CLUSTER_KEY}`],
+        'the episode still closes with a recovery notice');
 });
 
 test('rollbackDelivery re-arms an undelivered fire so the next tick notifies again', () => {
@@ -490,13 +512,13 @@ test('rollbackDelivery is a no-op for resolves, empty batches and null state', (
     assert.equal(rollbackDelivery(s.state, resolveAction), s.state);
 });
 
-test('groupActions splits fires (critical) and resolves (normal) into two banners', () => {
+test('groupActions splits fires (high) and resolves (normal) into two banners', () => {
     const mk = (type, label, title) => ({type, key: label, label, title, body: ''});
     const out = groupActions([
         mk('fire', 'a', 'a is down'), mk('resolve', 'b', 'b recovered'), mk('resolve', 'c', 'c recovered'),
     ]);
     assert.deepEqual(out, [
-        {title: 'a is down', body: '', urgency: 'critical'},
-        {title: '2 alerts recovered', body: 'b, c', urgency: 'normal'},
+        {kind: 'fire', title: 'a is down', body: '', urgency: 'high'},
+        {kind: 'resolve', title: '2 alerts recovered', body: 'b, c', urgency: 'normal'},
     ]);
 });

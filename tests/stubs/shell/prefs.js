@@ -1,5 +1,3 @@
-// Fake ExtensionPreferences base for the prefs process. Same getSettings()
-// contract as the shell-side Extension, and the gettext exports a future i18n
-// pass will reach for.
+// Fake ExtensionPreferences base: the same contract as the shell-side Extension.
 
 export {ExtensionPreferences, gettext, ngettext, pgettext} from './extension.js';

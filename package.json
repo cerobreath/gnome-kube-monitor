@@ -6,7 +6,7 @@
   "license": "GPL-2.0-or-later",
   "description": "Dev tooling for the Kube Node Monitor GNOME Shell extension (tests, lint, JSDoc type-check). Not shipped with the extension.",
   "engines": {
-    "node": ">=22.15"
+    "node": ">=24.0.0"
   },
   "scripts": {
     "test": "node --test --import ./tests/hooks.mjs tests/*.test.js",

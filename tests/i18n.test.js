@@ -1,11 +1,5 @@
-// Unit tests for the translation plumbing. Run with `npm test`.
-//
-// Two things are worth proving here and nowhere else. First, that an unbound
-// process still works -- everything below _() runs before enable() has a chance
-// to bind, and English is the honest fallback, not a crash. Second, that format()
-// survives a bad catalogue: translations are external input, and a stray or
-// renumbered placeholder must degrade visibly rather than print "undefined" into
-// the panel.
+// Tests for the translation plumbing: that an unbound process falls back to
+// English rather than crashing, and that format() survives a bad catalogue.
 
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
@@ -14,8 +8,7 @@ import {
     _, ngettext, pgettext, N_, format, bindTranslations, unbindTranslations,
 } from '../lib/i18n.js';
 
-// Every test binds or unbinds module state, so put it back afterwards: the rest
-// of the suite asserts English literals and would fail on a leaked backend.
+// The rest of the suite asserts English literals, so a leaked backend breaks it.
 test.afterEach(() => unbindTranslations());
 
 test('unbound, the wrappers are the identity and English picks its own plural', () => {
@@ -28,8 +21,7 @@ test('unbound, the wrappers are the identity and English picks its own plural', 
 });
 
 test('N_ marks a string for extraction without translating it', () => {
-    // The point of N_ is that it is a no-op even once a locale is bound: static
-    // tables store the English source and translate at lookup.
+    // N_ stays a no-op even once a locale is bound: static tables translate at lookup.
     bindTranslations({
         gettext: () => 'translated',
         ngettext: s => s,

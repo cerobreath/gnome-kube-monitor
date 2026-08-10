@@ -58,7 +58,7 @@
 
 You already run `kubectl get nodes` a dozen times a day to check nothing is broken. This shows the same thing on the panel instead: a status dot that stays green while every node is Ready, goes amber when one is degraded, and turns red when a node drops. Open the menu for the detail; the rest of the time it stays quiet.
 
-It reads through the `kubectl` and kubeconfig you already have, so any context and any auth that works in your terminal works here too. It only ever reads: nothing it does can change your cluster.
+It reads through the `kubectl` and kubeconfig you already have, so any context and any auth that works in your terminal works here too. Nothing it does can change your cluster.
 
 **Requirements:** GNOME Shell 45 to 50, `kubectl`, and a working kubeconfig. Per-node CPU and memory need metrics-server in the cluster; everything else works without it.
 
@@ -82,11 +82,11 @@ It reads through the `kubectl` and kubeconfig you already have, so any context a
 - the current context, a refresh button, and how fresh the data is (`now`, `45s`, `3m`, …);
 - a pods line: running, pending, crash-looping, failed;
 - your nodes, worst first: dot, name, how long each has been up or down, its role (or the reason it is unhappy), and CPU/memory bars when metrics-server is present;
-- a one-click context switcher, then Settings.
+- a one-click context switcher, a Mute alerts submenu (15 minutes, 1 hour, 8 hours), then Settings.
 
 Two more things:
 
-- desktop notifications when a node crosses Ready to NotReady, and again when it recovers;
+- desktop notifications when a node stays NotReady, when the whole cluster stops answering, and again on recovery. A recovery also withdraws the outage banner it answers, so the tray never collects stale alarms;
 - click any node to copy `kubectl describe node <name>` to the clipboard.
 
 <!-- MEDIA: notification  (screenshot)
@@ -133,10 +133,10 @@ gnome-extensions prefs kube-monitor@cerobreath.dev
 </p>
 
 - **Refresh interval**, in seconds.
-- **Notify on node up/down.**
+- **Notifications.** Three switches, for node problems, an unreachable cluster and recovery. Under them sit the timings: how long a node or the cluster must stay bad before you hear about it, how long an alert is held after it clears so a flapping node only notifies once, how often to remind you, and how long to batch simultaneous alerts into one notification.
 - **Context, kubeconfig path(s), kubectl path.** Leave them empty and it detects your current context, `~/.kube/config` (or `$KUBECONFIG`), and `kubectl` on your `PATH`. The window shows a green check next to each one it finds, plus a Test button that lists your contexts.
 
-If your kubeconfig logs in through SSO/OIDC (an exec plugin such as kubelogin), the extension will not open a browser while it polls in the background. Log in once in a terminal and it reuses that token. If the token later expires, a poll fails quietly until you log in again.
+If your kubeconfig logs in through SSO/OIDC (an exec plugin such as kubelogin), the extension will not open a browser while it polls in the background. Log in once in a terminal and it reuses that token. If the token later expires, the menu says the login has expired and polls fail quietly until you sign in again.
 
 ## How it works
 
@@ -145,7 +145,9 @@ Polling runs inside the compositor process, so it has to stay cheap. It works in
 - **Menu closed** (almost always): one small `kubectl` query, about 250 bytes, that feeds the panel dot and the notifications. That is the entire steady-state cost.
 - **Menu open:** full node detail, per-node metrics, and the pods summary, fetched only while you are looking. Rows update in place instead of being rebuilt.
 
-If the cluster goes unreachable it backs off instead of hammering the network: 10 seconds, then longer, capped at 5 minutes. Every poll arms a watchdog that kills a hung `kubectl`, so an unreachable cluster cannot wedge the menu on "Loading".
+If the cluster goes unreachable it backs off instead of hammering the network: 10 seconds, then longer, capped at a minute. Every poll arms a watchdog that kills a hung `kubectl`, so an unreachable cluster cannot wedge the menu on "Loading".
+
+It also knows the difference between your cluster being down and your machine being offline. With no network route there is no "cluster unreachable" alert, just a "No internet connection" note in the menu; the moment the connection returns it re-polls at once instead of sitting out the backoff. A cluster on localhost keeps being monitored either way.
 
 ## Layout
 
@@ -174,9 +176,9 @@ Everything worth testing is pure and free of `gi://` imports, so parsing, severi
 
 The interface is available in Arabic, Chinese (Simplified, Traditional, Hong Kong and Singapore), Dutch, English, French, German, Italian, Japanese, Korean, Polish, Portuguese (Portugal and Brazil), Russian, Spanish, Turkish and Ukrainian. It follows your desktop's language; nothing to configure.
 
-Regional variants fall back to the base language, so `de_AT`, `fr_CA`, `es_MX`, `nl_BE` and the rest are covered by `de`, `fr`, `es` and `nl`. Chinese and Portuguese get a catalogue per region because gettext never falls back sideways — `zh_HK` would otherwise land on English rather than on `zh_TW`.
+Regional variants fall back to the base language, so `de_AT`, `fr_CA`, `es_MX`, `nl_BE` and the rest are covered by `de`, `fr`, `es` and `nl`. Chinese and Portuguese get a catalogue per region because gettext never falls back sideways. Without that, `zh_HK` would land on English rather than on `zh_TW`.
 
-Kubernetes' own words — `Ready`, `NotReady`, `SchedulingDisabled`, `MemoryPressure`, node roles — stay in English on purpose, so what the menu says still matches what `kubectl get nodes` prints.
+Kubernetes' own words (`Ready`, `NotReady`, `SchedulingDisabled`, `MemoryPressure`, node roles) stay in English on purpose, so what the menu says still matches what `kubectl get nodes` prints.
 
 To correct or add a language:
 
@@ -187,9 +189,18 @@ $EDITOR po/uk.po           # translate; msgstr "" and #, fuzzy both fail the bui
 npm run i18n:check         # completeness + format-string check, part of npm run check
 ```
 
-New languages also need a line in `po/LINGUAS`. The catalogues were produced by the maintainer with machine assistance and reviewed for terminology, not by native speakers — corrections are welcome, and the `Last-Translator` field is yours to claim.
+New languages also need a line in `po/LINGUAS`. The catalogues were produced by the maintainer with machine assistance and reviewed for terminology, not by native speakers. Corrections are welcome, and the `Last-Translator` field is yours to claim.
 
 ## Develop
+
+Requires Node 24 or newer for the tooling. The extension itself runs on GJS and never
+touches Node.
+
+Deeper reading: [`docs/architecture.md`](docs/architecture.md) for the module layering,
+two-tier polling and the benchmarks behind the row cap, and
+[`docs/translations.md`](docs/translations.md) for locale coverage and what has been
+verified at runtime. [`AGENTS.md`](AGENTS.md) holds the conventions a change is expected to
+follow, with topic rules in [`.agents/rules/`](.agents/rules).
 
 ```bash
 npm install       # dev tooling only: eslint, typescript, @girs types. Not shipped.
@@ -207,7 +218,7 @@ To try a shell-side change without logging out, run a nested shell:
 
 ```bash
 dbus-run-session -- gnome-shell --devkit             # GNOME 49+ (needs the mutter-devkit package)
-dbus-run-session -- gnome-shell --nested --wayland   # GNOME 45-48 (--nested was removed in 49)
+dbus-run-session -- gnome-shell --nested --wayland   # GNOME 45-49 (--nested went with the X11 backend in 50)
 ```
 
 ## Packaging

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Kube Node Monitor 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-10 12:00+0300\n"
+"POT-Creation-Date: 2026-08-10 12:36+0300\n"
 "PO-Revision-Date: 2026-07-31 01:05+0300\n"
 "Last-Translator: Kube Node Monitor contributors\n"
 "Language-Team: Brazilian Portuguese\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: extension.js:77
+#: extension.js:72
 msgid "Copied to clipboard"
 msgstr "Copiado para a área de transferência"
 
@@ -255,32 +255,32 @@ msgstr[1] "Conectado. %d contextos encontrados."
 
 #. Translators: stands in for a node name in a grouped banner's list,
 #. e.g. "web-1, db-2, cluster". Lowercase, to read as one list item.
-#: lib/alerts.js:257
+#: lib/alerts.js:255
 msgid "cluster"
 msgstr "cluster"
 
 #. Translators: notification title when the cluster answers again.
-#: lib/alerts.js:264
+#: lib/alerts.js:259
 msgid "Cluster reachable again"
 msgstr "Cluster acessível novamente"
 
 #. Translators: notification title when a node stops being Ready.
 #. %s is the node name as the cluster spells it; do not translate it.
-#: lib/alerts.js:380
+#: lib/alerts.js:375
 #, javascript-format
 msgid "%s is down"
 msgstr "%s está fora do ar"
 
 #. Translators: notification title when a node becomes Ready again.
 #. %s is the node's name.
-#: lib/alerts.js:384
+#: lib/alerts.js:379
 #, javascript-format
 msgid "%s recovered"
 msgstr "%s se recuperou"
 
 #. Translators: banner title when several alerts fire at the same time.
 #. %d is how many; the body lists the node names.
-#: lib/alerts.js:430
+#: lib/alerts.js:425
 #, javascript-format
 msgid "%d alert firing"
 msgid_plural "%d alerts firing"
@@ -289,7 +289,7 @@ msgstr[1] "%d alertas ativos"
 
 #. Translators: banner title when several alerts clear at the same time.
 #. %d is how many; the body lists the node names.
-#: lib/alerts.js:433
+#: lib/alerts.js:428
 #, javascript-format
 msgid "%d alert recovered"
 msgid_plural "%d alerts recovered"
@@ -347,7 +347,7 @@ msgstr "Atualizar agora"
 #. until the poll answers.
 #. Translators: shown under the context name while the first poll of a
 #. cluster is still in flight.
-#: lib/indicator.js:193 lib/indicator.js:692
+#: lib/indicator.js:193 lib/indicator.js:688
 msgid "updating…"
 msgstr "atualizando…"
 
@@ -436,26 +436,26 @@ msgstr[1] "… e mais %d nós"
 
 #. Translators: spoken uptime on a node row: how long it has been
 #. Ready. %s is a short duration such as "3d".
-#: lib/indicator.js:598
+#: lib/indicator.js:594
 #, javascript-format
 msgid "up %s"
 msgstr "ativo há %s"
 
 #. Translators: spoken downtime on a node row: how long it has been
 #. NotReady. %s is a short duration such as "3d".
-#: lib/indicator.js:601
+#: lib/indicator.js:597
 #, javascript-format
 msgid "down %s"
 msgstr "fora do ar há %s"
 
 #. Translators: spoken CPU load on a node row. %d is a percentage.
-#: lib/indicator.js:604
+#: lib/indicator.js:600
 #, javascript-format
 msgid "CPU %d%%"
 msgstr "CPU %d%%"
 
 #. Translators: spoken memory load on a node row. %d is a percentage.
-#: lib/indicator.js:608
+#: lib/indicator.js:604
 #, javascript-format
 msgid "memory %d%%"
 msgstr "memória %d%%"
@@ -463,7 +463,7 @@ msgstr "memória %d%%"
 #. Translators: pod counts under the menu header. English has one form for
 #. all counts, but %d selects the plural form your language needs. Keep
 #. these very short: up to four of them share one row.
-#: lib/indicator.js:654
+#: lib/indicator.js:650
 #, javascript-format
 msgid "%d running"
 msgid_plural "%d running"
@@ -471,7 +471,7 @@ msgstr[0] "%d em execução"
 msgstr[1] "%d em execução"
 
 #. Translators: pods accepted but not yet started. Keep it very short.
-#: lib/indicator.js:658
+#: lib/indicator.js:654
 #, javascript-format
 msgid "%d pending"
 msgid_plural "%d pending"
@@ -479,7 +479,7 @@ msgstr[0] "%d pendente"
 msgstr[1] "%d pendentes"
 
 #. Translators: pods stuck restarting (CrashLoopBackOff). Keep it very short.
-#: lib/indicator.js:663
+#: lib/indicator.js:659
 #, javascript-format
 msgid "%d crashing"
 msgid_plural "%d crashing"
@@ -487,7 +487,7 @@ msgstr[0] "%d falhando"
 msgstr[1] "%d falhando"
 
 #. Translators: pods that terminated in failure. Keep it very short.
-#: lib/indicator.js:668
+#: lib/indicator.js:664
 #, javascript-format
 msgid "%d failed"
 msgid_plural "%d failed"
@@ -496,14 +496,14 @@ msgstr[1] "%d com falha"
 
 #. Translators: spoken name of the panel button. "Kube Node Monitor" is
 #. the extension's name, so leave it as it is. %s is the cluster summary.
-#: lib/indicator.js:678
+#: lib/indicator.js:674
 #, javascript-format
 msgid "Kube Node Monitor: %s"
 msgstr "Kube Node Monitor: %s"
 
 #. Translators: shown under the context name when the reading is only a
 #. few seconds old, in place of a duration.
-#: lib/indicator.js:700
+#: lib/indicator.js:696
 msgid "now"
 msgstr "agora"
 
@@ -540,57 +540,57 @@ msgid "%dd"
 msgstr "%dd"
 
 #. Translators: shown when the cluster did not respond before the timeout.
-#: lib/model.js:474
+#: lib/model.js:472
 msgid "The cluster didn't answer in time"
 msgstr "O cluster não respondeu a tempo"
 
 #. Translators: TLS/x509 certificate verification failed.
-#: lib/model.js:476
+#: lib/model.js:474
 msgid "The cluster's certificate can't be verified"
 msgstr "O certificado do cluster não é válido"
 
 #. Translators: the API server rejected the credentials (HTTP 401).
-#: lib/model.js:478
+#: lib/model.js:476
 msgid "The cluster rejected the login"
 msgstr "O cluster recusou as credenciais"
 
 #. Translators: an expired token that a credential helper must refresh.
-#: lib/model.js:480
+#: lib/model.js:478
 msgid "The login has expired"
 msgstr "É preciso entrar novamente"
 
 #. Translators: authenticated, but not permitted to list nodes (HTTP 403).
-#: lib/model.js:482
+#: lib/model.js:480
 msgid "This login can't read the cluster"
 msgstr "Estas credenciais não podem ler o cluster"
 
 #. Translators: the kubectl binary itself could not be found or executed.
-#: lib/model.js:484
+#: lib/model.js:482
 msgid "Can't find kubectl"
 msgstr "kubectl não foi encontrado"
 
 #. Translators: the network could not reach the API server at all.
-#: lib/model.js:486
+#: lib/model.js:484
 msgid "Can't reach the cluster"
 msgstr "Não é possível alcançar o cluster"
 
 #. Translators: the machine itself is offline, so the failure is local.
-#: lib/model.js:488
+#: lib/model.js:486
 msgid "No internet connection"
 msgstr "Sem conexão com a internet"
 
 #. Translators: no kubeconfig file exists to read a cluster from.
-#: lib/model.js:490
+#: lib/model.js:488
 msgid "No kubeconfig found"
 msgstr "Nenhum kubeconfig encontrado"
 
 #. Translators: the selected context is missing from the kubeconfig.
-#: lib/model.js:492
+#: lib/model.js:490
 msgid "The selected context doesn't exist"
 msgstr "O contexto selecionado não existe"
 
 #. Translators: catch-all when kubectl failed for none of the above reasons.
-#: lib/model.js:494
+#: lib/model.js:492
 msgid "kubectl ran into a problem"
 msgstr "O kubectl encontrou um problema"
 

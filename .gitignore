@@ -6,3 +6,5 @@ node_modules/
 .eslintcache
 .idea/
 .codegraph/
+# Local agent state; the committed .claude/rules stubs stay tracked.
+.claude/settings.local.json

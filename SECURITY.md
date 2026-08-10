@@ -2,22 +2,26 @@
 
 ## Reporting a vulnerability
 
-Please report security issues **privately**, not as a public issue.
+Please report security issues privately, not as a public issue.
 
 - Preferred: GitHub's [private vulnerability reporting][ghsa] on this repository
   (Security → Report a vulnerability).
 - Otherwise: open an issue containing only "security report, please provide a
-  private channel" — with no details — and a maintainer will follow up.
+  private channel", with no details, and a maintainer will follow up.
 
 Please include the extension version (`metadata.json` → `version-name`), your
 GNOME Shell version (`gnome-shell --version`), your `kubectl` version, and what
 an attacker would gain. A reproducer helps enormously.
 
 **Do not include real credentials in a report.** If you have a log or an error
-string that leaked a token, redact it to the first and last four characters — and
-rotate that credential, since it must be treated as compromised.
+string that leaked a token, redact it to the first and last four characters. Rotate
+that credential as well, since it must be treated as compromised.
 
 Expect an acknowledgement within a week. There is no bounty programme.
+
+Disclosure is coordinated: a fix ships before details go public, and you are
+credited in the release notes unless you ask not to be. If a report goes
+unanswered for 30 days, disclose at your own discretion.
 
 [ghsa]: https://docs.github.com/en/code-security/security-advisories/guidance-on-reporting-and-writing-information-about-vulnerabilities/privately-reporting-a-security-vulnerability
 
@@ -33,7 +37,7 @@ Useful context for judging severity:
 - **It is read-only against your cluster.** It runs `kubectl get` / `kubectl
   config` and never mutates cluster state. It holds no credentials of its own; it
   uses the kubeconfig you already have.
-- **It shells out to `kubectl`**, always via an argv array — never a shell — with
+- **It shells out to `kubectl`**, always via an argv array (never a shell) with
   `--request-timeout=5s` plus a local watchdog. An explicit `kubectl-path` must be
   an absolute path to an executable regular file, or it is ignored in favour of a
   PATH lookup.
@@ -58,12 +62,14 @@ Useful context for judging severity:
 
 - A kubeconfig may contain an `exec:` stanza, which makes `kubectl` run an
   arbitrary command. Adding an untrusted kubeconfig is equivalent to running that
-  command — the same as with `kubectl` in a terminal, except it happens on a timer.
+  command, the same as with `kubectl` in a terminal, except it happens on a timer.
 - Settings live in dconf, which has no per-key access control. Any process running
   as your user can change them. `kubectl-path` is validated, but a same-UID
   attacker can already do far more than change a setting.
 
 ## Verifying a release
 
-`npm run pack` produces the uploaded zip; `npm run check` (lint, two type-check
-passes, and the test suite at 100% coverage) gates every commit and every CI run.
+Releases are built from source in CI: a `v*` tag runs the full gate (lint, two
+type-check passes, the test suite at 100% coverage, and the translation checks),
+then packs and attaches the zip. `npm run pack` from the tagged commit produces
+the same file set, so an upload can be checked against the tree it claims to be.

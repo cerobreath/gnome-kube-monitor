@@ -1,4 +1,4 @@
-// Unit tests for the pure scheduling math. Run with `npm test`.
+// Tests for the pure scheduling math.
 
 import {test} from 'node:test';
 import assert from 'node:assert/strict';

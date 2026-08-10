@@ -1,5 +1,4 @@
-// Unit tests for the pure model. Run with `npm test` (node --test) — no deps,
-// no network, no gnome-shell required.
+// Tests for the pure model: parsing, severity, formatting and error classification.
 
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
@@ -175,8 +174,8 @@ test('nodeQualifier: role when healthy, reason when degraded, empty when down', 
     assert.equal(
         nodeQualifier({ready: true, level: NodeLevel.WARNING, roles: ['worker'], issues: ['MemoryPressure']}),
         'MemoryPressure');
-    // A down node reports its raw status: this is the ONLY text saying it is
-    // down, so state is not carried by the red dot alone (WCAG 1.4.1).
+    // A down node reports its raw status: the only text saying it is down, so
+    // state is not carried by the red dot alone (WCAG 1.4.1).
     assert.equal(
         nodeQualifier({
             ready: false, level: NodeLevel.ERROR, roles: ['worker'], issues: [],
@@ -205,7 +204,7 @@ test('meterLevel buckets load% into ok/warning/error at 70 and 90', () => {
 });
 
 test('parsers survive objects missing metadata/status/spec entirely', () => {
-    // Defensive `?? {}` paths: a node object stripped to nothing must not throw.
+    // Defensive ?? {} paths: a node object stripped to nothing must not throw.
     const bare = parseNodesDetail(JSON.stringify({items: [{}]}), NOW);
     assert.equal(bare.total, 1);
     assert.equal(bare.nodes[0].name, 'unknown');
@@ -247,24 +246,43 @@ test('classifyError buckets each kubectl failure into a human headline', () => {
     assert.equal(title('Get "https://api:6443/api": dial tcp: lookup api on 1.1.1.1:53: no such host'),
         "Can't reach the cluster");
     assert.equal(title('x509: certificate signed by unknown authority'),
-        "The cluster's certificate didn't check out");
+        "The cluster's certificate can't be verified");
     assert.equal(title('error: You must be logged in to the server (Unauthorized)'),
-        'The cluster turned down the login');
+        'The cluster rejected the login');
     assert.equal(title('nodes is forbidden: User "dev" cannot list resource "nodes" in API group ""'),
         "This login can't read the cluster");
     assert.equal(title('error: getting credentials: exec: executable kubectl-oidc_login failed'),
-        'The login needs renewing');
+        'The login has expired');
     assert.equal(title('Failed to execute child process "kubectl" (No such file or directory)'),
         "Can't find kubectl");
     assert.equal(title('error: no configuration has been provided, try setting KUBECONFIG'),
         'No kubeconfig found');
     assert.equal(title('error: context "old" does not exist'),
-        "That context isn't set up");
-    // kubectl 1.35's actual wording for a missing context (verified against the binary).
+        "The selected context doesn't exist");
+    // kubectl 1.35's wording for a missing context.
     assert.equal(title('Error in configuration: context was not found for specified context: old'),
-        "That context isn't set up");
+        "The selected context doesn't exist");
     assert.equal(title('error: something nobody has ever seen'),
         'kubectl ran into a problem');
+});
+
+test('classifyError: offline reattributes network failures to the local machine', () => {
+    // The watchdog path carries no kubectl words at all.
+    assert.deepEqual(classifyError('whatever', {timedOut: true, offline: true}),
+        {key: 'offline', title: 'No internet connection', detail: ''});
+    // Network-shaped kubectl failures follow.
+    assert.equal(classifyError('dial tcp 10.0.0.1:6443: i/o timeout', {offline: true}).key,
+        'offline');
+    assert.equal(classifyError('dial tcp: lookup api: no such host', {offline: true}).key,
+        'offline');
+    // Local problems stay local: being offline does not excuse a bad setup.
+    assert.equal(classifyError('error: no configuration has been provided', {offline: true}).key,
+        'noConfig');
+    assert.equal(classifyError('Failed to execute child process "kubectl"', {offline: true}).key,
+        'kubectlMissing');
+    // And without the flag nothing changes.
+    assert.equal(classifyError('dial tcp: lookup api: no such host').key, 'unreachable');
+    assert.equal(classifyError('whatever', {timedOut: true}).key, 'timeout');
 });
 
 test('classifyError strips klog noise from the detail, keeps kubectl words', () => {
@@ -273,15 +291,14 @@ test('classifyError strips klog noise from the detail, keeps kubectl words', () 
         'dial tcp [::1]:8080: connect: connection refused"';
     const {title, detail} = classifyError(raw);
     assert.equal(title, "Can't reach the cluster");
-    // klog prefix + `"Unhandled Error" err=` wrapper gone, quotes unescaped.
+    // klog prefix and the "Unhandled Error" err= wrapper gone, quotes unescaped.
     assert.equal(detail,
         'couldn\'t get current server API group list: Get "http://localhost:8080/api?timeout=5s": ' +
         'dial tcp [::1]:8080: connect: connection refused');
 });
 
 test('classifyError prefers kubectl\'s human summary over the repeated klog noise', () => {
-    // Exactly what kubectl 1.35 emits for an unreachable server: five identical
-    // klog lines, then a plain summary. The detail should be that summary.
+    // kubectl 1.35 emits repeated klog lines then a plain summary; use the summary.
     const klog = 'E0713 13:30:03.888827   96402 memcache.go:265] "Unhandled Error" ' +
         'err="couldn\'t get current server API group list: dial tcp 127.0.0.1:8080: connect: connection refused"';
     const raw = `${klog}\n${klog}\n${klog}\n` +

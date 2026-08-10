@@ -1,6 +1,5 @@
-// Fake Gio for the node test harness: a scriptable subprocess, a real-enough
-// Cancellable, and a filesystem probe. Lets the kubectl edge (argv, environ,
-// cancellation, kubectl-path validation) be asserted without spawning anything.
+// Fake Gio: a scriptable subprocess, a Cancellable, a filesystem probe and
+// GSettings, so the kubectl edge is assertable without spawning anything.
 
 export const IOErrorEnum = {CANCELLED: 19, FAILED: 0, NOT_FOUND: 1};
 
@@ -68,7 +67,7 @@ export class Cancellable {
     }
 }
 
-// ---- scriptable subprocess ------------------------------------------------
+// Scriptable subprocess
 
 /**
  * @typedef {object} SpawnResult
@@ -77,9 +76,7 @@ export class Cancellable {
  * @property {boolean} [ok]       exit status; defaults true
  * @property {boolean} [hang]     never resolve until cancelled (watchdog tests)
  * @property {boolean} [defer]    resolve only when __release() is called, so a
- *                                test can decide exactly when a poll lands --
- *                                e.g. after stop() -- and prove nothing leaks
- *                                into the next lifecycle
+ *                                test can land a poll after stop()
  * @property {Error} [throws]     reject instead of resolving
  */
 
@@ -91,10 +88,7 @@ let killed = 0;
 /** @type {(() => void)[]} */
 let deferred = [];
 
-/**
- * Complete every deferred call. Lets a test land a poll's result at a chosen
- * moment (after stop(), after a context switch) rather than racing it.
- */
+/** Complete every deferred call, so a test chooses when a poll lands. */
 export function __release() {
     const pending = deferred;
     deferred = [];
@@ -129,6 +123,7 @@ export function __reset() {
     killed = 0;
     deferred = [];
     files = {'/usr/bin/kubectl': {type: FileType.REGULAR, executable: true}};
+    networkMonitor = new FakeNetworkMonitor();
 }
 
 export class Subprocess {
@@ -141,10 +136,8 @@ export class Subprocess {
         this._completed = false;
     }
 
-    // Only a process that actually ran to completion can be "successful". Note
-    // this is latched at completion, not derived from _exited afterwards: killing
-    // an already-finished process must not retroactively turn its success into a
-    // failure (which would mask the very late-delivery races we test for).
+    // Latched at completion, not derived from _exited: killing an already-finished
+    // process must not retroactively turn its success into a failure.
     get_successful() {
         return this._completed && this._result.ok !== false;
     }
@@ -156,8 +149,7 @@ export class Subprocess {
     }
 
     /**
-     * Promisified in real GJS; the stub returns the Promise directly and
-     * Gio._promisify is a no-op, so client.js's await works unchanged.
+     * Promisified in real GJS; the stub returns the Promise directly.
      * @param {unknown} _stdin
      * @param {Cancellable | null} cancellable
      * @returns {Promise<[string, string]>}
@@ -174,8 +166,7 @@ export class Subprocess {
             this._onKill = fail;
             if (r.hang)
                 return;                       // resolves only via force_exit()
-            // `stdout: null` is passed through deliberately, so client.js's
-            // `stdout ?? ''` guard is a tested path and not an assumption.
+            // stdout: null is passed through, so client.js's ?? '' guard is tested.
             const finish = () => {
                 if (r.throws) {
                     reject(r.throws);
@@ -213,7 +204,7 @@ export class SubprocessLauncher {
     }
 }
 
-// ---- filesystem probe ----------------------------------------------------
+// Filesystem probe
 
 /** @type {Record<string, {type?: number, executable?: boolean} | undefined>} */
 let files = {'/usr/bin/kubectl': {type: FileType.REGULAR, executable: true}};
@@ -246,28 +237,74 @@ export function _promisify() {
     // No-op: Subprocess.communicate_utf8_async already returns a Promise here.
 }
 
+// Network monitor: a process-wide singleton like the real one, with a switch a
+// test flips to change availability and emit network-changed.
+class FakeNetworkMonitor {
+    constructor() {
+        this.network_available = true;
+        /** @type {Map<number, {name: string, cb: (...a: any[]) => void}>} */
+        this._handlers = new Map();
+        this._nextId = 1;
+    }
+
+    /** @param {string} name @param {(...a: any[]) => void} cb */
+    connect(name, cb) {
+        const id = this._nextId++;
+        this._handlers.set(id, {name, cb});
+        return id;
+    }
+
+    /** @param {number} id */
+    disconnect(id) {
+        if (!this._handlers.has(id))
+            throw new Error(`NetworkMonitor.disconnect: no handler ${id}`);
+        this._handlers.delete(id);
+    }
+
+    __handlerCount() {
+        return this._handlers.size;
+    }
+
+    /** @param {boolean} available */
+    __setAvailable(available) {
+        this.network_available = available;
+        for (const h of [...this._handlers.values()]) {
+            if (h.name === 'network-changed')
+                h.cb(this, available);
+        }
+    }
+}
+
+let networkMonitor = new FakeNetworkMonitor();
+
+export const NetworkMonitor = {
+    get_default: () => networkMonitor,
+};
+
+export function __networkMonitor() {
+    return networkMonitor;
+}
+
 export function icon_new_for_string(/** @type {string} */ str) {
     return {__gicon: str, to_string: () => str};
 }
 
 export default {
     IOErrorEnum, SubprocessFlags, FileType, FileQueryInfoFlags, SettingsBindFlags,
-    Cancellable, Subprocess, SubprocessLauncher, File, GioError,
+    Cancellable, Subprocess, SubprocessLauncher, File, GioError, NetworkMonitor,
     _promisify, icon_new_for_string,
     __setSpawn, __calls, __lastCall, __killCount, __setFiles, __reset,
-    __release, __pendingSpawns,
+    __release, __pendingSpawns, __networkMonitor,
     get Settings() {
         return Settings;
     },
 };
 
-// ---- GSettings -----------------------------------------------------------
+// GSettings
 
 /**
- * Fake Gio.Settings backed by a plain map. Defaults mirror the real gschema so
- * tests exercise the same values users get, and every write emits `changed` and
- * `changed::key` exactly as dconf does -- including for writes we make ourselves,
- * which is what the extension's key allowlist has to survive.
+ * Fake Gio.Settings backed by a plain map. Defaults mirror the real gschema, and
+ * every write emits changed and changed::key exactly as dconf does.
  */
 export class Settings {
     /** @param {Record<string, any>} [initial] */
@@ -279,7 +316,7 @@ export class Settings {
             'notify-cluster-unreachable': true,
             'notify-on-recovery': true,
             'alert-node-for': 30,
-            'alert-cluster-for': 30,
+            'alert-cluster-for': 120,
             'alert-keep-firing-for': 60,
             'alert-repeat-interval': 0,
             'alert-group-wait': 0,

@@ -9,9 +9,8 @@ DEST_DIR="$EXT_ROOT/$UUID"
 echo "==> Compiling GSettings schema"
 glib-compile-schemas "$SRC_DIR/schemas"
 
-# The install is a symlink, so gnome-shell's bindtextdomain() looks for
-# locale/ inside this checkout. po/ holds the sources; the .mo files are build
-# output (gitignored), which is why they are compiled here rather than committed.
+# The install is a symlink, so bindtextdomain() looks for locale/ inside this
+# checkout. The .mo files are build output, not committed.
 echo "==> Compiling translations"
 "$SRC_DIR/po/i18n.sh" compile
 
@@ -32,7 +31,7 @@ echo
 echo "Wayland: the shell picks up a new extension after you log out and back in."
 echo "To test without logging out, run a nested shell:"
 echo "    dbus-run-session -- gnome-shell --devkit             # GNOME 49+ (needs mutter-devkit)"
-echo "    dbus-run-session -- gnome-shell --nested --wayland   # GNOME 45-48"
+echo "    dbus-run-session -- gnome-shell --nested --wayland   # GNOME 45-49"
 echo
 echo "Extension logs:"
 echo "    journalctl -f -o cat /usr/bin/gnome-shell | grep -i kube"

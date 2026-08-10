@@ -1,11 +1,5 @@
-// Fake MessageTray that can present either generation of the notification API,
-// so lib/notifier.js's version shim is testable on both sides of the GNOME 46
-// break instead of only on whichever shell the developer happens to run.
-//
-//   45   : positional constructors + Source.showNotification + setters
-//   46-50: params-object constructors + Source.addNotification + properties
-//
-// Shapes verified against the messageTray.js shipped in GNOME 50 and the 45.0 tag.
+// Fake MessageTray that can present either notification API generation: 45 uses
+// positional ctors and showNotification, 46+ params objects and addNotification.
 
 export const Urgency = {LOW: 0, NORMAL: 1, HIGH: 2, CRITICAL: 3};
 
@@ -87,8 +81,24 @@ class SourceBase extends Emitter {
         return this.icon ?? {__themed: this.iconName};
     }
 
+    // Real Source behaviour (_onNotificationDestroy): a destroyed notification is
+    // removed, and losing the last one destroys the source itself.
+    /** @param {Notification} n */
+    _track(n) {
+        this.notifications.push(n);
+        n.connect('destroy', () => {
+            const i = this.notifications.indexOf(n);
+            if (i >= 0)
+                this.notifications.splice(i, 1);
+            if (!this.destroyed && this.notifications.length === 0)
+                this.destroy();
+        });
+    }
+
     destroy() {
         this.destroyed = true;
+        for (const n of [...this.notifications])
+            n.destroy();
         this.notifications = [];
         this.emit('destroy');
     }
@@ -105,7 +115,7 @@ export function __setApiGeneration(gen) {
         Source = class ModernSource extends SourceBase {
             /** @param {Notification} n */
             addNotification(n) {
-                this.notifications.push(n);
+                this._track(n);
                 this.emit('notification-added', n);
             }
         };
@@ -113,13 +123,13 @@ export function __setApiGeneration(gen) {
         Source = class LegacySource extends SourceBase {
             /** @param {Notification} n */
             showNotification(n) {
-                this.notifications.push(n);
+                this._track(n);
                 this.emit('notify', n);
             }
 
             /** @param {Notification} n */
             pushNotification(n) {
-                this.notifications.push(n);
+                this._track(n);
             }
         };
     }

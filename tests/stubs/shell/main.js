@@ -1,6 +1,5 @@
-// Fake `Main`: the panel and the message tray, with just enough surface for the
-// view and the notification edge, plus recording so tests can assert what was
-// added or connected.
+// Fake Main: the panel and the message tray, recording what was added or
+// connected.
 
 class Emitter {
     constructor() {
@@ -85,7 +84,7 @@ export let messageTray = new MessageTrayImpl();
 /** @type {{title: string, body: string}[]} */
 export let notifications = [];
 
-/** The legacy shortcut. Recorded so a test can prove we never use it. */
+/** The legacy shortcut, recorded so a test can prove it is never used. */
 export function notify(/** @type {string} */ title, /** @type {string} */ body) {
     notifications.push({title, body});
 }

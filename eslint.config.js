@@ -1,6 +1,5 @@
-// Flat ESLint config (ESLint 9+). Offline dev tool: run `npm install` first.
-// GJS runs modern ESM; the globals below are the gnome-shell / GObject runtime
-// surface plus the browser-ish primitives GJS provides.
+// Flat ESLint config (ESLint 9+), dev-only: run npm install first. The globals
+// below are the GJS runtime surface, which no globals preset covers.
 import js from '@eslint/js';
 import globals from 'globals';
 
@@ -31,8 +30,7 @@ export default [
         },
     },
     {
-        // The test suite and its gi/shell stubs run under node, not GJS: they get
-        // node's globals on top of the shared set above.
+        // The test suite and its gi/shell stubs run under node, not GJS.
         files: ['tests/**/*.js', 'tests/**/*.mjs'],
         languageOptions: {
             globals: {...globals.node},

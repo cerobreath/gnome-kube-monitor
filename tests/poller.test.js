@@ -1,6 +1,5 @@
-// Unit tests for the poll loop. The fake GLib gives us a clock that only moves
-// when we say so, so cadence, backoff, the watchdog and the teardown guards are
-// all assertable — these were previously verified only by ad-hoc scripts.
+// Tests for the poll loop. The fake GLib clock only moves when a test says so,
+// so cadence, backoff, the watchdog and the teardown guards are all assertable.
 
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
@@ -18,8 +17,7 @@ const DETAIL_OUT = JSON.stringify({
 });
 
 /**
- * Answer a kubectl invocation the way a healthy cluster would. Dispatches on
- * exact argv elements so the four queries can't be confused for one another.
+ * Answer a kubectl invocation the way a healthy cluster would.
  * @param {string[]} argv
  */
 function answerFor(argv) {
@@ -35,8 +33,7 @@ function answerFor(argv) {
 }
 
 /**
- * A poller wired to recording callbacks, with a default spawn handler that
- * answers whichever query kubectl was asked for.
+ * A poller wired to recording callbacks and a default spawn handler.
  * @param {object} [over]
  */
 function harness(over = {}) {
@@ -48,7 +45,7 @@ function harness(over = {}) {
     const observations = [];
     let menuOpen = false;
 
-    // Match exact argv elements: `-o jsonpath=…` contains the substring "-o json",
+    // Match exact argv elements: -o jsonpath=… contains the substring "-o json",
     // so a loose check would answer the pods query with node JSON.
     Gio.__setSpawn(({argv}) => answerFor(argv));
 
@@ -81,6 +78,7 @@ test('start polls immediately, then self-schedules at the base interval', async 
     await settle();
     assert.equal(h.states.length, 1, 'one poll on start');
     assert.equal(h.observations.length, 1);
+    assert.equal(h.observations[0].offline, false, 'a success is by definition not offline');
 
     await GLib.__advance(9_000);
     assert.equal(h.states.length, 1, 'nothing before the interval elapses');
@@ -209,8 +207,7 @@ test('the watchdog rescues a hung kubectl and keeps the loop alive', async () =>
     assert.equal(h.observations[0].reachable, false);
     assert.equal(Gio.__killCount(), 1, 'the hung child was killed');
 
-    // And the loop continues rather than wedging. The timeout counted as a
-    // failure, so the retry is backed off to 20s.
+    // The loop continues; the timeout counted as a failure, so the retry is 20s.
     Gio.__setSpawn(({argv}) => answerFor(argv));
     await GLib.__advance(21_000);
     await settle();
@@ -246,13 +243,14 @@ test('a poll finishing after stop() delivers nothing (no cross-cycle bleed)', as
 });
 
 test('a poll superseded by a context switch delivers nothing either', async () => {
-    const h = harness();
-    // Fail with a plain Error (not a cancellation): this is the escape hatch that
-    // used to let a superseded poll report a false outage.
+    let context = '';
+    const h = harness({getOpts: () => ({kubectlPath: '', kubeconfig: '', context})});
+    // A plain Error, not a cancellation: the path that once reported a false outage.
     Gio.__setSpawn(() => ({hang: true}));
     h.poller.start();
     await settle();
 
+    context = 'other';                   // a real switch changes the options
     h.poller.refreshNow();               // marks the in-flight poll as superseded
     await settle();
     assert.equal(h.observations.length, 0, 'the abandoned poll must stay silent');
@@ -263,6 +261,56 @@ test('a poll superseded by a context switch delivers nothing either', async () =
     await settle();
     assert.ok(h.observations.length >= 1);
     assert.equal(h.observations[h.observations.length - 1].reachable, true);
+    h.poller.stop();
+});
+
+test('a refresh identical to the in-flight poll coalesces into it', async () => {
+    const h = harness();
+    Gio.__setSpawn(({argv}) => ({...answerFor(argv), defer: true}));
+    h.poller.start();
+    await settle();
+    assert.equal(Gio.__calls().length, 1);
+
+    h.poller.refreshNow();               // same tier, same options
+    await settle();
+    assert.equal(Gio.__killCount(), 0, 'the in-flight kubectl is left to answer');
+
+    Gio.__release();
+    await settle();
+    assert.equal(h.states.length, 1, 'and its result is delivered, not discarded');
+    assert.equal(Gio.__calls().length, 1, 'no wasted respawn of an identical poll');
+    h.poller.stop();
+});
+
+test('a forced refresh restarts even an identical in-flight poll', async () => {
+    const h = harness();
+    Gio.__setSpawn(() => ({hang: true}));
+    h.poller.start();
+    await settle();
+
+    h.poller.refreshNow(true);           // the network flipped: that socket is dead
+    await settle();
+    assert.equal(Gio.__killCount(), 1, 'the doomed poll is put down at once');
+
+    Gio.__setSpawn(({argv}) => answerFor(argv));
+    await GLib.__advance(50);
+    await settle();
+    assert.equal(h.states.length, 1, 'the replacement poll delivered');
+    assert.equal(h.states[0].error, null);
+    h.poller.stop();
+});
+
+test('a failing poll while offline is classified and observed as offline', async () => {
+    const h = harness({isOffline: () => true});
+    Gio.__setSpawn(() => ({stdout: '', stderr: 'dial tcp: lookup api: no such host', ok: false}));
+    h.poller.start();
+    await settle();
+
+    assert.equal(h.states[0].error.key, 'offline');
+    assert.equal(h.states[0].error.title, 'No internet connection');
+    assert.equal(h.observations[0].reachable, false);
+    assert.equal(h.observations[0].offline, true,
+        'the alert machine needs the flag to inhibit the cluster alert');
     h.poller.stop();
 });
 
@@ -282,10 +330,8 @@ test('stop() then start() on one instance keeps polling (cancellable is renewed)
 });
 
 test('a SUCCESSFUL poll landing after stop() is discarded', async () => {
-    // The cancellation check cannot catch this one: kubectl finished fine, it is
-    // only the *delivery* that is late. Ordering matters -- release resolves the
-    // promise, then stop() lands before the await continuation runs, which is
-    // exactly the real race (gnome-shell disabling us mid-flight).
+    // kubectl finished fine; only the delivery is late, so the cancellation check
+    // cannot catch it. Release resolves, then stop() lands before the await.
     const h = harness();
     Gio.__setSpawn(({argv}) => ({...answerFor(argv), defer: true}));
     h.poller.start();
@@ -315,12 +361,14 @@ test('a FAILING poll landing after stop() reports no outage', async () => {
 });
 
 test('a poll landing after a context switch is discarded too', async () => {
-    const h = harness();
+    let context = '';
+    const h = harness({getOpts: () => ({kubectlPath: '', kubeconfig: '', context})});
     Gio.__setSpawn(() => ({stdout: '', stderr: 'boom', ok: false, defer: true}));
     h.poller.start();
     await settle();
 
     Gio.__release();
+    context = 'other';                   // a real switch changes the options
     h.poller.refreshNow();               // supersede it before it can deliver
     await settle();
     assert.equal(h.observations.length, 0, 'the superseded poll stays silent');
@@ -345,8 +393,7 @@ test('reentrancy: a second start() while a poll is in flight does not overlap it
 });
 
 test('a tick that somehow fires after stop() does nothing (white-box guard check)', async () => {
-    // Not reachable through the public API today -- stop() clears the timers --
-    // but the guard is what keeps that true for future callers, so prove it.
+    // Not reachable through the public API today, since stop() clears the timers.
     const h = harness();
     h.poller.stop();
     await h.poller._tick();
@@ -427,8 +474,8 @@ test('intervalChanged during an in-flight poll is ignored (the finally re-arms)'
 });
 
 test('a thrown non-Error is still classified rather than crashing the loop', async () => {
-    // GJS can surface failures that are not Error instances, so `err?.message ??
-    // err` has to hold up: the loop must classify it and keep polling.
+    // GJS can surface failures that are not Error instances, so err?.message ?? err
+    // has to hold up: the loop must classify it and keep polling.
     const h = harness();
     Gio.__setSpawn(() => ({throws: 'plain string failure'}));
     h.poller.start();
@@ -442,8 +489,7 @@ test('a thrown non-Error is still classified rather than crashing the loop', asy
 
 test('onState and onObservation really are optional', async () => {
     // The typedef marks both as optional, so a poller built without them must run
-    // (and fail) cleanly rather than throwing inside the loop where nothing would
-    // catch it.
+    // and fail cleanly rather than throwing inside the loop.
     Gio.__reset();
     GLib.__reset();
     Gio.__setSpawn(({argv}) => answerFor(argv));

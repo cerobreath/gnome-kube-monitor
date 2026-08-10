@@ -1,6 +1,5 @@
-// Unit tests for the notification edge. The point of these is the version shim:
-// the extension claims GNOME 45-50, but a developer only ever runs one of them,
-// so both sides of the MessageTray API break at 46 are exercised here.
+// Tests for the notification edge. Both sides of the MessageTray API break at
+// GNOME 46 are exercised, since a developer only ever runs one of them.
 
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
@@ -13,9 +12,8 @@ import {KubeNotifier} from '../lib/notifier.js';
 const EXT = {path: '/ext'};
 
 /**
- * Point the stub tray at one API generation and hand back a fresh notifier.
- * A single module instance serves every generation because notifier.js probes
- * the API per call rather than caching the answer at import.
+ * Point the stub tray at one API generation and hand back a fresh notifier. One
+ * module instance serves every generation: notifier.js probes per call.
  * @param {number} gen
  */
 async function loadNotifier(gen) {
@@ -48,7 +46,7 @@ for (const gen of [45, 46, 50]) {
         notifier.destroy();
     });
 
-    test(`GNOME ${gen}: urgency maps through, so a fire is sticky and shown under DND`, async () => {
+    test(`GNOME ${gen}: urgency maps through to MessageTray.Urgency`, async () => {
         const notifier = await loadNotifier(gen);
         notifier.notify('down', '', {urgency: 'critical'});
         notifier.notify('recovered', '', {urgency: 'normal'});
@@ -70,8 +68,10 @@ for (const gen of [45, 46, 50]) {
     test(`GNOME ${gen}: an unknown urgency name degrades to normal`, async () => {
         const notifier = await loadNotifier(gen);
         notifier.notify('x', '', {urgency: /** @type {any} */ ('nonsense')});
-        assert.equal(Main.messageTray.sources[0].notifications[0].urgency,
-            MessageTray.Urgency.NORMAL);
+        notifier.notifyAlert(/** @type {any} */ (
+            {kind: 'fire', title: 'y', body: '', urgency: 'nonsense'}));
+        const urgencies = Main.messageTray.sources[0].notifications.map(n => n.urgency);
+        assert.deepEqual(urgencies, [MessageTray.Urgency.NORMAL, MessageTray.Urgency.NORMAL]);
         notifier.destroy();
     });
 
@@ -129,6 +129,60 @@ for (const gen of [45, 46, 50]) {
         const notifier = await loadNotifier(gen);
         notifier.notify('title only');
         assert.equal(Main.messageTray.sources[0].notifications[0].body ?? '', '');
+        notifier.destroy();
+    });
+
+    test(`GNOME ${gen}: a new fire replaces the previous alert banner`, async () => {
+        const notifier = await loadNotifier(gen);
+        notifier.notifyAlert({kind: 'fire', title: 'n1 is down', body: '', urgency: 'high'});
+        notifier.notifyAlert({kind: 'fire', title: '2 alerts firing', body: 'n1, n2', urgency: 'high'});
+
+        const titles = Main.messageTray.sources[0].notifications.map(n => n.title);
+        assert.deepEqual(titles, ['2 alerts firing'], 'no pile of stale fire banners');
+        notifier.destroy();
+    });
+
+    test(`GNOME ${gen}: a resolve withdraws the fire banner it answers`, async () => {
+        const notifier = await loadNotifier(gen);
+        notifier.notifyAlert({kind: 'fire', title: 'n1 is down', body: '', urgency: 'high'});
+        assert.equal(Main.messageTray.sources[0].notifications.length, 1);
+
+        notifier.notifyAlert({kind: 'resolve', title: 'n1 recovered', body: '', urgency: 'normal'});
+        const source = Main.messageTray.sources[0];
+        assert.deepEqual(source.notifications.map(n => n.title), ['n1 recovered'],
+            'the outage banner left with the outage');
+        assert.equal(source.notifications[0].isTransient, true,
+            'a recovery notice cleans up after itself');
+        assert.equal(source.notifications[0].urgency, MessageTray.Urgency.NORMAL);
+        notifier.destroy();
+    });
+
+    test(`GNOME ${gen}: a resolve with no live fire banner still posts`, async () => {
+        const notifier = await loadNotifier(gen);
+        notifier.notifyAlert({kind: 'resolve', title: 'n1 recovered', body: '', urgency: 'normal'});
+        assert.equal(Main.messageTray.sources[0].notifications.length, 1);
+        notifier.destroy();
+    });
+
+    test(`GNOME ${gen}: a dismissed banner clears the withdraw reference safely`, async () => {
+        const notifier = await loadNotifier(gen);
+        notifier.notifyAlert({kind: 'fire', title: 'n1 is down', body: '', urgency: 'high'});
+        const banner = Main.messageTray.sources[0].notifications[0];
+
+        banner.destroy();                // the user dismissed it
+        // Its source went with it: dismissing the last notification destroys it.
+        assert.equal(Main.messageTray.sources.length, 0);
+
+        notifier.notifyAlert({kind: 'fire', title: 'n2 is down', body: '', urgency: 'high'});
+        assert.deepEqual(Main.messageTray.sources[0].notifications.map(n => n.title),
+            ['n2 is down']);
+
+        // A stray late destroy of the old banner must not drop the live one's
+        // reference: the guard in notifyAlert's destroy handler.
+        banner.destroy();
+        notifier.notifyAlert({kind: 'resolve', title: 'n2 recovered', body: '', urgency: 'normal'});
+        assert.deepEqual(Main.messageTray.sources[0].notifications.map(n => n.title),
+            ['n2 recovered'], 'n2\'s banner was still withdrawable');
         notifier.destroy();
     });
 }

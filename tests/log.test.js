@@ -1,7 +1,5 @@
-// Unit tests for diagnostic logging. Two properties matter more than the
-// formatting: it is silent unless explicitly enabled (the journal is shared with
-// every other application), and it cannot put credential material there even if a
-// caller is careless.
+// Tests for diagnostic logging: silent unless enabled, and it cannot put
+// credential material in the shared journal even if a caller is careless.
 
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
@@ -108,9 +106,8 @@ test('newlines are collapsed, so one event stays one journal line', () => {
 
 test('the default sink is console.log, which the journal actually shows', () => {
     // Not console.debug: GLib's default writer drops LEVEL_DEBUG unless
-    // G_MESSAGES_DEBUG is set on the process, and you cannot set that on a
-    // gnome-shell the user is already running (verified in a nested shell).
-    // Not warn/error either -- those are recorded whether asked for or not.
+    // G_MESSAGES_DEBUG is set on the process, which a running gnome-shell cannot
+    // do. Not warn/error either: those are recorded whether asked for or not.
     const original = console.log;
     /** @type {string[]} */
     const seen = [];

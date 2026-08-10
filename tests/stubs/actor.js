@@ -1,6 +1,5 @@
-// Shared actor behaviour for the St/Clutter/PopupMenu fakes: signals, the child
-// tree, style classes and the ClutterText handle. Enough for the view's real
-// logic (row reuse, class swapping, wrapping, teardown) to be asserted.
+// Shared actor base for the St/Clutter/PopupMenu fakes: signals, children,
+// style classes and the ClutterText handle.
 
 export class Emitter {
     constructor() {

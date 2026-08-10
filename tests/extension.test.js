@@ -1,8 +1,4 @@
-// Unit tests for the wiring. This is where the alert machine meets GSettings and
-// the notifier, so the things asserted here are the ones that used to be provable
-// only by living with the extension for a while: that writing our own state key
-// cannot trigger a re-poll, that a steady cluster does not churn dconf, that
-// group_wait coalesces banners, and that disable() releases everything.
+// Tests for the wiring, where the alert machine meets GSettings and the notifier.
 
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
@@ -27,9 +23,8 @@ function makeExtension(settingsInitial = {}, meta = {}) {
     GLib.__reset();
     Main.__reset();
     MessageTray.__setApiGeneration(50);
-    // Dispatch on argv: the extension asks kubectl three different questions at
-    // enable (health, current-context, get-contexts) and answering them all with
-    // node output would put nonsense in the context label.
+    // Dispatch on argv: enable asks kubectl three questions (health,
+    // current-context, get-contexts) and one answer would not fit all three.
     Gio.__setSpawn(({argv}) => {
         if (argv.includes('current-context'))
             return {stdout: 'ctx\n'};
@@ -50,9 +45,8 @@ function makeExtension(settingsInitial = {}, meta = {}) {
 const settle = () => GLib.__settle();
 
 /**
- * Run whole poll cycles. Note the lifecycle: the first observation that sees a
- * bad node only *pends* it, so firing always needs a second one -- even with
- * `for` set to 0. That is the debounce working, not an off-by-one.
+ * Run whole poll cycles. The first observation that sees a bad node only pends
+ * it, so firing always needs a second one even with the debounce at 0.
  * @param {number} count
  */
 async function pollCycles(count = 1) {
@@ -68,7 +62,7 @@ async function flushBanners(windowMs = 10) {
     await settle();
 }
 
-/** Titles of every banner posted through our own tray source. */
+/** Titles of every banner posted through the extension's tray source. */
 function banners() {
     return Main.messageTray.sources.flatMap(s => s.notifications.map(n => ({
         title: n.title, body: n.body, urgency: n.urgency,
@@ -118,7 +112,7 @@ test('enable/disable cycles (i.e. screen locks) do not accumulate anything', asy
     assert.equal(Object.keys(Main.panel.statusArea).length, 0);
 });
 
-test('a node going down notifies once, as a sticky critical banner', async () => {
+test('a node going down notifies once, at high urgency', async () => {
     const {ext} = makeExtension({'alert-node-for': 0, 'alert-keep-firing-for': 0});
     ext.enable();
     await settle();                       // cold start: silent baseline
@@ -129,8 +123,8 @@ test('a node going down notifies once, as a sticky critical banner', async () =>
     await flushBanners();
 
     assert.deepEqual(banners().map(b => b.title), ['n1 is down']);
-    assert.equal(banners()[0].urgency, MessageTray.Urgency.CRITICAL,
-        'a fire must stick and show under DND');
+    assert.equal(banners()[0].urgency, MessageTray.Urgency.HIGH,
+        'a fire is prominent but must not squat on the screen like CRITICAL');
 
     // Still down on the next poll: no repeat (repeat-interval defaults to 0).
     await pollCycles(2);
@@ -139,22 +133,76 @@ test('a node going down notifies once, as a sticky critical banner', async () =>
     ext.disable();
 });
 
-test('recovery notifies at normal urgency', async () => {
+test('recovery notifies at normal urgency and withdraws the fire banner', async () => {
     const {ext} = makeExtension({'alert-node-for': 0, 'alert-keep-firing-for': 0});
     ext.enable();
     await settle();
     Gio.__setSpawn(() => ({stdout: HEALTH_N1_DOWN}));
     await pollCycles(2);
     await flushBanners();
+    assert.deepEqual(banners().map(b => b.title), ['n1 is down']);
 
     Gio.__setSpawn(() => ({stdout: HEALTH_ALL_OK}));
     await pollCycles(1);
     await flushBanners();
 
+    // The stale "n1 is down" left the tray with the outage; only the transient
+    // recovery notice remains.
     const titles = banners().map(b => b.title);
-    assert.deepEqual(titles, ['n1 is down', 'n1 recovered']);
-    assert.equal(banners()[1].urgency, MessageTray.Urgency.NORMAL);
+    assert.deepEqual(titles, ['n1 recovered']);
+    assert.equal(banners()[0].urgency, MessageTray.Urgency.NORMAL);
+    assert.equal(Main.messageTray.sources[0].notifications[0].isTransient, true,
+        'a recovery notice cleans up after itself');
     ext.disable();
+});
+
+test('losing the network never blames the cluster with a banner', async () => {
+    const {ext} = makeExtension({'alert-cluster-for': 0, 'alert-keep-firing-for': 0});
+    ext.enable();
+    await settle();
+    assert.deepEqual(banners(), []);
+
+    Gio.__networkMonitor().__setAvailable(false);
+    Gio.__setSpawn(() => ({stdout: '', stderr: 'dial tcp: lookup api: no such host', ok: false}));
+    await pollCycles(4);                  // plenty of failures past the 0s debounce
+    await flushBanners();
+    assert.deepEqual(banners(), [], 'a local outage is not a cluster alert');
+    ext.disable();
+});
+
+test('a network reconnect re-polls at once instead of waiting out the backoff', async () => {
+    const {ext} = makeExtension();
+    ext.enable();
+    await settle();
+
+    // The cluster drops away and failures build a long backoff.
+    Gio.__setSpawn(() => ({stdout: '', stderr: 'no such host', ok: false}));
+    await pollCycles(3);
+
+    Gio.__setSpawn(() => ({stdout: HEALTH_ALL_OK}));
+    Gio.__networkMonitor().__setAvailable(false);
+    const before = Gio.__calls().length;
+    await settle();
+    assert.equal(Gio.__calls().length, before, 'going offline does not itself poll');
+
+    Gio.__networkMonitor().__setAvailable(true);
+    await settle();
+    assert.ok(Gio.__calls().length > before,
+        'the reconnect polls immediately rather than sitting out the backoff');
+    ext.disable();
+});
+
+test('disable releases the network monitor handler', async () => {
+    const {ext} = makeExtension();
+    const monitor = Gio.__networkMonitor();
+    assert.equal(monitor.__handlerCount(), 0);
+    ext.enable();
+    await settle();
+    assert.equal(monitor.__handlerCount(), 1);
+
+    ext.disable();
+    assert.equal(monitor.__handlerCount(), 0,
+        'the monitor is a process-wide singleton; a leak would outlive every lock');
 });
 
 test('several nodes flipping together are coalesced into one banner', async () => {
@@ -203,8 +251,7 @@ test('an unreachable cluster notifies without leaking kubectl detail into the bo
         stdout: '', ok: false,
         stderr: 'Unable to connect to the server: dial tcp 10.0.0.1:6443: connect: connection refused',
     }));
-    // A failing poll backs the loop off (10s -> 20s), so the second observation
-    // arrives later than a healthy interval would suggest.
+    // A failing poll backs the loop off (10s -> 20s), so the retry comes later.
     await GLib.__advance(10_500);          // poll fails -> cluster alert pends
     await settle();
     await GLib.__advance(21_000);          // backed-off retry -> fires
@@ -263,8 +310,8 @@ test('writing our own state key never triggers a re-poll', async () => {
     await settle();
     const callsAfterFire = Gio.__calls().length;
 
-    // The fire persisted alert-state, which emits `changed`. If the handler
-    // treated unknown keys as a connection change, this would re-poll forever.
+    // The fire persisted alert-state, which emits changed. If the handler treated
+    // unknown keys as a connection change, this would re-poll forever.
     await settle();
     assert.equal(Gio.__calls().length, callsAfterFire, 'no feedback loop');
     ext.disable();
@@ -486,10 +533,8 @@ test('buffered banners are re-armed rather than lost when disable interrupts the
 });
 
 test('every poller callback degrades safely if it fires after disable', async () => {
-    // These run inside the compositor, so a late callback that throws would land
-    // as a JS error in gnome-shell rather than in our own code. The guards are
-    // deliberate; this pins them down (white-box by necessity -- the callbacks are
-    // only reachable through the poller's dependency object).
+    // These run inside the compositor, so a late callback that throws lands as a
+    // JS error in gnome-shell. White-box: they are only reachable via _deps.
     const {ext} = makeExtension({'refresh-interval': 42});
     ext.enable();
     await settle();
@@ -501,8 +546,8 @@ test('every poller callback degrades safely if it fires after disable', async ()
 
     assert.equal(deps.getIntervalSec(), 10, 'falls back to the schema default');
     assert.deepEqual(deps.getOpts(), {kubectlPath: '', kubeconfig: '', context: ''});
-    // The resolved label deliberately outlives disable(), so a re-enable shows the
-    // cluster name instead of flashing a placeholder; enable() re-reads it anyway.
+    // The resolved label outlives disable(), so a re-enable shows the cluster name
+    // instead of flashing a placeholder; enable() re-reads it anyway.
     assert.equal(deps.getContextLabel(), 'ctx');
     ext._context = '';
     assert.equal(deps.getContextLabel(), 'kubectl', 'last-resort label');
@@ -541,7 +586,7 @@ test('the config falls back to schema defaults when settings are gone', async ()
     const fallback = ext._alertConfig();
     assert.deepEqual(fallback, {
         nodeEnabled: true, clusterEnabled: true, resolveNotify: true,
-        nodeForSec: 30, clusterForSec: 30, keepFiringForSec: 60,
+        nodeForSec: 30, clusterForSec: 120, keepFiringForSec: 60,
         repeatIntervalSec: 0, intervalSec: 10, settleFactor: 3, silencedUntilMs: 0,
     });
 });
@@ -589,8 +634,7 @@ test('an extension enabled with debug-logging already on starts logging at once'
 });
 
 test('disable() without a prior enable() is harmless', () => {
-    // The shell calls disable() even when enable() bailed out, so nothing here
-    // may assume enable() ran.
+    // The shell calls disable() even when enable() bailed out.
     const {ext} = makeExtension();
     ext.disable();
     assert.equal(GLib.__pendingTimers(), 0);
@@ -628,9 +672,8 @@ test('clearing the alert state writes an empty key rather than stale JSON', asyn
     await flushBanners();
     assert.match(settings.get_string('alert-state'), /NodeNotReady/);
 
-    // A connection change drops the machine's state. If no observation lands
-    // before teardown, the persist must CLEAR the key rather than leave the
-    // previous cluster's alerts on disk for the next enable to load.
+    // A connection change drops the machine's state. With no observation before
+    // teardown, the persist must clear the key rather than leave stale alerts.
     Gio.__setSpawn(() => ({hang: true}));   // the re-poll never completes
     settings.set_string('kubectl-path', '/usr/bin/kubectl');
     await settle();
@@ -647,13 +690,9 @@ test('a corrupt persisted state is discarded rather than trusted', async () => {
 });
 
 test('a bound locale reaches the view, the pure alert machine and the banners', async () => {
-    // The point of the whole i18n wiring, end to end: enable() binds the
-    // extension itself as the gettext backend, and every string built afterwards
-    // comes out of the catalogue -- including the ones produced inside the
-    // gi-free modules, which is the part that could plausibly have been missed.
-    //
-    // The catalogue is Ukrainian, so it also proves nothing assumes English's
-    // two plural forms: 3 nodes selects the second of three.
+    // enable() binds the extension as the gettext backend, so every string built
+    // afterwards comes from the catalogue, including those from the gi-free
+    // modules. Ukrainian also proves nothing assumes English's two plural forms.
     const catalog = {
         'critical': 'критичний',
         'Mute alerts': 'Вимкнути сповіщення',
@@ -685,20 +724,17 @@ test('a bound locale reaches the view, the pure alert machine and the banners', 
     await settle();
 
     const indicator = Main.panel.statusArea['kube-monitor@cerobreath.dev'];
-    // indicator.js: the severity word, the plural form and the positional
-    // arguments all had to survive to get this sentence out.
+    // The severity word, the plural form and the positional arguments all survive.
     assert.equal(indicator.accessible_name,
         'Kube Node Monitor: критичний, 2 з 3 вузлів готові');
     assert.equal(indicator._muteItem.label.text, 'Вимкнути сповіщення');
 
-    // alerts.js is gi-free and cannot import gnome-shell's gettext at all; this
-    // is what proves the injected backend reaches it.
+    // alerts.js is gi-free: only the injected backend can translate this.
     await pollCycles(2);
     await flushBanners();
     assert.deepEqual(banners().map(b => b.title), ['n3 не відповідає']);
 
-    // disable() releases the backend, so a later English process is not left
-    // speaking Ukrainian through stale module state.
+    // disable() releases the backend, so stale module state cannot leak Ukrainian.
     ext.disable();
     const {ext: plain} = makeExtension();
     plain.enable();

@@ -122,7 +122,7 @@ test('detection reports kubectl found on PATH, and says where to fix it when not
     let {page} = await openPrefs();
     let row = rowByTitle(page, 'kubectl');
     assert.equal(row.subtitle, '/usr/bin/kubectl');
-    assert.equal(row.__suffixes[0].icon_name, 'emblem-ok-symbolic');
+    assert.equal(row.__suffixes[0].icon_name, 'object-select-symbolic');
 
     ({page} = await openPrefs({}, {programs: {}}));   // nothing on PATH
     row = rowByTitle(page, 'kubectl');
@@ -141,7 +141,7 @@ test('kubeconfig detection covers default, missing, explicit and multi-file case
     let {page} = await openPrefs();
     let row = rowByTitle(page, 'kubeconfig');
     assert.equal(row.subtitle, '/home/tester/.kube/config');
-    assert.equal(row.__suffixes[0].icon_name, 'emblem-ok-symbolic');
+    assert.equal(row.__suffixes[0].icon_name, 'object-select-symbolic');
 
     // Default location, absent -> flagged in words.
     ({page} = await openPrefs({}, {files: []}));

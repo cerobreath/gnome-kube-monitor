@@ -246,14 +246,14 @@ export default class KubeMonitorPreferences extends ExtensionPreferences {
         const detectPaths = () => {
             const o = opts();
             const kubectl = o.kubectlPath || GLib.find_program_in_path('kubectl') || '';
-            kubectlIcon.icon_name = kubectl ? 'emblem-ok-symbolic' : 'dialog-warning-symbolic';
+            kubectlIcon.icon_name = kubectl ? 'object-select-symbolic' : 'dialog-warning-symbolic';
             // Translators: shown when kubectl is not on PATH. "Advanced" is the
             // expander below, so use the same wording you gave its title.
             kubectlRow.subtitle = kubectl || _('Not found on PATH. Set it under Advanced.');
 
             const list = o.kubeconfig ? o.kubeconfig.split(':').filter(Boolean) : [];
             if (list.length > 1) {
-                kubeconfigIcon.icon_name = 'emblem-ok-symbolic';
+                kubeconfigIcon.icon_name = 'object-select-symbolic';
                 // Translators: how many kubeconfig files kubectl will merge into
                 // one configuration. %d is the count.
                 const files = ngettext('%d file', '%d files', list.length);
@@ -262,7 +262,7 @@ export default class KubeMonitorPreferences extends ExtensionPreferences {
                 const kc = list[0] || GLib.getenv('KUBECONFIG') ||
                     GLib.build_filenamev([GLib.get_home_dir(), '.kube', 'config']);
                 const exists = GLib.file_test(kc, GLib.FileTest.EXISTS);
-                kubeconfigIcon.icon_name = exists ? 'emblem-ok-symbolic' : 'dialog-warning-symbolic';
+                kubeconfigIcon.icon_name = exists ? 'object-select-symbolic' : 'dialog-warning-symbolic';
                 // Translators: %s is a file path that does not exist.
                 kubeconfigRow.subtitle = exists ? kc : format(_('%s (missing)'), kc);
             }

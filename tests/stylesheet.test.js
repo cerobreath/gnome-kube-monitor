@@ -1,10 +1,11 @@
-// Guards on stylesheet.css, which gnome-shell parses and nothing here executes,
-// so this reads the source. St's CSS subset has no logical properties while
-// StBoxLayout reverses its children under RTL, hence the :ltr / :rtl split.
+// Guards on assets nothing here executes: stylesheet.css, which gnome-shell
+// parses, and the icon names GTK resolves at runtime. St's CSS subset has no
+// logical properties while StBoxLayout reverses its children under RTL, hence
+// the :ltr / :rtl split.
 
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {readFileSync} from 'node:fs';
+import {readdirSync, readFileSync} from 'node:fs';
 import {fileURLToPath} from 'node:url';
 import {dirname, join} from 'node:path';
 
@@ -65,4 +66,35 @@ test('the meter track width still matches METER_WIDTH in indicator.js', () => {
         .exec(readFileSync(join(ROOT, 'lib', 'indicator.js'), 'utf8'));
     assert.ok(css && js, 'both declarations must be findable');
     assert.equal(css[1], js[1]);
+});
+
+// Adwaita and gtk4's built-in gresource are the only icon sources an extension
+// can count on. emblem-ok-symbolic looks plausible, ships only with Breeze, and
+// rendered as the missing-icon placeholder in the preferences window until this
+// caught it. Verify a new name against both before adding it here.
+const ICONS = new Set([
+    'content-loading-symbolic',
+    'dialog-warning-symbolic',
+    'list-add-symbolic',
+    'notifications-disabled-symbolic',
+    'object-select-symbolic',
+    'pan-down-symbolic',
+    'pan-end-symbolic',
+    'preferences-system-symbolic',
+    'user-trash-symbolic',
+    'view-refresh-symbolic',
+]);
+
+test('every symbolic icon name is one Adwaita or gtk4 actually carries', () => {
+    const files = ['prefs.js', 'extension.js',
+        ...readdirSync(join(ROOT, 'lib')).filter(f => f.endsWith('.js')).map(f => join('lib', f))];
+    let seen = 0;
+    for (const rel of files) {
+        for (const [, name] of readFileSync(join(ROOT, rel), 'utf8').matchAll(/'([a-z0-9-]+-symbolic)'/g)) {
+            seen++;
+            assert.ok(ICONS.has(name),
+                `${rel} uses ${name}, which is not in the verified icon list`);
+        }
+    }
+    assert.ok(seen >= 9, 'the icon scan found almost nothing, so the regex has drifted');
 });

@@ -109,7 +109,11 @@ Outside the menu it does two things. It posts a desktop notification when a node
 ## Settings
 
 <p align="center">
-  <img src="docs/images/prefs.png" alt="The preferences window, with kubectl and kubeconfig auto-detected" width="700">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/brand/prefs-dark.svg">
+    <source media="(prefers-color-scheme: light)" srcset="docs/images/brand/prefs-light.svg">
+    <img src="docs/images/brand/prefs-light.svg" alt="The preferences window: Monitoring and Notifications at the top of the scroll, Connection and Advanced further down, with kubectl and the kubeconfig auto-detected" width="880">
+  </picture>
 </p>
 
 Leave context, kubeconfig and kubectl empty and it finds your current context, `~/.kube/config` (or `$KUBECONFIG`), and `kubectl` on your `PATH`. A green check marks each one it resolves, and **Test** lists the contexts it can see. The rest is the refresh interval and the notification timings: how long something must stay broken before you hear about it, how long an alert is held after it clears so a flapping node only notifies once, how often to repeat, and how long to batch simultaneous alerts into one banner.

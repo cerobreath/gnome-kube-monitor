@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 168" width="880" height="168" fill="none" role="img" aria-label="Roadmap: GNOME Shell today, other Linux shells, Windows and macOS next">
+<title>Roadmap: GNOME Shell today, other Linux shells, Windows and macOS next</title>
+<style>.now{animation:rp 2.8s ease-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes rp{0%{transform:scale(1);opacity:.7}70%,100%{transform:scale(1.9);opacity:0}}
+.pk{animation:pf 3.4s linear infinite}
+@keyframes pf{0%,6%{opacity:0}16%,84%{opacity:1}94%,100%{opacity:0}}@media (prefers-reduced-motion:reduce){*{animation:none!important}}</style>
+<line x1="80" y1="62" x2="800" y2="62" stroke="rgba(43,12,28,0.22)" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="1 7"/>
+  <line x1="80" y1="62" x2="320" y2="62" stroke="#A82740" stroke-width="2.5" stroke-linecap="round" opacity="0.55"/>
+  <circle r="4" fill="#A82740" class="pk"><animateMotion dur="3.4s" repeatCount="indefinite" path="M80,62 H320"/></circle>
+  <g>
+    <circle cx="80" cy="62" r="13" fill="#A82740" stroke="#A82740" stroke-width="2"/>
+    <circle class="now" cx="80" cy="62" r="13" fill="none" stroke="#A82740" stroke-width="2"/><path d="M75,62 l3.6,3.8 L85.4,57.4" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    <text x="80" y="102" text-anchor="middle" font-family="system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="14.5" font-weight="700" fill="#2B0C1C">GNOME Shell</text>
+    <text x="80" y="121" text-anchor="middle" font-family="ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace" font-size="11.5" fill="rgba(43,12,28,0.62)">45 → 50</text>
+    <text x="80" y="36" text-anchor="middle" font-family="ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace" font-size="10.5" letter-spacing="0.8" fill="#A82740">SHIPPING</text>
+  </g>
+  <g>
+    <circle cx="320" cy="62" r="10" fill="#FFFFFF" stroke="rgba(168,39,64,0.18)" stroke-width="2"/>
+    
+    <text x="320" y="102" text-anchor="middle" font-family="system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="14.5" font-weight="600" fill="rgba(43,12,28,0.68)">More Linux shells</text>
+    <text x="320" y="121" text-anchor="middle" font-family="ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace" font-size="11.5" fill="rgba(43,12,28,0.62)">KDE Plasma next</text>
+    <text x="320" y="36" text-anchor="middle" font-family="ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace" font-size="10.5" letter-spacing="0.8" fill="rgba(43,12,28,0.62)">PLANNED</text>
+  </g>
+  <g>
+    <circle cx="560" cy="62" r="10" fill="#FFFFFF" stroke="rgba(168,39,64,0.18)" stroke-width="2"/>
+    
+    <text x="560" y="102" text-anchor="middle" font-family="system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="14.5" font-weight="600" fill="rgba(43,12,28,0.68)">Windows</text>
+    <text x="560" y="121" text-anchor="middle" font-family="ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace" font-size="11.5" fill="rgba(43,12,28,0.62)">tray app</text>
+    <text x="560" y="36" text-anchor="middle" font-family="ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace" font-size="10.5" letter-spacing="0.8" fill="rgba(43,12,28,0.62)">PLANNED</text>
+  </g>
+  <g>
+    <circle cx="800" cy="62" r="10" fill="#FFFFFF" stroke="rgba(168,39,64,0.18)" stroke-width="2"/>
+    
+    <text x="800" y="102" text-anchor="middle" font-family="system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="14.5" font-weight="600" fill="rgba(43,12,28,0.68)">macOS</text>
+    <text x="800" y="121" text-anchor="middle" font-family="ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace" font-size="11.5" fill="rgba(43,12,28,0.62)">menu bar</text>
+    <text x="800" y="36" text-anchor="middle" font-family="ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace" font-size="10.5" letter-spacing="0.8" fill="rgba(43,12,28,0.62)">PLANNED</text>
+  </g>
+</svg>

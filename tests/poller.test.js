@@ -77,6 +77,7 @@ test('start polls immediately, then self-schedules at the base interval', async 
     h.poller.start();
     await settle();
     assert.equal(h.states.length, 1, 'one poll on start');
+    assert.equal(h.states[0].failures, 0);
     assert.equal(h.observations.length, 1);
     assert.equal(h.observations[0].offline, false, 'a success is by definition not offline');
 
@@ -151,6 +152,7 @@ test('a failing poll reports a classified error and an unreachable observation',
     assert.equal(h.states.length, 1);
     assert.equal(h.states[0].level, 'error');
     assert.equal(h.states[0].error.title, "Can't reach the cluster");
+    assert.equal(h.states[0].failures, 1, 'the view needs the count to soften a first blip');
     assert.equal(h.observations.length, 1);
     assert.equal(h.observations[0].reachable, false, 'the alert machine must see the outage');
     assert.equal(h.observations[0].nodes.length, 0);

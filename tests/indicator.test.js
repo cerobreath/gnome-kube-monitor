@@ -173,6 +173,86 @@ test('an error with no detail renders the headline alone', () => {
     assert.match(texts, /didn't answer in time/);
 });
 
+/** An error state the poller would deliver. @param {object} [over] */
+function errorState(over = {}) {
+    return {
+        tier: 'health', context: 'ctx', level: NodeLevel.ERROR, nodes: [], readyCount: 0,
+        total: 0, pods: null, monotonic: 1_000_000,
+        error: {key: 'timeout', title: "The cluster didn't answer in time", detail: ''},
+        failures: 1, ...over,
+    };
+}
+
+test('the first transient failure keeps the node list, under a dim note', () => {
+    const {indicator} = makeIndicator();
+    indicator.update(detailState({nodes: [node()], monotonic: GLib.get_monotonic_time()}));
+    assert.equal(indicator._nodeRows.size, 1);
+
+    GLib.__setClock(45_000);
+    indicator.update(errorState({monotonic: GLib.get_monotonic_time()}));
+
+    assert.equal(indicator._nodeRows.size, 1, 'the last good rows survive one blip');
+    assert.equal(indicator._errorStrip.visible, true);
+    assert.match(indicator._errorStripLabel.text, /didn't answer in time/);
+    assert.ok(classesUnder(indicator).includes('kube-dot-error'),
+        'the panel dot still tells the truth at once');
+    assert.equal(indicator._timeLabel.text, '45s',
+        'the header shows the age of the data on show, not of the failure');
+});
+
+test('a second consecutive failure replaces the list with the full error view', () => {
+    const {indicator} = makeIndicator();
+    indicator.update(detailState());
+    // No monotonic on purpose: a stampless error must read "updating…" too.
+    const {monotonic: _drop, ...second} = errorState({failures: 2});
+    indicator.update(second);
+
+    assert.equal(indicator._nodeRows.size, 0);
+    assert.equal(indicator._errorStrip.visible, false);
+    assert.match(menuOf(indicator).__itemTexts().join(' '), /didn't answer in time/);
+    assert.equal(indicator._timeLabel.text, 'updating…');
+});
+
+test('a configuration error is never softened, even on the first failure', () => {
+    const {indicator} = makeIndicator();
+    indicator.update(detailState());
+    indicator.update(errorState({error: {key: 'noConfig', title: 'No kubeconfig found', detail: ''}}));
+
+    assert.equal(indicator._nodeRows.size, 0, 'a missing kubeconfig will not heal by itself');
+    assert.equal(indicator._errorStrip.visible, false);
+});
+
+test('a success clears the transient-failure note', () => {
+    const {indicator} = makeIndicator();
+    indicator.update(detailState());
+    indicator.update(errorState());
+    assert.equal(indicator._errorStrip.visible, true);
+
+    indicator.update(detailState());
+    assert.equal(indicator._errorStrip.visible, false);
+});
+
+test('a transient failure with nothing to show stays calm rather than red', () => {
+    // Fresh indicator right after unlock: no rows yet, first poll races the
+    // network. The menu keeps its quiet loading face, with the note. The
+    // missing failures field exercises the ?? 0 default.
+    const {indicator} = makeIndicator();
+    const {failures: _drop, ...noCount} = errorState();
+    indicator.update(noCount);
+
+    assert.equal(indicator._errorStrip.visible, true);
+    assert.equal(indicator._timeLabel.text, 'updating…', 'no stamp was taken from the failure');
+    assert.equal(indicator._nodesSection.__items.length, 0, 'no full error item was built');
+});
+
+test('switching context hides the transient-failure note', () => {
+    const {indicator} = makeIndicator();
+    indicator.update(detailState());
+    indicator.update(errorState());
+    indicator._showSwitching('other');
+    assert.equal(indicator._errorStrip.visible, false);
+});
+
 test('the context title ellipsizes instead of widening the header', () => {
     const {indicator} = makeIndicator();
     indicator.update(detailState({context: 'gke_some-project_europe-west1_prod-cluster'}));

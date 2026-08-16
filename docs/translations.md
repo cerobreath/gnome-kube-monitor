@@ -54,5 +54,10 @@ side is declared without the other.
 - **The pixels of an RTL layout.** GNOME 50's mutter dropped `--x11`, so no window manager
   is available under Xvfb to place a mirrored window on screen, and the shell refuses
   screenshots outside unsafe mode. That gap is toolkit behaviour rather than ours.
-- **Native review.** No native speaker has reviewed the catalogues. Corrections are welcome
-  and the `Last-Translator` field is yours to claim.
+- **Native review.** No native speaker has reviewed the catalogues. Every one except `ru`
+  and `uk`, which the maintainer reads, carries a header comment saying it is AI-generated.
+  A pass per language has since checked each against its GNOME team's conventions, which
+  caught calques, register slips and two error headlines that had drifted from the msgid
+  (an unverifiable certificate is not an invalid one; an expired login is a fact, not an
+  instruction). That is review, not sign-off. Corrections are welcome and the
+  `Last-Translator` field is yours to claim.

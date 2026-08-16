@@ -3,11 +3,14 @@
 # This file is distributed under the same license as the Kube Node Monitor package.
 # Translators are credited in the Last-Translator field of each po/*.po file.
 #
+# AI-generated translation, reviewed against GNOME Korean conventions but not
+# by a native speaker. Corrections are welcome: claim the Last-Translator field.
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: Kube Node Monitor 0.1.0\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-16 18:38+0300\n"
+"Report-Msgid-Bugs-To: https://github.com/cerobreath/gnome-kube-monitor\n"
+"POT-Creation-Date: 2026-08-16 18:41+0300\n"
 "PO-Revision-Date: 2026-07-31 01:05+0300\n"
 "Last-Translator: Kube Node Monitor contributors\n"
 "Language-Team: Korean\n"
@@ -542,12 +545,12 @@ msgstr "클러스터가 로그인 정보를 거부했습니다"
 #. Translators: an expired token that a credential helper must refresh.
 #: lib/model.js:478
 msgid "The login has expired"
-msgstr "로그인을 갱신해야 합니다"
+msgstr "로그인이 만료되었습니다"
 
 #. Translators: authenticated, but not permitted to list nodes (HTTP 403).
 #: lib/model.js:480
 msgid "This login can't read the cluster"
-msgstr "이 로그인으로는 클러스터를 읽을 수 없습니다"
+msgstr "이 로그인으로는 클러스터를 조회할 수 없습니다"
 
 #. Translators: the kubectl binary itself could not be found or executed.
 #: lib/model.js:482
@@ -562,7 +565,7 @@ msgstr "클러스터에 연결할 수 없습니다"
 #. Translators: the machine itself is offline, so the failure is local.
 #: lib/model.js:486
 msgid "No internet connection"
-msgstr "인터넷 연결 없음"
+msgstr "인터넷 연결이 없습니다"
 
 #. Translators: no kubeconfig file exists to read a cluster from.
 #: lib/model.js:488

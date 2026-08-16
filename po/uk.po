@@ -6,8 +6,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Kube Node Monitor 0.1.0\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-16 18:38+0300\n"
+"Report-Msgid-Bugs-To: https://github.com/cerobreath/gnome-kube-monitor\n"
+"POT-Creation-Date: 2026-08-16 18:41+0300\n"
 "PO-Revision-Date: 2026-07-31 01:05+0300\n"
 "Last-Translator: Kube Node Monitor contributors\n"
 "Language-Team: Ukrainian\n"
@@ -46,7 +46,7 @@ msgstr "Сповіщення"
 
 #: prefs.js:42
 msgid "Choose which events notify you, and how long to wait first."
-msgstr "Виберіть, про які події сповіщати й скільки чекати перед цим."
+msgstr "Виберіть, про які події сповіщати та скільки чекати перед сповіщенням."
 
 #: prefs.js:47
 msgid "Node problems"
@@ -286,9 +286,9 @@ msgstr "%s відновлено"
 #, javascript-format
 msgid "%d alert firing"
 msgid_plural "%d alerts firing"
-msgstr[0] "Спрацювало %d сповіщення"
-msgstr[1] "Спрацювало %d сповіщення"
-msgstr[2] "Спрацювало %d сповіщень"
+msgstr[0] "%d нова проблема"
+msgstr[1] "%d нові проблеми"
+msgstr[2] "%d нових проблем"
 
 #. Translators: banner title when several alerts clear at the same time.
 #. %d is how many; the body lists the node names.
@@ -296,9 +296,9 @@ msgstr[2] "Спрацювало %d сповіщень"
 #, javascript-format
 msgid "%d alert recovered"
 msgid_plural "%d alerts recovered"
-msgstr[0] "Відновлено %d сповіщення"
-msgstr[1] "Відновлено %d сповіщення"
-msgstr[2] "Відновлено %d сповіщень"
+msgstr[0] "%d проблему вирішено"
+msgstr[1] "%d проблеми вирішено"
+msgstr[2] "%d проблем вирішено"
 
 #. Translators: spoken cluster state. Every node is Ready.
 #: lib/indicator.js:30
@@ -422,9 +422,9 @@ msgstr "%s, поточний"
 #, javascript-format
 msgid "%1$s, %2$d of %3$d node ready"
 msgid_plural "%1$s, %2$d of %3$d nodes ready"
-msgstr[0] "%1$s, %2$d з %3$d вузла готовий"
-msgstr[1] "%1$s, %2$d з %3$d вузлів готові"
-msgstr[2] "%1$s, %2$d з %3$d вузлів готові"
+msgstr[0] "%1$s, готово %2$d з %3$d вузла"
+msgstr[1] "%1$s, готово %2$d з %3$d вузлів"
+msgstr[2] "%1$s, готово %2$d з %3$d вузлів"
 
 #. Translators: shown in place of the node list when the cluster
 #. reports no nodes at all.
@@ -589,7 +589,7 @@ msgstr "Немає зв'язку з кластером"
 #. Translators: the machine itself is offline, so the failure is local.
 #: lib/model.js:486
 msgid "No internet connection"
-msgstr "Немає з’єднання з інтернетом"
+msgstr "Немає з'єднання з інтернетом"
 
 #. Translators: no kubeconfig file exists to read a cluster from.
 #: lib/model.js:488

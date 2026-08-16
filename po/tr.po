@@ -3,11 +3,14 @@
 # This file is distributed under the same license as the Kube Node Monitor package.
 # Translators are credited in the Last-Translator field of each po/*.po file.
 #
+# AI-generated translation, reviewed against GNOME Turkish conventions but not
+# by a native speaker. Corrections are welcome: claim the Last-Translator field.
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: Kube Node Monitor 0.1.0\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-16 18:38+0300\n"
+"Report-Msgid-Bugs-To: https://github.com/cerobreath/gnome-kube-monitor\n"
+"POT-Creation-Date: 2026-08-16 18:41+0300\n"
 "PO-Revision-Date: 2026-07-31 01:05+0300\n"
 "Last-Translator: Kube Node Monitor contributors\n"
 "Language-Team: Turkish\n"
@@ -37,7 +40,7 @@ msgstr "Yenileme aralığı"
 
 #: prefs.js:34
 msgid "Seconds between kubectl polls"
-msgstr "kubectl sorguları arasındaki saniye"
+msgstr "kubectl sorguları arasında geçecek saniye"
 
 #: prefs.js:41
 msgid "Notifications"
@@ -58,7 +61,7 @@ msgstr "Bir düğüm Ready durumundan çıktığında bildir"
 
 #: prefs.js:55
 msgid "Cluster unreachable"
-msgstr "Kümeye ulaşılamaması"
+msgstr "Ulaşılamayan küme"
 
 #: prefs.js:56
 msgid "Notify when kubectl cannot reach the cluster"
@@ -103,24 +106,24 @@ msgid ""
 "once"
 msgstr ""
 "Nedeni ortadan kalktıktan sonra uyarının etkin kalacağı saniye; böylece "
-"dalgalanan düğüm yalnızca bir kez bildirilir"
+"durumu sık değişen bir düğüm yalnızca bir kez bildirilir"
 
 #: prefs.js:98
 msgid "Repeat reminder"
-msgstr "Yineleme anımsatması"
+msgstr "Yeniden anımsatma"
 
 #: prefs.js:99
 msgid ""
 "Seconds before notifying again about a still-active alert, or zero to notify "
 "once"
 msgstr ""
-"Hâlâ etkin olan bir uyarıyı yeniden bildirmeden önceki saniye; bir kez "
-"bildirmek için sıfır"
+"Hâlâ etkin olan bir uyarıyı yeniden bildirmeden önce beklenecek saniye; "
+"yalnızca bir kez bildirmek için sıfır"
 
 #. Translators: alerts firing within this window become one notification.
 #: prefs.js:107
 msgid "Batch window"
-msgstr "Toplama penceresi"
+msgstr "Gruplama penceresi"
 
 #: prefs.js:108
 msgid "Seconds to wait so alerts firing together arrive as one notification"
@@ -262,7 +265,7 @@ msgstr "küme"
 #. Translators: notification title when the cluster answers again.
 #: lib/alerts.js:259
 msgid "Cluster reachable again"
-msgstr "Kümeye yeniden ulaşılıyor"
+msgstr "Kümeye yeniden ulaşılabiliyor"
 
 #. Translators: notification title when a node stops being Ready.
 #. %s is the node name as the cluster spells it; do not translate it.
@@ -557,12 +560,12 @@ msgstr "Küme oturum açma bilgilerini reddetti"
 #. Translators: an expired token that a credential helper must refresh.
 #: lib/model.js:478
 msgid "The login has expired"
-msgstr "Yeniden oturum açmanız gerekiyor"
+msgstr "Oturumun süresi doldu"
 
 #. Translators: authenticated, but not permitted to list nodes (HTTP 403).
 #: lib/model.js:480
 msgid "This login can't read the cluster"
-msgstr "Bu kimlik kümeyi okuyamıyor"
+msgstr "Bu oturumun kümeyi okuma yetkisi yok"
 
 #. Translators: the kubectl binary itself could not be found or executed.
 #: lib/model.js:482

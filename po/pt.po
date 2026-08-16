@@ -3,11 +3,15 @@
 # This file is distributed under the same license as the Kube Node Monitor package.
 # Translators are credited in the Last-Translator field of each po/*.po file.
 #
+# AI-generated translation, reviewed against GNOME European Portuguese
+# conventions but not by a native speaker. Corrections are welcome: claim the
+# Last-Translator field.
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: Kube Node Monitor 0.1.0\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-16 18:38+0300\n"
+"Report-Msgid-Bugs-To: https://github.com/cerobreath/gnome-kube-monitor\n"
+"POT-Creation-Date: 2026-08-16 18:41+0300\n"
 "PO-Revision-Date: 2026-07-31 01:05+0300\n"
 "Last-Translator: Kube Node Monitor contributors\n"
 "Language-Team: Portuguese\n"
@@ -62,7 +66,7 @@ msgstr "Cluster inacessível"
 
 #: prefs.js:56
 msgid "Notify when kubectl cannot reach the cluster"
-msgstr "Notificar quando o kubectl não consegue alcançar o cluster"
+msgstr "Notificar quando o kubectl não consegue contactar o cluster"
 
 #: prefs.js:62
 msgid "Recovery"
@@ -70,7 +74,7 @@ msgstr "Recuperação"
 
 #: prefs.js:63
 msgid "Also notify when a node or the cluster comes back"
-msgstr "Notificar também quando um nó ou o cluster volta"
+msgstr "Notificar também quando um nó ou o cluster recupera"
 
 #. Translators: how long a node must stay down before it notifies.
 #: prefs.js:70
@@ -176,7 +180,8 @@ msgstr "Avançado"
 
 #: prefs.js:162
 msgid "Extra kubeconfig files and a custom kubectl path"
-msgstr "Ficheiros kubeconfig adicionais e um caminho próprio para o kubectl"
+msgstr ""
+"Ficheiros kubeconfig adicionais e um caminho personalizado para o kubectl"
 
 #: prefs.js:166
 msgid "kubectl path"
@@ -242,7 +247,7 @@ msgstr "Contexto atual (automático)"
 #: prefs.js:298
 #, javascript-format
 msgid "Following current-context (%s)"
-msgstr "A seguir current-context (%s)"
+msgstr "A seguir o current-context (%s)"
 
 #. Translators: toast after a successful connection test.
 #. %d is how many contexts the kubeconfig defines.
@@ -547,7 +552,7 @@ msgstr "O cluster não respondeu a tempo"
 #. Translators: TLS/x509 certificate verification failed.
 #: lib/model.js:474
 msgid "The cluster's certificate can't be verified"
-msgstr "O certificado do cluster não é válido"
+msgstr "Não é possível verificar o certificado do cluster"
 
 #. Translators: the API server rejected the credentials (HTTP 401).
 #: lib/model.js:476
@@ -557,7 +562,7 @@ msgstr "O cluster recusou as credenciais"
 #. Translators: an expired token that a credential helper must refresh.
 #: lib/model.js:478
 msgid "The login has expired"
-msgstr "É necessário iniciar sessão novamente"
+msgstr "A sessão expirou"
 
 #. Translators: authenticated, but not permitted to list nodes (HTTP 403).
 #: lib/model.js:480
@@ -572,7 +577,7 @@ msgstr "kubectl não foi encontrado"
 #. Translators: the network could not reach the API server at all.
 #: lib/model.js:484
 msgid "Can't reach the cluster"
-msgstr "Não é possível alcançar o cluster"
+msgstr "Não é possível contactar o cluster"
 
 #. Translators: the machine itself is offline, so the failure is local.
 #: lib/model.js:486

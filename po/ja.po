@@ -3,11 +3,14 @@
 # This file is distributed under the same license as the Kube Node Monitor package.
 # Translators are credited in the Last-Translator field of each po/*.po file.
 #
+# AI-generated translation, reviewed against GNOME Japanese conventions but not
+# by a native speaker. Corrections are welcome: claim the Last-Translator field.
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: Kube Node Monitor 0.1.0\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-16 18:38+0300\n"
+"Report-Msgid-Bugs-To: https://github.com/cerobreath/gnome-kube-monitor\n"
+"POT-Creation-Date: 2026-08-16 18:41+0300\n"
 "PO-Revision-Date: 2026-07-31 01:05+0300\n"
 "Last-Translator: Kube Node Monitor contributors\n"
 "Language-Team: Japanese\n"
@@ -80,7 +83,7 @@ msgstr "ノードの待機時間"
 #. Translators: "NotReady" is a Kubernetes node state, keep it as it is.
 #: prefs.js:72
 msgid "Seconds a node must stay NotReady before notifying"
-msgstr "通知するまでにノードが NotReady のままでいる必要のある秒数"
+msgstr "ノードが NotReady になってから通知するまでの秒数"
 
 #. Translators: how long the cluster must stay unreachable before it notifies.
 #: prefs.js:80
@@ -89,7 +92,7 @@ msgstr "クラスターの待機時間"
 
 #: prefs.js:81
 msgid "Seconds the cluster must stay unreachable before notifying"
-msgstr "通知するまでにクラスターが接続不能のままでいる必要のある秒数"
+msgstr "クラスターに接続できなくなってから通知するまでの秒数"
 
 #. Translators: an alert stays active this long after its cause clears.
 #: prefs.js:89
@@ -172,7 +175,7 @@ msgstr "詳細設定"
 
 #: prefs.js:162
 msgid "Extra kubeconfig files and a custom kubectl path"
-msgstr "追加の kubeconfig ファイルと、kubectl の任意のパス"
+msgstr "追加の kubeconfig ファイルと、kubectl パスの指定"
 
 #: prefs.js:166
 msgid "kubectl path"
@@ -223,7 +226,7 @@ msgstr[0] "%d 個のファイル"
 #: prefs.js:267
 #, javascript-format
 msgid "%s (missing)"
-msgstr "%s （見つかりません）"
+msgstr "%s（見つかりません）"
 
 #. Translators: first entry of the context picker. It follows whichever
 #. context kubectl has selected instead of pinning one.
@@ -263,7 +266,7 @@ msgstr "クラスターに再接続しました"
 #: lib/alerts.js:375
 #, javascript-format
 msgid "%s is down"
-msgstr "%s が停止しました"
+msgstr "%s がダウンしました"
 
 #. Translators: notification title when a node becomes Ready again.
 #. %s is the node's name.
@@ -301,7 +304,7 @@ msgstr "問題あり"
 #. Translators: spoken cluster state. At least one node is down.
 #: lib/indicator.js:34
 msgid "critical"
-msgstr "重大"
+msgstr "危険"
 
 #. Translators: spoken cluster state. No reading yet, or kubectl failed.
 #: lib/indicator.js:36
@@ -397,7 +400,7 @@ msgstr "接続を追加…"
 #: lib/indicator.js:386
 #, javascript-format
 msgid "%s, current"
-msgstr "%s、現在"
+msgstr "%s、使用中"
 
 #. Translators: spoken summary of the whole cluster. %1$s is a state word
 #. ("healthy", "degraded", …), %2$d is how many nodes are Ready and %3$d
@@ -406,7 +409,7 @@ msgstr "%s、現在"
 #, javascript-format
 msgid "%1$s, %2$d of %3$d node ready"
 msgid_plural "%1$s, %2$d of %3$d nodes ready"
-msgstr[0] "%1$s、%3$d 個中 %2$d 個のノードが準備完了"
+msgstr[0] "%1$s、%3$d ノード中 %2$d ノードが Ready"
 
 #. Translators: shown in place of the node list when the cluster
 #. reports no nodes at all.
@@ -420,7 +423,7 @@ msgstr "ノードがありません"
 #, javascript-format
 msgid "… and %d more node"
 msgid_plural "… and %d more nodes"
-msgstr[0] "… 他 %d 個のノード"
+msgstr[0] "… 他 %d ノード"
 
 #. Translators: spoken uptime on a node row: how long it has been
 #. Ready. %s is a short duration such as "3d".
@@ -541,7 +544,7 @@ msgstr "クラスターがログイン情報を拒否しました"
 #. Translators: an expired token that a credential helper must refresh.
 #: lib/model.js:478
 msgid "The login has expired"
-msgstr "ログインの更新が必要です"
+msgstr "ログインの有効期限が切れました"
 
 #. Translators: authenticated, but not permitted to list nodes (HTTP 403).
 #: lib/model.js:480

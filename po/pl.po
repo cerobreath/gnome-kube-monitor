@@ -3,11 +3,14 @@
 # This file is distributed under the same license as the Kube Node Monitor package.
 # Translators are credited in the Last-Translator field of each po/*.po file.
 #
+# AI-generated translation, reviewed against GNOME Polish conventions but not
+# by a native speaker. Corrections are welcome: claim the Last-Translator field.
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: Kube Node Monitor 0.1.0\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-16 18:38+0300\n"
+"Report-Msgid-Bugs-To: https://github.com/cerobreath/gnome-kube-monitor\n"
+"POT-Creation-Date: 2026-08-16 18:41+0300\n"
 "PO-Revision-Date: 2026-07-31 01:05+0300\n"
 "Last-Translator: Kube Node Monitor contributors\n"
 "Language-Team: Polish\n"
@@ -38,7 +41,7 @@ msgstr "Częstotliwość odświeżania"
 
 #: prefs.js:34
 msgid "Seconds between kubectl polls"
-msgstr "Sekundy między odpytaniami kubectl"
+msgstr "Czas w sekundach między odpytaniami kubectl"
 
 #: prefs.js:41
 msgid "Notifications"
@@ -47,8 +50,8 @@ msgstr "Powiadomienia"
 #: prefs.js:42
 msgid "Choose which events notify you, and how long to wait first."
 msgstr ""
-"Zdarzenia, o których mają być wysyłane powiadomienia, oraz czas oczekiwania "
-"przed nimi."
+"Zdarzenia, o których mają informować powiadomienia, oraz czas oczekiwania "
+"przed ich wysłaniem."
 
 #: prefs.js:47
 msgid "Node problems"
@@ -57,7 +60,7 @@ msgstr "Problemy z węzłami"
 #. Translators: "Ready" is a Kubernetes node state, keep it as it is.
 #: prefs.js:49
 msgid "Notify when a node stops being Ready"
-msgstr "Powiadamiaj, gdy węzeł przestaje być w stanie Ready"
+msgstr "Powiadamianie, gdy węzeł przestaje być w stanie Ready"
 
 #: prefs.js:55
 msgid "Cluster unreachable"
@@ -65,15 +68,15 @@ msgstr "Klaster niedostępny"
 
 #: prefs.js:56
 msgid "Notify when kubectl cannot reach the cluster"
-msgstr "Powiadamiaj, gdy kubectl nie może połączyć się z klastrem"
+msgstr "Powiadamianie, gdy kubectl nie może połączyć się z klastrem"
 
 #: prefs.js:62
 msgid "Recovery"
-msgstr "Przywrócenie"
+msgstr "Powrót do działania"
 
 #: prefs.js:63
 msgid "Also notify when a node or the cluster comes back"
-msgstr "Powiadamiaj też, gdy węzeł lub klaster wraca do działania"
+msgstr "Powiadamianie także o powrocie węzła lub klastra do działania"
 
 #. Translators: how long a node must stay down before it notifies.
 #: prefs.js:70
@@ -83,7 +86,9 @@ msgstr "Opóźnienie dla węzła"
 #. Translators: "NotReady" is a Kubernetes node state, keep it as it is.
 #: prefs.js:72
 msgid "Seconds a node must stay NotReady before notifying"
-msgstr "Ile sekund węzeł musi pozostać w stanie NotReady przed powiadomieniem"
+msgstr ""
+"Ile sekund węzeł musi pozostawać w stanie NotReady, zanim pojawi się "
+"powiadomienie"
 
 #. Translators: how long the cluster must stay unreachable before it notifies.
 #: prefs.js:80
@@ -92,7 +97,8 @@ msgstr "Opóźnienie dla klastra"
 
 #: prefs.js:81
 msgid "Seconds the cluster must stay unreachable before notifying"
-msgstr "Ile sekund klaster musi pozostać niedostępny przed powiadomieniem"
+msgstr ""
+"Ile sekund klaster musi być niedostępny, zanim pojawi się powiadomienie"
 
 #. Translators: an alert stays active this long after its cause clears.
 #: prefs.js:89
@@ -105,7 +111,7 @@ msgid ""
 "Seconds an alert stays active after it clears, so a flapping node notifies "
 "once"
 msgstr ""
-"Ile sekund alert pozostaje aktywny po ustąpieniu przyczyny, aby migoczący "
+"Ile sekund alert pozostaje aktywny po ustąpieniu przyczyny, aby niestabilny "
 "węzeł wywołał tylko jedno powiadomienie"
 
 #: prefs.js:98
@@ -123,13 +129,13 @@ msgstr ""
 #. Translators: alerts firing within this window become one notification.
 #: prefs.js:107
 msgid "Batch window"
-msgstr "Czas zbierania"
+msgstr "Czas grupowania"
 
 #: prefs.js:108
 msgid "Seconds to wait so alerts firing together arrive as one notification"
 msgstr ""
-"Ile sekund czekać, aby jednocześnie zgłoszone alerty trafiły w jednym "
-"powiadomieniu"
+"Ile sekund czekać, aby alerty zgłoszone jednocześnie trafiły do jednego "
+"powiadomienia"
 
 #: prefs.js:115
 msgid "Connection"
@@ -147,7 +153,7 @@ msgstr "Kontekst"
 
 #: prefs.js:126 prefs.js:299
 msgid "Which context to monitor"
-msgstr "Który kontekst monitorować"
+msgstr "Monitorowany kontekst"
 
 #. Translators: tooltip on the status icon beside the kubectl row.
 #: prefs.js:137
@@ -171,7 +177,7 @@ msgstr "Sprawdzenie połączenia"
 
 #: prefs.js:153
 msgid "Run kubectl and list contexts"
-msgstr "Uruchom kubectl i wypisz konteksty"
+msgstr "Uruchomienie kubectl i wypisanie kontekstów"
 
 #: prefs.js:161
 msgid "Advanced"
@@ -191,7 +197,7 @@ msgstr "Zapis diagnostyki"
 
 #: prefs.js:173
 msgid "Record poll and alert decisions in the system log"
-msgstr "Zapisuj decyzje o odpytaniach i alertach w dzienniku systemowym"
+msgstr "Zapisywanie decyzji o odpytaniach i alertach w dzienniku systemowym"
 
 #: prefs.js:184
 msgid "Add kubeconfig file…"
@@ -203,7 +209,7 @@ msgstr "Dodaj plik kubeconfig"
 
 #: prefs.js:193
 msgid "Select a kubeconfig file"
-msgstr "Wybierz plik kubeconfig"
+msgstr "Wybór pliku kubeconfig"
 
 #. Translators: tooltip on the trash button beside a kubeconfig
 #. file. %s is the file's name.
@@ -216,7 +222,7 @@ msgstr "Usuń %s"
 #. expander below, so use the same wording you gave its title.
 #: prefs.js:252
 msgid "Not found on PATH. Set it under Advanced."
-msgstr "Nie znaleziono w PATH. Podaj ścieżkę w sekcji Zaawansowane."
+msgstr "Nie znaleziono w PATH. Ścieżkę można podać w sekcji Zaawansowane."
 
 #. Translators: how many kubeconfig files kubectl will merge into
 #. one configuration. %d is the count.
@@ -246,7 +252,7 @@ msgstr "Bieżący kontekst (auto)"
 #: prefs.js:298
 #, javascript-format
 msgid "Following current-context (%s)"
-msgstr "Podąża za current-context (%s)"
+msgstr "Zgodnie z current-context (%s)"
 
 #. Translators: toast after a successful connection test.
 #. %d is how many contexts the kubeconfig defines.
@@ -281,7 +287,7 @@ msgstr "%s nie działa"
 #: lib/alerts.js:379
 #, javascript-format
 msgid "%s recovered"
-msgstr "%s przywrócony"
+msgstr "%s znów działa"
 
 #. Translators: banner title when several alerts fire at the same time.
 #. %d is how many; the body lists the node names.
@@ -299,9 +305,9 @@ msgstr[2] "%d aktywnych alertów"
 #, javascript-format
 msgid "%d alert recovered"
 msgid_plural "%d alerts recovered"
-msgstr[0] "%d alert przywrócony"
-msgstr[1] "%d alerty przywrócone"
-msgstr[2] "%d alertów przywróconych"
+msgstr[0] "%d alert ustąpił"
+msgstr[1] "%d alerty ustąpiły"
+msgstr[2] "%d alertów ustąpiło"
 
 #. Translators: spoken cluster state. Every node is Ready.
 #: lib/indicator.js:30
@@ -385,12 +391,12 @@ msgstr "Wyciszone · pozostało %s"
 #. Translators: spoken state of the cluster switcher when its list is open.
 #: lib/indicator.js:324
 msgid "expanded"
-msgstr "rozwinięte"
+msgstr "rozwinięty"
 
 #. Translators: spoken state of the cluster switcher when its list is closed.
 #: lib/indicator.js:326
 msgid "collapsed"
-msgstr "zwinięte"
+msgstr "zwinięty"
 
 #. Translators: spoken name of the menu header button. %1$s is the current
 #. context name, %2$s is "expanded" or "collapsed".
@@ -425,9 +431,9 @@ msgstr "%s, bieżący"
 #, javascript-format
 msgid "%1$s, %2$d of %3$d node ready"
 msgid_plural "%1$s, %2$d of %3$d nodes ready"
-msgstr[0] "%1$s, %2$d z %3$d węzła gotowy"
-msgstr[1] "%1$s, %2$d z %3$d węzłów gotowe"
-msgstr[2] "%1$s, %2$d z %3$d węzłów gotowych"
+msgstr[0] "%1$s, gotowych węzłów: %2$d z %3$d"
+msgstr[1] "%1$s, gotowych węzłów: %2$d z %3$d"
+msgstr[2] "%1$s, gotowych węzłów: %2$d z %3$d"
 
 #. Translators: shown in place of the node list when the cluster
 #. reports no nodes at all.
@@ -441,9 +447,9 @@ msgstr "Brak węzłów"
 #, javascript-format
 msgid "… and %d more node"
 msgid_plural "… and %d more nodes"
-msgstr[0] "…i jeszcze %d węzeł"
-msgstr[1] "…i jeszcze %d węzły"
-msgstr[2] "…i jeszcze %d węzłów"
+msgstr[0] "… i jeszcze %d węzeł"
+msgstr[1] "… i jeszcze %d węzły"
+msgstr[2] "… i jeszcze %d węzłów"
 
 #. Translators: spoken uptime on a node row: how long it has been
 #. Ready. %s is a short duration such as "3d".
@@ -562,7 +568,7 @@ msgstr "Klaster nie odpowiedział na czas"
 #. Translators: TLS/x509 certificate verification failed.
 #: lib/model.js:474
 msgid "The cluster's certificate can't be verified"
-msgstr "Certyfikat klastra nie przeszedł weryfikacji"
+msgstr "Nie można zweryfikować certyfikatu klastra"
 
 #. Translators: the API server rejected the credentials (HTTP 401).
 #: lib/model.js:476
@@ -572,7 +578,7 @@ msgstr "Klaster odrzucił dane logowania"
 #. Translators: an expired token that a credential helper must refresh.
 #: lib/model.js:478
 msgid "The login has expired"
-msgstr "Trzeba zalogować się ponownie"
+msgstr "Dane logowania wygasły"
 
 #. Translators: authenticated, but not permitted to list nodes (HTTP 403).
 #: lib/model.js:480

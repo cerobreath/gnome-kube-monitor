@@ -6,8 +6,12 @@ node_modules/
 .eslintcache
 .idea/
 .codegraph/
-# Local agent state; the committed .claude/rules stubs stay tracked.
-.claude/settings.local.json
+# Tool-specific agent config. The tool-neutral AGENTS.md and .agents/rules are tracked.
+/.claude/
+/CLAUDE.md
 # Local-only generator for the README brand art. Its output, docs/images/brand/*.svg,
 # is committed: the README renders those through <picture>.
 /.brand/
+# Screen recordings. GitHub only plays <video> from its own hosts, so a demo is
+# uploaded as a release/issue attachment rather than committed.
+docs/images/*.mp4

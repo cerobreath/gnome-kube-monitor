@@ -1,34 +1,34 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 158" width="760" height="158" fill="none" role="img" aria-label="Panel dot states: all Ready, degraded, node down">
-<title>Panel dot states: all Ready, degraded, node down</title>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 182" width="760" height="182" fill="none" role="img" aria-label="Panel dot states: green while every node is Ready, amber when one is degraded, red when one is down">
+<title>Panel dot states: green while every node is Ready, amber when one is degraded, red when one is down</title>
 <style>.dok,.dwarn,.derr{animation:br 3.6s ease-in-out infinite}
 .dwarn{animation-delay:.6s}.derr{animation-delay:1.2s}
 @keyframes br{0%,100%{opacity:1}50%{opacity:.45}}@media (prefers-reduced-motion:reduce){*{animation:none!important}}</style>
 <defs><symbol id="helm" viewBox="77.892 67.452 567.062 567.062"><g transform="translate(-6.3260942,-174.7524)"><path fill="currentColor" stroke="currentColor" stroke-width="8" stroke-linejoin="round" stroke-linecap="round" d="m 367.734,274.06 c -8.077,0.001 -14.626,7.276 -14.625,16.25 1e-5,0.138 0.028,0.269 0.031,0.406 -0.012,1.219 -0.071,2.688 -0.031,3.75 0.193,5.176 1.321,9.137 2,13.906 1.23,10.207 2.261,18.667 1.625,26.531 -0.619,2.965 -2.803,5.677 -4.75,7.562 l -0.344,6.188 c -8.777,0.727 -17.612,2.059 -26.438,4.062 -37.975,8.622 -70.67,28.183 -95.562,54.594 -1.615,-1.102 -4.441,-3.129 -5.281,-3.75 -2.611,0.353 -5.25,1.158 -8.688,-0.844 -6.545,-4.406 -12.506,-10.487 -19.719,-17.812 -3.305,-3.504 -5.698,-6.841 -9.625,-10.219 -0.892,-0.767 -2.253,-1.805 -3.25,-2.594 -3.07,-2.448 -6.691,-3.724 -10.188,-3.844 -4.496,-0.154 -8.824,1.604 -11.656,5.156 -5.035,6.315 -3.423,15.968 3.594,21.562 0.071,0.057 0.147,0.101 0.219,0.156 0.964,0.782 2.145,1.783 3.031,2.438 4.167,3.077 7.973,4.651 12.125,7.094 8.747,5.402 15.998,9.881 21.75,15.281 2.246,2.394 2.639,6.613 2.938,8.438 l 4.688,4.188 c -25.093,37.764 -36.707,84.409 -29.844,131.938 l -6.125,1.781 c -1.614,2.085 -3.895,5.365 -6.281,6.344 -7.525,2.37 -15.994,3.241 -26.219,4.312 -4.8,0.399 -8.942,0.161 -14.031,1.125 -1.12,0.212 -2.681,0.619 -3.906,0.906 -0.043,0.009 -0.082,0.022 -0.125,0.031 -0.067,0.015 -0.155,0.048 -0.219,0.062 -8.62,2.083 -14.158,10.006 -12.375,17.812 1.783,7.808 10.203,12.557 18.875,10.688 0.063,-0.014 0.153,-0.017 0.219,-0.031 0.098,-0.022 0.184,-0.07 0.281,-0.094 1.209,-0.265 2.724,-0.561 3.781,-0.844 5.003,-1.34 8.627,-3.308 13.125,-5.031 9.677,-3.471 17.692,-6.37 25.5,-7.5 3.261,-0.255 6.697,2.012 8.406,2.969 l 6.375,-1.094 c 14.67,45.483 45.414,82.245 84.344,105.312 l -2.656,6.375 c 0.957,2.475 2.013,5.825 1.3,8.269 -2.839,7.361 -7.701,15.131 -13.238,23.793 -2.681,4.002 -5.425,7.108 -7.844,11.688 -0.579,1.096 -1.316,2.779 -1.875,3.938 -3.759,8.042 -1.002,17.305 6.219,20.781 7.266,3.498 16.284,-0.191 20.188,-8.25 0.006,-0.011 0.026,-0.02 0.031,-0.031 0.004,-0.009 -0.004,-0.022 0,-0.031 0.556,-1.143 1.344,-2.644 1.812,-3.719 2.072,-4.747 2.762,-8.815 4.219,-13.406 3.87,-9.72 5.996,-19.919 11.323,-26.274 1.459,-1.74 3.837,-2.409 6.302,-3.07 l 3.312,-6 c 33.938,13.027 71.927,16.522 109.875,7.906 8.657,-1.966 17.014,-4.509 25.094,-7.562 0.931,1.651 2.661,4.826 3.125,5.625 2.506,0.815 5.24,1.236 7.469,4.531 3.985,6.809 6.711,14.864 10.031,24.594 1.457,4.591 2.178,8.659 4.25,13.406 0.472,1.082 1.256,2.605 1.812,3.75 3.895,8.085 12.942,11.787 20.219,8.281 7.22,-3.478 9.98,-12.74 6.219,-20.781 -0.559,-1.158 -1.327,-2.842 -1.906,-3.938 -2.419,-4.58 -5.163,-7.654 -7.844,-11.656 -5.537,-8.662 -10.13,-15.858 -12.969,-23.219 -1.187,-3.797 0.2,-6.158 1.125,-8.625 -0.554,-0.635 -1.739,-4.22 -2.438,-5.906 40.457,-23.888 70.299,-62.021 84.312,-106.062 1.892,0.297 5.182,0.879 6.25,1.094 2.2,-1.451 4.222,-3.344 8.188,-3.031 7.808,1.129 15.823,4.03 25.5,7.5 4.498,1.723 8.122,3.723 13.125,5.062 1.057,0.283 2.572,0.547 3.781,0.812 0.097,0.024 0.183,0.071 0.281,0.094 0.065,0.015 0.156,0.017 0.219,0.031 8.672,1.867 17.094,-2.879 18.875,-10.688 1.781,-7.807 -3.754,-15.732 -12.375,-17.812 -1.254,-0.285 -3.032,-0.769 -4.25,-1 -5.089,-0.964 -9.231,-0.726 -14.031,-1.125 -10.225,-1.071 -18.694,-1.943 -26.219,-4.312 -3.068,-1.19 -5.251,-4.841 -6.313,-6.344 l -5.906,-1.719 c 3.062,-22.154 2.237,-45.211 -3.062,-68.281 -5.348,-23.285 -14.8,-44.581 -27.406,-63.344 1.515,-1.377 4.376,-3.911 5.188,-4.656 0.237,-2.624 0.033,-5.376 2.75,-8.281 5.751,-5.401 13.003,-9.879 21.75,-15.281 4.152,-2.443 7.99,-4.017 12.156,-7.094 0.942,-0.696 2.229,-1.798 3.219,-2.594 7.015,-5.596 8.631,-15.248 3.594,-21.562 -5.037,-6.314 -14.797,-6.909 -21.812,-1.312 -0.999,0.791 -2.354,1.823 -3.25,2.594 -3.926,3.378 -6.351,6.714 -9.656,10.219 -7.212,7.326 -13.174,13.438 -19.719,17.844 -2.836,1.651 -6.99,1.08 -8.875,0.969 l -5.562,3.969 c -31.719,-33.261 -74.905,-54.525 -121.406,-58.656 -0.13,-1.949 -0.3,-5.471 -0.344,-6.531 -1.904,-1.822 -4.203,-3.377 -4.781,-7.312 -0.636,-7.864 0.426,-16.325 1.656,-26.531 0.679,-4.769 1.807,-8.73 2,-13.906 0.044,-1.177 -0.026,-2.884 -0.031,-4.156 -0.001,-8.974 -6.548,-16.251 -14.625,-16.25 z m -18.312,113.438 -4.344,76.719 -0.312,0.156 c -0.291,6.863 -5.94,12.344 -12.875,12.344 -2.841,0 -5.463,-0.912 -7.594,-2.469 l -0.125,0.062 -62.906,-44.594 c 19.334,-19.011 44.063,-33.06 72.562,-39.531 5.206,-1.182 10.41,-2.059 15.594,-2.688 z m 36.656,0 c 33.273,4.092 64.045,19.159 87.625,42.25 l -62.5,44.312 -0.219,-0.094 c -5.547,4.052 -13.363,3.046 -17.688,-2.375 -1.771,-2.221 -2.701,-4.832 -2.812,-7.469 l -0.062,-0.031 z m -147.625,70.875 57.438,51.375 -0.062,0.312 c 5.184,4.507 5.949,12.328 1.625,17.75 -1.771,2.221 -4.142,3.711 -6.688,4.406 l -0.062,0.25 -73.625,21.25 c -3.747,-34.265 4.329,-67.574 21.375,-95.344 z m 258.156,0.031 c 8.534,13.833 14.997,29.282 18.844,46.031 3.801,16.548 4.755,33.067 3.188,49.031 l -74,-21.312 -0.062,-0.312 c -6.627,-1.811 -10.699,-8.552 -9.156,-15.312 0.632,-2.77 2.102,-5.113 4.094,-6.844 l -0.031,-0.156 57.125,-51.125 z m -140.656,55.312 23.531,0 14.625,18.281 -5.25,22.812 -21.125,10.156 -21.188,-10.188 -5.25,-22.812 z m 75.438,62.562 c 1,-0.051 1.996,0.04 2.969,0.219 l 0.125,-0.156 76.156,12.875 c -11.146,31.313 -32.473,58.44 -60.969,76.594 l -29.562,-71.406 0.094,-0.125 c -2.716,-6.31 0.002,-13.71 6.25,-16.719 1.6,-0.77 3.271,-1.197 4.938,-1.281 z m -127.906,0.312 c 5.812,0.082 11.025,4.115 12.375,10.031 0.632,2.77 0.325,5.514 -0.719,7.938 l 0.219,0.281 -29.25,70.688 c -27.347,-17.549 -49.129,-43.824 -60.781,-76.062 l 75.5,-12.812 0.125,0.156 c 0.845,-0.155 1.701,-0.23 2.531,-0.219 z m 63.781,30.969 c 2.024,-0.074 4.079,0.341 6.031,1.281 2.56,1.233 4.537,3.173 5.781,5.5 l 0.281,0 37.219,67.25 c -4.83,1.619 -9.796,3.003 -14.875,4.156 -28.465,6.463 -56.839,4.505 -82.531,-4.25 l 37.125,-67.125 0.062,0 c 2.228,-4.164 6.452,-6.649 10.906,-6.812 z"/></g></symbol></defs>
   <g transform="translate(20,0)">
-    <rect x="0" y="14" width="200" height="128" rx="14" fill="#FFFFFF" stroke="rgba(168,39,64,0.18)"/>
-    <rect x="46" y="34" width="108" height="38" rx="11" fill="#F0E3E7"/>
-    <g color="#2B0C1C"><use href="#helm" x="84" y="43" width="20" height="20" opacity="0.9"/></g>
-    <circle cx="106" cy="62" r="7.5" fill="#FFFFFF"/>
-    <circle class="dok" cx="106" cy="62" r="5" fill="#2EC27E"/>
-    <text x="100" y="102" text-anchor="middle" font-family="system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="15" font-weight="600" fill="#2B0C1C">All Ready</text>
-    <text x="100" y="122" text-anchor="middle" font-family="system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="12.5" fill="rgba(43,12,28,0.68)">every node is Ready</text>
+    <rect x="0" y="12" width="226" height="158" rx="15" fill="#FFFFFF" stroke="rgba(168,39,64,0.18)"/>
+    <rect x="89" y="32" width="48" height="48" rx="12" fill="#F0E3E7"/>
+    <g color="#2B0C1C"><use href="#helm" x="100" y="43" width="26" height="26" opacity="0.92"/></g>
+    <circle cx="127" cy="66" r="8" fill="#F0E3E7"/>
+    <circle class="dok" cx="127" cy="66" r="5.4" fill="#2EC27E"/>
+    <text x="113" y="120" text-anchor="middle" font-family="system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="17" font-weight="600" fill="#2B0C1C">All Ready</text>
+    <text x="113" y="143" text-anchor="middle" font-family="system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="13.5" fill="rgba(43,12,28,0.68)">every node is Ready</text>
   </g>
-  <g transform="translate(260,0)">
-    <rect x="0" y="14" width="200" height="128" rx="14" fill="#FFFFFF" stroke="rgba(168,39,64,0.18)"/>
-    <rect x="46" y="34" width="108" height="38" rx="11" fill="#F0E3E7"/>
-    <g color="#2B0C1C"><use href="#helm" x="84" y="43" width="20" height="20" opacity="0.9"/></g>
-    <circle cx="106" cy="62" r="7.5" fill="#FFFFFF"/>
-    <circle class="dwarn" cx="106" cy="62" r="5" fill="#E5A50A"/>
-    <text x="100" y="102" text-anchor="middle" font-family="system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="15" font-weight="600" fill="#2B0C1C">Degraded</text>
-    <text x="100" y="122" text-anchor="middle" font-family="system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="12.5" fill="rgba(43,12,28,0.68)">pressure, or cordoned</text>
+  <g transform="translate(266,0)">
+    <rect x="0" y="12" width="226" height="158" rx="15" fill="#FFFFFF" stroke="rgba(168,39,64,0.18)"/>
+    <rect x="89" y="32" width="48" height="48" rx="12" fill="#F0E3E7"/>
+    <g color="#2B0C1C"><use href="#helm" x="100" y="43" width="26" height="26" opacity="0.92"/></g>
+    <circle cx="127" cy="66" r="8" fill="#F0E3E7"/>
+    <circle class="dwarn" cx="127" cy="66" r="5.4" fill="#E5A50A"/>
+    <text x="113" y="120" text-anchor="middle" font-family="system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="17" font-weight="600" fill="#2B0C1C">Degraded</text>
+    <text x="113" y="143" text-anchor="middle" font-family="system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="13.5" fill="rgba(43,12,28,0.68)">pressure, or cordoned</text>
   </g>
-  <g transform="translate(500,0)">
-    <rect x="0" y="14" width="200" height="128" rx="14" fill="#FFFFFF" stroke="rgba(168,39,64,0.18)"/>
-    <rect x="46" y="34" width="108" height="38" rx="11" fill="#F0E3E7"/>
-    <g color="#2B0C1C"><use href="#helm" x="84" y="43" width="20" height="20" opacity="0.9"/></g>
-    <circle cx="106" cy="62" r="7.5" fill="#FFFFFF"/>
-    <circle class="derr" cx="106" cy="62" r="5" fill="#FF5C5C"/>
-    <text x="100" y="102" text-anchor="middle" font-family="system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="15" font-weight="600" fill="#2B0C1C">Node down</text>
-    <text x="100" y="122" text-anchor="middle" font-family="system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="12.5" fill="rgba(43,12,28,0.68)">NotReady past the delay</text>
+  <g transform="translate(512,0)">
+    <rect x="0" y="12" width="226" height="158" rx="15" fill="#FFFFFF" stroke="rgba(168,39,64,0.18)"/>
+    <rect x="89" y="32" width="48" height="48" rx="12" fill="#F0E3E7"/>
+    <g color="#2B0C1C"><use href="#helm" x="100" y="43" width="26" height="26" opacity="0.92"/></g>
+    <circle cx="127" cy="66" r="8" fill="#F0E3E7"/>
+    <circle class="derr" cx="127" cy="66" r="5.4" fill="#FF5C5C"/>
+    <text x="113" y="120" text-anchor="middle" font-family="system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="17" font-weight="600" fill="#2B0C1C">Node down</text>
+    <text x="113" y="143" text-anchor="middle" font-family="system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="13.5" fill="rgba(43,12,28,0.68)">NotReady past the delay</text>
   </g>
 </svg>

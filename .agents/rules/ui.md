@@ -36,12 +36,13 @@ shipped bugs. Each rule below exists because something broke.
 
 ## Direction-sensitive CSS must be split
 
-`margin-left`/`margin-right` and the padding/border equivalents have to be written twice,
-under `:ltr` and `:rtl`. St has no logical properties, while `StBoxLayout` *does* reverse
-child order under RTL, so a bare `margin-left` keeps pushing right in Arabic after the
-neighbour it was clearing has moved. `tests/stylesheet.test.js` fails the build if a
-directional property appears outside an `:ltr`/`:rtl` selector, or if one side is declared
-without the other.
+- **Write `margin-left`/`margin-right` twice**, once under `:ltr` and once under `:rtl`.
+  Same for the padding and border equivalents.
+- **Why**: St has no logical properties, while `StBoxLayout` *does* reverse child order
+  under RTL. A bare `margin-left` therefore keeps pushing right in Arabic, after the
+  neighbour it was clearing has already moved to the other side.
+- **Enforced**: `tests/stylesheet.test.js` fails the build if a directional property
+  appears outside an `:ltr`/`:rtl` selector, or if one side is declared without the other.
 
 ## Layout and performance
 

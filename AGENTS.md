@@ -1,38 +1,47 @@
 # AGENTS.md
 
 Instructions for AI coding agents, and a decent orientation for any new contributor.
-Deeper reference lives in `docs/` and is read on demand. `CLAUDE.md` is a one-line
-`@AGENTS.md` pointer, so Claude Code reads this file too.
+Deeper reference lives in `docs/` and is read on demand.
 
 ## What this is
 
-A GNOME Shell extension (`shell-version` 45 to 50) showing Kubernetes node health in the
-top bar. UUID `kube-monitor@cerobreath.dev`.
+A GNOME Shell extension showing Kubernetes node health in the top bar. Plain GJS/ESM with
+**no build step**: gnome-shell loads the `.js` files directly, and TypeScript only
+type-checks through JSDoc. `package.json`, `tests/`, `eslint.config.js`, `tsconfig*.json`
+and CI are dev-only and never ship.
 
-The extension is plain GJS/ESM with **no build step**: gnome-shell loads the `.js` files
-directly. `package.json`, `tests/`, `eslint.config.js`, `tsconfig*.json` and CI are
-dev-only tooling and never ship.
+## Where the rest of the guidance lives
 
-### Where the rest of the guidance lives
+This file holds what applies to every change. Topic rules live in `.agents/rules/`, one per
+area, each carrying `paths:` frontmatter so it loads only when work touches those files.
 
-This file holds what applies to every change. Topic rules live in `.agents/rules/`;
-`.claude/rules/` holds matching path-scoped stubs that import them, so Claude Code still
-loads each rule only when it opens a matching file, and a human can read them whenever the
-topic comes up.
-
-| Topic | File | Loads with |
+| Topic | File | Applies to |
 | --- | --- | --- |
 | Translation plumbing and catalogue rules | `.agents/rules/i18n.md` | `po/**`, `lib/i18n.js` |
 | St theming traps, RTL, menu layout cost | `.agents/rules/ui.md` | `lib/indicator.js`, `lib/notifier.js`, `stylesheet.css` |
 | Harness, stubs, coverage policy, types | `.agents/rules/testing.md` | `tests/**` |
 | Poll-loop invariants and the kubectl edge | `.agents/rules/poll-loop.md` | `lib/poller.js`, `lib/client.js`, `lib/schedule.js` |
-| Module map, two-tier polling, benchmarks | `docs/architecture.md` | on demand |
+| Module map, alerting, two-tier polling, benchmarks | `docs/architecture.md` | on demand |
 | Locale coverage, what is verified at runtime | `docs/translations.md` | on demand |
+
+**Wiring, if your tool needs it.** Claude Code reads `CLAUDE.md` and `.claude/rules/`, not
+this file and not `.agents/`. Both are gitignored here, so a fresh clone has neither and
+the rules above will not load. Recreate them locally: a one-line `CLAUDE.md` containing
+`@AGENTS.md`, and one stub per rule that repeats the frontmatter and imports the real file.
+
+```markdown
+---
+paths:
+  - "tests/**"
+---
+
+@../../.agents/rules/testing.md
+```
 
 ## Commands
 
-Dev tooling needs Node 24+ (`engines`, enforced by `.npmrc`). The extension itself never
-runs on Node.
+Dev tooling needs Node 24+ (`engines`, enforced by `.npmrc`). The extension never runs on
+Node.
 
 ```bash
 npm install                  # dev tooling only (eslint, typescript, @girs types)
@@ -90,7 +99,7 @@ gsettings --schemadir schemas set org.gnome.shell.extensions.kube-monitor debug-
   class body). Their initializers run *after* `_init()` and reset whatever `_init` set back
   to `undefined` (verified on GJS 1.88). Assign all instance state inside `_init()`.
 - **Annotate new code with JSDoc** so both `tsc --checkJs` passes stay clean.
-- **Conventional Commits** (`feat:`, `fix:`, `chore(deps):`), matching history.
+- **Conventional Commits**, subject line only, no body. Match the existing history.
 
 ## Two execution contexts that cannot share runtime code
 
@@ -141,17 +150,14 @@ subtitle**.
 
 ## Release
 
-`npm run pack` builds the EGO-upload zip: `metadata.json`, the four top-level files,
-`lib/`, `icons/`, `LICENSE`, the `.gschema.xml` (**not** the compiled schema) and
-`locale/`, which `--podir=po` compiles from the catalogues. `po/` itself is not shipped.
+`npm run pack` builds the EGO-upload zip. CI cannot call it, because `gnome-extensions`
+lives inside the heavy gnome-shell package, so both workflows build the zip through
+`.github/pack-zip.sh` instead. **Its file list mirrors the pack script in `package.json`,
+the one pairing left to keep by hand.** A `v*` tag runs the full gate and publishes that
+zip as a GitHub release.
 
-CI cannot call `npm run pack`, because `gnome-extensions` lives inside the heavy
-gnome-shell package; both workflows build the zip through `.github/pack-zip.sh` instead.
-Its file list mirrors the pack script in `package.json`, the one pairing left to keep by
-hand. A `v*` tag runs the full gate and publishes that zip as a GitHub release.
-
-License is GPL-2.0-or-later. The panel icon is the official Kubernetes helm: regenerate it
-by extracting the helm path from the source logo SVG rather than hand-editing path data.
+The panel icon is the official Kubernetes helm: regenerate it by extracting the helm path
+from the source logo SVG rather than hand-editing path data.
 
 <!-- Maintainer note, stripped before this file reaches an agent's context.
      Keep it under 200 lines: past that, adherence drops and rules get lost.

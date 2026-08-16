@@ -8,7 +8,7 @@ paths:
 # Poll loop invariants
 
 This loop runs inside the compositor process, so a wedge here freezes the desktop. Preserve
-all four.
+all five.
 
 - **Reentrancy**: `_polling` guards against overlapping polls. The timer is a
   self-rescheduling single-shot, not a fixed recurring one, which guarantees the next poll

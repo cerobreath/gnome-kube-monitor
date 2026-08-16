@@ -53,7 +53,11 @@ normal.
 
 **`indicator.js`** is decoupled from settings. It emits `refresh-requested`,
 `context-selected(string)`, `menu-open-changed(bool)`, `node-copied(string)` and
-`snooze-requested(int seconds)`, and never reads GSettings itself. Notifications are the
+`snooze-requested(int seconds)`, and never reads GSettings itself. The first
+network-shaped poll failure keeps the last data on show under a dim note instead of
+replacing the menu, since opening the menu forces a re-poll that usually heals it; a
+second consecutive failure, or any configuration error, renders the full error view.
+The panel dot is not debounced. Notifications are the
 extension's job, so the copy row and the mute submenu emit rather than act; the extension
 pushes mute state back with `setSnoozeUntil(ms)`.
 

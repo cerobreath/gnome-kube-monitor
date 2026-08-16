@@ -268,3 +268,10 @@
     opacity: 0.55;
     max-width: 300px;
 }
+
+/* One transient failure: a dim note above data kept from the last good poll. */
+.kube-error-strip {
+    font-size: 0.85em;
+    opacity: 0.55;
+    max-width: 300px;
+}

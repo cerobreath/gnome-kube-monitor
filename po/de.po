@@ -3,11 +3,14 @@
 # This file is distributed under the same license as the Kube Node Monitor package.
 # Translators are credited in the Last-Translator field of each po/*.po file.
 #
+# AI-generated translation, reviewed against GNOME German conventions but not
+# by a native speaker. Corrections are welcome: claim the Last-Translator field.
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: Kube Node Monitor 0.1.0\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-16 18:38+0300\n"
+"Report-Msgid-Bugs-To: https://github.com/cerobreath/gnome-kube-monitor\n"
+"POT-Creation-Date: 2026-08-16 18:41+0300\n"
 "PO-Revision-Date: 2026-07-31 01:05+0300\n"
 "Last-Translator: Kube Node Monitor contributors\n"
 "Language-Team: German\n"
@@ -64,7 +67,7 @@ msgstr "Cluster nicht erreichbar"
 
 #: prefs.js:56
 msgid "Notify when kubectl cannot reach the cluster"
-msgstr "Benachrichtigen, wenn kubectl den Cluster nicht erreicht"
+msgstr "Benachrichtigen, wenn kubectl den Cluster nicht erreichen kann"
 
 #: prefs.js:62
 msgid "Recovery"
@@ -72,7 +75,8 @@ msgstr "Wiederherstellung"
 
 #: prefs.js:63
 msgid "Also notify when a node or the cluster comes back"
-msgstr "Auch benachrichtigen, wenn ein Knoten oder der Cluster zurückkehrt"
+msgstr ""
+"Auch benachrichtigen, wenn ein Knoten oder der Cluster wieder verfügbar ist"
 
 #. Translators: how long a node must stay down before it notifies.
 #: prefs.js:70
@@ -108,8 +112,8 @@ msgid ""
 "Seconds an alert stays active after it clears, so a flapping node notifies "
 "once"
 msgstr ""
-"Sekunden, die eine Warnung nach dem Wegfall ihrer Ursache aktiv bleibt, "
-"damit ein flatternder Knoten nur eine Benachrichtigung auslöst"
+"Sekunden, die eine Warnung aktiv bleibt, nachdem ihre Ursache behoben ist, "
+"damit ein instabiler Knoten nur eine Benachrichtigung auslöst"
 
 #: prefs.js:98
 msgid "Repeat reminder"
@@ -121,7 +125,7 @@ msgid ""
 "once"
 msgstr ""
 "Sekunden bis zur erneuten Benachrichtigung über eine weiterhin aktive "
-"Warnung, oder null, um nur einmal zu benachrichtigen"
+"Warnung; bei null wird nur einmal benachrichtigt"
 
 #. Translators: alerts firing within this window become one notification.
 #: prefs.js:107
@@ -150,17 +154,17 @@ msgstr "Kontext"
 
 #: prefs.js:126 prefs.js:299
 msgid "Which context to monitor"
-msgstr "Welcher Kontext überwacht wird"
+msgstr "Der zu überwachende Kontext"
 
 #. Translators: tooltip on the status icon beside the kubectl row.
 #: prefs.js:137
 msgid "Whether kubectl was found"
-msgstr "Ob kubectl gefunden wurde"
+msgstr "Zeigt an, ob kubectl gefunden wurde"
 
 #. Translators: tooltip on the status icon beside the kubeconfig row.
 #: prefs.js:144
 msgid "Whether a kubeconfig was found"
-msgstr "Ob eine kubeconfig gefunden wurde"
+msgstr "Zeigt an, ob eine kubeconfig gefunden wurde"
 
 #. Translators: button that tries the connection. Keep it to one word if
 #. you can, it is a compact button in a row.
@@ -190,7 +194,7 @@ msgstr "kubectl-Pfad"
 
 #: prefs.js:172
 msgid "Log diagnostics"
-msgstr "Diagnose protokollieren"
+msgstr "Diagnosedaten protokollieren"
 
 #: prefs.js:173
 msgid "Record poll and alert decisions in the system log"
@@ -220,7 +224,7 @@ msgstr "%s entfernen"
 #. expander below, so use the same wording you gave its title.
 #: prefs.js:252
 msgid "Not found on PATH. Set it under Advanced."
-msgstr "Nicht in PATH gefunden. Pfad unter Erweitert angeben."
+msgstr "Nicht im PATH gefunden. Pfad unter »Erweitert« angeben."
 
 #. Translators: how many kubeconfig files kubectl will merge into
 #. one configuration. %d is the count.
@@ -249,7 +253,7 @@ msgstr "Aktueller Kontext (automatisch)"
 #: prefs.js:298
 #, javascript-format
 msgid "Following current-context (%s)"
-msgstr "Folgt current-context (%s)"
+msgstr "Folgt dem current-context (%s)"
 
 #. Translators: toast after a successful connection test.
 #. %d is how many contexts the kubeconfig defines.
@@ -283,7 +287,7 @@ msgstr "%s ist ausgefallen"
 #: lib/alerts.js:379
 #, javascript-format
 msgid "%s recovered"
-msgstr "%s ist wiederhergestellt"
+msgstr "%s ist wieder verfügbar"
 
 #. Translators: banner title when several alerts fire at the same time.
 #. %d is how many; the body lists the node names.
@@ -554,7 +558,7 @@ msgstr "Der Cluster hat nicht rechtzeitig geantwortet"
 #. Translators: TLS/x509 certificate verification failed.
 #: lib/model.js:474
 msgid "The cluster's certificate can't be verified"
-msgstr "Das Zertifikat des Clusters ist ungültig"
+msgstr "Das Zertifikat des Clusters lässt sich nicht überprüfen"
 
 #. Translators: the API server rejected the credentials (HTTP 401).
 #: lib/model.js:476
@@ -564,12 +568,12 @@ msgstr "Der Cluster hat die Anmeldung abgelehnt"
 #. Translators: an expired token that a credential helper must refresh.
 #: lib/model.js:478
 msgid "The login has expired"
-msgstr "Die Anmeldung muss erneuert werden"
+msgstr "Die Anmeldung ist abgelaufen"
 
 #. Translators: authenticated, but not permitted to list nodes (HTTP 403).
 #: lib/model.js:480
 msgid "This login can't read the cluster"
-msgstr "Diese Anmeldung darf den Cluster nicht lesen"
+msgstr "Diese Anmeldung darf den Cluster nicht abfragen"
 
 #. Translators: the kubectl binary itself could not be found or executed.
 #: lib/model.js:482

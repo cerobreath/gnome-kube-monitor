@@ -3,11 +3,14 @@
 # This file is distributed under the same license as the Kube Node Monitor package.
 # Translators are credited in the Last-Translator field of each po/*.po file.
 #
+# AI-generated translation, reviewed against GNOME Italian conventions but not
+# by a native speaker. Corrections are welcome: claim the Last-Translator field.
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: Kube Node Monitor 0.1.0\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-16 18:38+0300\n"
+"Report-Msgid-Bugs-To: https://github.com/cerobreath/gnome-kube-monitor\n"
+"POT-Creation-Date: 2026-08-16 18:41+0300\n"
 "PO-Revision-Date: 2026-07-31 01:05+0300\n"
 "Last-Translator: Kube Node Monitor contributors\n"
 "Language-Team: Italian\n"
@@ -45,7 +48,7 @@ msgstr "Notifiche"
 
 #: prefs.js:42
 msgid "Choose which events notify you, and how long to wait first."
-msgstr "Scegliere quali eventi notificare e quanto tempo attendere prima."
+msgstr "Scegliere quali eventi notificare e quanto attendere prima di farlo."
 
 #: prefs.js:47
 msgid "Node problems"
@@ -54,7 +57,7 @@ msgstr "Problemi dei nodi"
 #. Translators: "Ready" is a Kubernetes node state, keep it as it is.
 #: prefs.js:49
 msgid "Notify when a node stops being Ready"
-msgstr "Notifica quando un nodo smette di essere Ready"
+msgstr "Notificare quando un nodo smette di essere Ready"
 
 #: prefs.js:55
 msgid "Cluster unreachable"
@@ -62,7 +65,7 @@ msgstr "Cluster irraggiungibile"
 
 #: prefs.js:56
 msgid "Notify when kubectl cannot reach the cluster"
-msgstr "Notifica quando kubectl non riesce a raggiungere il cluster"
+msgstr "Notificare quando kubectl non riesce a raggiungere il cluster"
 
 #: prefs.js:62
 msgid "Recovery"
@@ -70,7 +73,7 @@ msgstr "Ripristino"
 
 #: prefs.js:63
 msgid "Also notify when a node or the cluster comes back"
-msgstr "Notifica anche quando un nodo o il cluster torna disponibile"
+msgstr "Notificare anche quando un nodo o il cluster torna disponibile"
 
 #. Translators: how long a node must stay down before it notifies.
 #: prefs.js:70
@@ -104,7 +107,7 @@ msgid ""
 "once"
 msgstr ""
 "Secondi in cui un avviso resta attivo dopo che la causa è cessata, così un "
-"nodo instabile notifica una volta sola"
+"nodo instabile genera una sola notifica"
 
 #: prefs.js:98
 msgid "Repeat reminder"
@@ -169,7 +172,7 @@ msgstr "Prova la connessione"
 
 #: prefs.js:153
 msgid "Run kubectl and list contexts"
-msgstr "Esegui kubectl ed elenca i contesti"
+msgstr "Esegue kubectl ed elenca i contesti"
 
 #: prefs.js:161
 msgid "Advanced"
@@ -185,7 +188,7 @@ msgstr "Percorso di kubectl"
 
 #: prefs.js:172
 msgid "Log diagnostics"
-msgstr "Registra la diagnostica"
+msgstr "Registrare la diagnostica"
 
 #: prefs.js:173
 msgid "Record poll and alert decisions in the system log"
@@ -198,7 +201,7 @@ msgstr "Aggiungi file kubeconfig…"
 
 #: prefs.js:188
 msgid "Add a kubeconfig file"
-msgstr "Aggiungi un file kubeconfig"
+msgstr "Aggiunge un file kubeconfig"
 
 #: prefs.js:193
 msgid "Select a kubeconfig file"
@@ -209,7 +212,7 @@ msgstr "Seleziona un file kubeconfig"
 #: prefs.js:228
 #, javascript-format
 msgid "Remove %s"
-msgstr "Rimuovi %s"
+msgstr "Rimuove %s"
 
 #. Translators: shown when kubectl is not on PATH. "Advanced" is the
 #. expander below, so use the same wording you gave its title.
@@ -252,8 +255,8 @@ msgstr "Segue current-context (%s)"
 #, javascript-format
 msgid "Connected. Found %d context."
 msgid_plural "Connected. Found %d contexts."
-msgstr[0] "Connesso. Trovato %d contesto."
-msgstr[1] "Connesso. Trovati %d contesti."
+msgstr[0] "Connessione riuscita. Trovato %d contesto."
+msgstr[1] "Connessione riuscita. Trovati %d contesti."
 
 #. Translators: stands in for a node name in a grouped banner's list,
 #. e.g. "web-1, db-2, cluster". Lowercase, to read as one list item.
@@ -361,7 +364,7 @@ msgstr "Silenzia avvisi"
 #. Translators: menu row that cancels an active mute.
 #: lib/indicator.js:262
 msgid "Turn muting off"
-msgstr "Disattiva il silenzio"
+msgstr "Riattiva gli avvisi"
 
 #. Translators: menu row that opens the extension's preferences window.
 #: lib/indicator.js:271
@@ -469,8 +472,8 @@ msgstr "memoria %d%%"
 #, javascript-format
 msgid "%d running"
 msgid_plural "%d running"
-msgstr[0] "%d in esecuzione"
-msgstr[1] "%d in esecuzione"
+msgstr[0] "%d attivo"
+msgstr[1] "%d attivi"
 
 #. Translators: pods accepted but not yet started. Keep it very short.
 #: lib/indicator.js:679
@@ -549,7 +552,7 @@ msgstr "Il cluster non ha risposto in tempo"
 #. Translators: TLS/x509 certificate verification failed.
 #: lib/model.js:474
 msgid "The cluster's certificate can't be verified"
-msgstr "Il certificato del cluster non è valido"
+msgstr "Impossibile verificare il certificato del cluster"
 
 #. Translators: the API server rejected the credentials (HTTP 401).
 #: lib/model.js:476
@@ -559,7 +562,7 @@ msgstr "Il cluster ha rifiutato le credenziali"
 #. Translators: an expired token that a credential helper must refresh.
 #: lib/model.js:478
 msgid "The login has expired"
-msgstr "È necessario accedere di nuovo"
+msgstr "Le credenziali sono scadute"
 
 #. Translators: authenticated, but not permitted to list nodes (HTTP 403).
 #: lib/model.js:480

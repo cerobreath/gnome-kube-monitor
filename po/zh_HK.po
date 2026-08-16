@@ -3,11 +3,15 @@
 # This file is distributed under the same license as the Kube Node Monitor package.
 # Translators are credited in the Last-Translator field of each po/*.po file.
 #
+# AI-generated translation, reviewed against Hong Kong written-Chinese
+# conventions but not by a native speaker. Corrections are welcome: claim the
+# Last-Translator field.
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: Kube Node Monitor 0.1.0\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-16 18:38+0300\n"
+"Report-Msgid-Bugs-To: https://github.com/cerobreath/gnome-kube-monitor\n"
+"POT-Creation-Date: 2026-08-16 18:41+0300\n"
 "PO-Revision-Date: 2026-07-31 01:05+0300\n"
 "Last-Translator: Kube Node Monitor contributors\n"
 "Language-Team: Traditional Chinese (Hong Kong)\n"
@@ -89,7 +93,7 @@ msgstr "叢集延遲"
 
 #: prefs.js:81
 msgid "Seconds the cluster must stay unreachable before notifying"
-msgstr "通知前叢集需保持無法連接的秒數"
+msgstr "通知前叢集需持續無法連接的秒數"
 
 #. Translators: an alert stays active this long after its cause clears.
 #: prefs.js:89
@@ -101,7 +105,7 @@ msgstr "保持時間"
 msgid ""
 "Seconds an alert stays active after it clears, so a flapping node notifies "
 "once"
-msgstr "警示在原因消失後仍保持作用的秒數，讓狀態抖動的節點只通知一次"
+msgstr "警示在原因消失後仍持續生效的秒數，讓狀態反覆變化的節點只通知一次"
 
 #: prefs.js:98
 msgid "Repeat reminder"
@@ -111,7 +115,7 @@ msgstr "重複提醒"
 msgid ""
 "Seconds before notifying again about a still-active alert, or zero to notify "
 "once"
-msgstr "再次通知仍在作用中的警示前等待的秒數，0 表示只通知一次"
+msgstr "警示尚未解除時再次通知的間隔秒數，0 表示只通知一次"
 
 #. Translators: alerts firing within this window become one notification.
 #: prefs.js:107
@@ -128,7 +132,7 @@ msgstr "連接"
 
 #: prefs.js:116
 msgid "kubectl and the kubeconfig are found automatically."
-msgstr "kubectl 和 kubeconfig 會自動偵測。"
+msgstr "會自動偵測 kubectl 和 kubeconfig。"
 
 #. Translators: "context" is the kubectl term for a saved cluster
 #. connection; use whatever kubectl's own translation uses.
@@ -190,7 +194,7 @@ msgstr "新增 kubeconfig 檔案…"
 
 #: prefs.js:188
 msgid "Add a kubeconfig file"
-msgstr "新增一個 kubeconfig 檔案"
+msgstr "新增 kubeconfig 檔案"
 
 #: prefs.js:193
 msgid "Select a kubeconfig file"
@@ -221,7 +225,7 @@ msgstr[0] "%d 個檔案"
 #: prefs.js:267
 #, javascript-format
 msgid "%s (missing)"
-msgstr "%s (不存在)"
+msgstr "%s（不存在）"
 
 #. Translators: first entry of the context picker. It follows whichever
 #. context kubectl has selected instead of pinning one.
@@ -254,7 +258,7 @@ msgstr "叢集"
 #. Translators: notification title when the cluster answers again.
 #: lib/alerts.js:259
 msgid "Cluster reachable again"
-msgstr "叢集已回復連接"
+msgstr "叢集已恢復連接"
 
 #. Translators: notification title when a node stops being Ready.
 #. %s is the node name as the cluster spells it; do not translate it.
@@ -284,7 +288,7 @@ msgstr[0] "%d 則警示觸發中"
 #, javascript-format
 msgid "%d alert recovered"
 msgid_plural "%d alerts recovered"
-msgstr[0] "%d 則警示已恢復"
+msgstr[0] "%d 則警示已解除"
 
 #. Translators: spoken cluster state. Every node is Ready.
 #: lib/indicator.js:30
@@ -395,7 +399,7 @@ msgstr "新增連接…"
 #: lib/indicator.js:386
 #, javascript-format
 msgid "%s, current"
-msgstr "%s，目前"
+msgstr "%s，目前使用中"
 
 #. Translators: spoken summary of the whole cluster. %1$s is a state word
 #. ("healthy", "degraded", …), %2$d is how many nodes are Ready and %3$d
@@ -481,7 +485,7 @@ msgstr[0] "%d 個失敗"
 #: lib/indicator.js:699
 #, javascript-format
 msgid "Kube Node Monitor: %s"
-msgstr "Kube Node Monitor: %s"
+msgstr "Kube Node Monitor：%s"
 
 #. Translators: shown under the context name when the reading is only a
 #. few seconds old, in place of a duration.
@@ -524,22 +528,22 @@ msgstr "%d天"
 #. Translators: shown when the cluster did not respond before the timeout.
 #: lib/model.js:472
 msgid "The cluster didn't answer in time"
-msgstr "叢集未在逾時前回應"
+msgstr "叢集未及時回應"
 
 #. Translators: TLS/x509 certificate verification failed.
 #: lib/model.js:474
 msgid "The cluster's certificate can't be verified"
-msgstr "叢集憑證未通過驗證"
+msgstr "無法驗證叢集憑證"
 
 #. Translators: the API server rejected the credentials (HTTP 401).
 #: lib/model.js:476
 msgid "The cluster rejected the login"
-msgstr "叢集拒絕了登入憑證"
+msgstr "叢集拒絕登入"
 
 #. Translators: an expired token that a credential helper must refresh.
 #: lib/model.js:478
 msgid "The login has expired"
-msgstr "登入需要重新取得"
+msgstr "登入已過期"
 
 #. Translators: authenticated, but not permitted to list nodes (HTTP 403).
 #: lib/model.js:480
@@ -559,7 +563,7 @@ msgstr "無法連接叢集"
 #. Translators: the machine itself is offline, so the failure is local.
 #: lib/model.js:486
 msgid "No internet connection"
-msgstr "沒有互聯網連線"
+msgstr "沒有互聯網連接"
 
 #. Translators: no kubeconfig file exists to read a cluster from.
 #: lib/model.js:488
@@ -569,12 +573,12 @@ msgstr "找不到 kubeconfig"
 #. Translators: the selected context is missing from the kubeconfig.
 #: lib/model.js:490
 msgid "The selected context doesn't exist"
-msgstr "所選上下文不存在"
+msgstr "所選的上下文不存在"
 
 #. Translators: catch-all when kubectl failed for none of the above reasons.
 #: lib/model.js:492
 msgid "kubectl ran into a problem"
-msgstr "kubectl 執行發生錯誤"
+msgstr "kubectl 執行時發生問題"
 
 #~ msgctxt "meter"
 #~ msgid "CPU"

@@ -3,11 +3,14 @@
 # This file is distributed under the same license as the Kube Node Monitor package.
 # Translators are credited in the Last-Translator field of each po/*.po file.
 #
+# AI-generated translation, reviewed against GNOME Spanish conventions but not
+# by a native speaker. Corrections are welcome: claim the Last-Translator field.
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: Kube Node Monitor 0.1.0\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-16 18:38+0300\n"
+"Report-Msgid-Bugs-To: https://github.com/cerobreath/gnome-kube-monitor\n"
+"POT-Creation-Date: 2026-08-16 18:41+0300\n"
 "PO-Revision-Date: 2026-07-31 01:05+0300\n"
 "Last-Translator: Kube Node Monitor contributors\n"
 "Language-Team: Spanish\n"
@@ -45,7 +48,7 @@ msgstr "Notificaciones"
 
 #: prefs.js:42
 msgid "Choose which events notify you, and how long to wait first."
-msgstr "Elija qué eventos le notifican y cuánto tiempo esperar antes."
+msgstr "Elegir qué eventos notifican y cuánto tiempo esperar antes."
 
 #: prefs.js:47
 msgid "Node problems"
@@ -54,7 +57,7 @@ msgstr "Problemas de nodo"
 #. Translators: "Ready" is a Kubernetes node state, keep it as it is.
 #: prefs.js:49
 msgid "Notify when a node stops being Ready"
-msgstr "Notificar cuando un nodo deja de estar Ready"
+msgstr "Notificar cuando un nodo deje de estar Ready"
 
 #: prefs.js:55
 msgid "Cluster unreachable"
@@ -62,7 +65,7 @@ msgstr "Clúster inaccesible"
 
 #: prefs.js:56
 msgid "Notify when kubectl cannot reach the cluster"
-msgstr "Notificar cuando kubectl no puede alcanzar el clúster"
+msgstr "Notificar cuando kubectl no pueda conectar con el clúster"
 
 #: prefs.js:62
 msgid "Recovery"
@@ -70,7 +73,7 @@ msgstr "Recuperación"
 
 #: prefs.js:63
 msgid "Also notify when a node or the cluster comes back"
-msgstr "Notificar también cuando un nodo o el clúster vuelve"
+msgstr "Notificar también cuando un nodo o el clúster se recupere"
 
 #. Translators: how long a node must stay down before it notifies.
 #: prefs.js:70
@@ -176,7 +179,7 @@ msgstr "Avanzado"
 
 #: prefs.js:162
 msgid "Extra kubeconfig files and a custom kubectl path"
-msgstr "Archivos kubeconfig adicionales y una ruta propia a kubectl"
+msgstr "Archivos kubeconfig adicionales y una ruta personalizada de kubectl"
 
 #: prefs.js:166
 msgid "kubectl path"
@@ -201,7 +204,7 @@ msgstr "Añadir un archivo kubeconfig"
 
 #: prefs.js:193
 msgid "Select a kubeconfig file"
-msgstr "Seleccione un archivo kubeconfig"
+msgstr "Seleccionar un archivo kubeconfig"
 
 #. Translators: tooltip on the trash button beside a kubeconfig
 #. file. %s is the file's name.
@@ -365,7 +368,7 @@ msgstr "Quitar el silencio"
 #. Translators: menu row that opens the extension's preferences window.
 #: lib/indicator.js:271
 msgid "Settings"
-msgstr "Preferencias"
+msgstr "Configuración"
 
 #. Translators: the "Mute alerts" row while muting is active. %s is a
 #. short duration such as "45m" or "2h".
@@ -440,14 +443,14 @@ msgstr[1] "… y %d nodos más"
 #: lib/indicator.js:619
 #, javascript-format
 msgid "up %s"
-msgstr "activo %s"
+msgstr "activo desde hace %s"
 
 #. Translators: spoken downtime on a node row: how long it has been
 #. NotReady. %s is a short duration such as "3d".
 #: lib/indicator.js:622
 #, javascript-format
 msgid "down %s"
-msgstr "caído %s"
+msgstr "caído desde hace %s"
 
 #. Translators: spoken CPU load on a node row. %d is a percentage.
 #: lib/indicator.js:625
@@ -468,8 +471,8 @@ msgstr "memoria %d%%"
 #, javascript-format
 msgid "%d running"
 msgid_plural "%d running"
-msgstr[0] "%d en ejecución"
-msgstr[1] "%d en ejecución"
+msgstr[0] "%d activo"
+msgstr[1] "%d activos"
 
 #. Translators: pods accepted but not yet started. Keep it very short.
 #: lib/indicator.js:679
@@ -548,7 +551,7 @@ msgstr "El clúster no respondió a tiempo"
 #. Translators: TLS/x509 certificate verification failed.
 #: lib/model.js:474
 msgid "The cluster's certificate can't be verified"
-msgstr "El certificado del clúster no es válido"
+msgstr "No se puede verificar el certificado del clúster"
 
 #. Translators: the API server rejected the credentials (HTTP 401).
 #: lib/model.js:476
@@ -558,12 +561,12 @@ msgstr "El clúster rechazó las credenciales"
 #. Translators: an expired token that a credential helper must refresh.
 #: lib/model.js:478
 msgid "The login has expired"
-msgstr "Hay que iniciar sesión de nuevo"
+msgstr "La sesión ha caducado"
 
 #. Translators: authenticated, but not permitted to list nodes (HTTP 403).
 #: lib/model.js:480
 msgid "This login can't read the cluster"
-msgstr "Estas credenciales no pueden leer el clúster"
+msgstr "Estas credenciales no permiten leer el clúster"
 
 #. Translators: the kubectl binary itself could not be found or executed.
 #: lib/model.js:482

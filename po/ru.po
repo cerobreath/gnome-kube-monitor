@@ -6,8 +6,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Kube Node Monitor 0.1.0\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-16 18:38+0300\n"
+"Report-Msgid-Bugs-To: https://github.com/cerobreath/gnome-kube-monitor\n"
+"POT-Creation-Date: 2026-08-16 18:41+0300\n"
 "PO-Revision-Date: 2026-07-31 01:05+0300\n"
 "Last-Translator: Kube Node Monitor contributors\n"
 "Language-Team: Russian\n"
@@ -46,7 +46,8 @@ msgstr "Уведомления"
 
 #: prefs.js:42
 msgid "Choose which events notify you, and how long to wait first."
-msgstr "Выберите, о каких событиях уведомлять и как долго ждать перед этим."
+msgstr ""
+"Выберите, о каких событиях уведомлять и сколько ждать перед уведомлением."
 
 #: prefs.js:47
 msgid "Node problems"
@@ -288,9 +289,9 @@ msgstr "%s восстановлен"
 #, javascript-format
 msgid "%d alert firing"
 msgid_plural "%d alerts firing"
-msgstr[0] "Сработало %d уведомление"
-msgstr[1] "Сработало %d уведомления"
-msgstr[2] "Сработало %d уведомлений"
+msgstr[0] "%d новая проблема"
+msgstr[1] "%d новые проблемы"
+msgstr[2] "%d новых проблем"
 
 #. Translators: banner title when several alerts clear at the same time.
 #. %d is how many; the body lists the node names.
@@ -298,9 +299,9 @@ msgstr[2] "Сработало %d уведомлений"
 #, javascript-format
 msgid "%d alert recovered"
 msgid_plural "%d alerts recovered"
-msgstr[0] "Восстановлено %d уведомление"
-msgstr[1] "Восстановлено %d уведомления"
-msgstr[2] "Восстановлено %d уведомлений"
+msgstr[0] "%d проблема решена"
+msgstr[1] "%d проблемы решены"
+msgstr[2] "%d проблем решено"
 
 #. Translators: spoken cluster state. Every node is Ready.
 #: lib/indicator.js:30
@@ -315,7 +316,7 @@ msgstr "с проблемами"
 #. Translators: spoken cluster state. At least one node is down.
 #: lib/indicator.js:34
 msgid "critical"
-msgstr "критично"
+msgstr "в критическом состоянии"
 
 #. Translators: spoken cluster state. No reading yet, or kubectl failed.
 #: lib/indicator.js:36
@@ -424,9 +425,9 @@ msgstr "%s, текущий"
 #, javascript-format
 msgid "%1$s, %2$d of %3$d node ready"
 msgid_plural "%1$s, %2$d of %3$d nodes ready"
-msgstr[0] "%1$s, %2$d из %3$d узла готов"
-msgstr[1] "%1$s, %2$d из %3$d узлов готовы"
-msgstr[2] "%1$s, %2$d из %3$d узлов готовы"
+msgstr[0] "%1$s, готово %2$d из %3$d узла"
+msgstr[1] "%1$s, готово %2$d из %3$d узлов"
+msgstr[2] "%1$s, готово %2$d из %3$d узлов"
 
 #. Translators: shown in place of the node list when the cluster
 #. reports no nodes at all.

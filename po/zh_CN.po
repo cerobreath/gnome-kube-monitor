@@ -3,11 +3,15 @@
 # This file is distributed under the same license as the Kube Node Monitor package.
 # Translators are credited in the Last-Translator field of each po/*.po file.
 #
+# AI-generated translation, reviewed against GNOME Simplified Chinese
+# conventions but not by a native speaker. Corrections are welcome: claim the
+# Last-Translator field.
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: Kube Node Monitor 0.1.0\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-16 18:38+0300\n"
+"Report-Msgid-Bugs-To: https://github.com/cerobreath/gnome-kube-monitor\n"
+"POT-Creation-Date: 2026-08-16 18:41+0300\n"
 "PO-Revision-Date: 2026-07-31 01:05+0300\n"
 "Last-Translator: Kube Node Monitor contributors\n"
 "Language-Team: Simplified Chinese\n"
@@ -101,7 +105,7 @@ msgstr "保持时长"
 msgid ""
 "Seconds an alert stays active after it clears, so a flapping node notifies "
 "once"
-msgstr "告警在原因消失后仍保持活动的秒数，让状态抖动的节点只通知一次"
+msgstr "告警在原因消失后仍保持活动的秒数，让状态反复变化的节点只通知一次"
 
 #: prefs.js:98
 msgid "Repeat reminder"
@@ -190,7 +194,7 @@ msgstr "添加 kubeconfig 文件…"
 
 #: prefs.js:188
 msgid "Add a kubeconfig file"
-msgstr "添加一个 kubeconfig 文件"
+msgstr "添加 kubeconfig 文件"
 
 #: prefs.js:193
 msgid "Select a kubeconfig file"
@@ -221,7 +225,7 @@ msgstr[0] "%d 个文件"
 #: prefs.js:267
 #, javascript-format
 msgid "%s (missing)"
-msgstr "%s (不存在)"
+msgstr "%s（不存在）"
 
 #. Translators: first entry of the context picker. It follows whichever
 #. context kubectl has selected instead of pinning one.
@@ -254,7 +258,7 @@ msgstr "集群"
 #. Translators: notification title when the cluster answers again.
 #: lib/alerts.js:259
 msgid "Cluster reachable again"
-msgstr "集群恢复连接"
+msgstr "集群已恢复连接"
 
 #. Translators: notification title when a node stops being Ready.
 #. %s is the node name as the cluster spells it; do not translate it.
@@ -294,7 +298,7 @@ msgstr "正常"
 #. Translators: spoken cluster state. Something is wrong, nothing is down.
 #: lib/indicator.js:32
 msgid "degraded"
-msgstr "有问题"
+msgstr "异常"
 
 #. Translators: spoken cluster state. At least one node is down.
 #: lib/indicator.js:34
@@ -453,35 +457,35 @@ msgstr "内存 %d%%"
 #, javascript-format
 msgid "%d running"
 msgid_plural "%d running"
-msgstr[0] "%d 个运行中"
+msgstr[0] "%d 运行中"
 
 #. Translators: pods accepted but not yet started. Keep it very short.
 #: lib/indicator.js:679
 #, javascript-format
 msgid "%d pending"
 msgid_plural "%d pending"
-msgstr[0] "%d 个待处理"
+msgstr[0] "%d 等待中"
 
 #. Translators: pods stuck restarting (CrashLoopBackOff). Keep it very short.
 #: lib/indicator.js:684
 #, javascript-format
 msgid "%d crashing"
 msgid_plural "%d crashing"
-msgstr[0] "%d 个崩溃"
+msgstr[0] "%d 崩溃"
 
 #. Translators: pods that terminated in failure. Keep it very short.
 #: lib/indicator.js:689
 #, javascript-format
 msgid "%d failed"
 msgid_plural "%d failed"
-msgstr[0] "%d 个失败"
+msgstr[0] "%d 失败"
 
 #. Translators: spoken name of the panel button. "Kube Node Monitor" is
 #. the extension's name, so leave it as it is. %s is the cluster summary.
 #: lib/indicator.js:699
 #, javascript-format
 msgid "Kube Node Monitor: %s"
-msgstr "Kube Node Monitor: %s"
+msgstr "Kube Node Monitor：%s"
 
 #. Translators: shown under the context name when the reading is only a
 #. few seconds old, in place of a duration.
@@ -503,7 +507,7 @@ msgstr "%d秒"
 #, javascript-format
 msgctxt "duration"
 msgid "%dm"
-msgstr "%d分"
+msgstr "%d分钟"
 
 #. Translators: abbreviated duration in hours, e.g. "5h". %d is the
 #. number of hours.
@@ -524,7 +528,7 @@ msgstr "%d天"
 #. Translators: shown when the cluster did not respond before the timeout.
 #: lib/model.js:472
 msgid "The cluster didn't answer in time"
-msgstr "集群未在超时前响应"
+msgstr "集群响应超时"
 
 #. Translators: TLS/x509 certificate verification failed.
 #: lib/model.js:474
@@ -539,7 +543,7 @@ msgstr "集群拒绝了登录凭据"
 #. Translators: an expired token that a credential helper must refresh.
 #: lib/model.js:478
 msgid "The login has expired"
-msgstr "登录需要重新获取"
+msgstr "登录已过期"
 
 #. Translators: authenticated, but not permitted to list nodes (HTTP 403).
 #: lib/model.js:480

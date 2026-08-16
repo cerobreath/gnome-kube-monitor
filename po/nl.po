@@ -3,11 +3,14 @@
 # This file is distributed under the same license as the Kube Node Monitor package.
 # Translators are credited in the Last-Translator field of each po/*.po file.
 #
+# AI-generated translation, reviewed against GNOME Dutch conventions but not
+# by a native speaker. Corrections are welcome: claim the Last-Translator field.
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: Kube Node Monitor 0.1.0\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-16 18:38+0300\n"
+"Report-Msgid-Bugs-To: https://github.com/cerobreath/gnome-kube-monitor\n"
+"POT-Creation-Date: 2026-08-16 18:41+0300\n"
 "PO-Revision-Date: 2026-07-31 01:05+0300\n"
 "Last-Translator: Kube Node Monitor contributors\n"
 "Language-Team: Dutch\n"
@@ -72,12 +75,12 @@ msgstr "Herstel"
 
 #: prefs.js:63
 msgid "Also notify when a node or the cluster comes back"
-msgstr "Ook melden wanneer een node of het cluster terugkeert"
+msgstr "Ook melden wanneer een node of het cluster weer beschikbaar is"
 
 #. Translators: how long a node must stay down before it notifies.
 #: prefs.js:70
 msgid "Node delay"
-msgstr "Vertraging voor node"
+msgstr "Wachttijd voor nodes"
 
 #. Translators: "NotReady" is a Kubernetes node state, keep it as it is.
 #: prefs.js:72
@@ -87,7 +90,7 @@ msgstr "Seconden dat een node NotReady moet blijven voordat er gemeld wordt"
 #. Translators: how long the cluster must stay unreachable before it notifies.
 #: prefs.js:80
 msgid "Cluster delay"
-msgstr "Vertraging voor cluster"
+msgstr "Wachttijd voor het cluster"
 
 #: prefs.js:81
 msgid "Seconds the cluster must stay unreachable before notifying"
@@ -106,7 +109,7 @@ msgid ""
 "once"
 msgstr ""
 "Seconden dat een melding actief blijft nadat de oorzaak weg is, zodat een "
-"flakkerende node maar één melding oplevert"
+"node die blijft wisselen maar één melding oplevert"
 
 #: prefs.js:98
 msgid "Repeat reminder"
@@ -308,7 +311,7 @@ msgstr "gezond"
 #. Translators: spoken cluster state. Something is wrong, nothing is down.
 #: lib/indicator.js:32
 msgid "degraded"
-msgstr "verminderd"
+msgstr "verstoord"
 
 #. Translators: spoken cluster state. At least one node is down.
 #: lib/indicator.js:34
@@ -546,12 +549,12 @@ msgstr "%dd"
 #. Translators: shown when the cluster did not respond before the timeout.
 #: lib/model.js:472
 msgid "The cluster didn't answer in time"
-msgstr "Het cluster antwoordde niet op tijd"
+msgstr "Het cluster reageerde niet op tijd"
 
 #. Translators: TLS/x509 certificate verification failed.
 #: lib/model.js:474
 msgid "The cluster's certificate can't be verified"
-msgstr "Het certificaat van het cluster is niet geldig"
+msgstr "Het certificaat van het cluster kan niet worden geverifieerd"
 
 #. Translators: the API server rejected the credentials (HTTP 401).
 #: lib/model.js:476
@@ -561,7 +564,7 @@ msgstr "Het cluster heeft de aanmelding geweigerd"
 #. Translators: an expired token that a credential helper must refresh.
 #: lib/model.js:478
 msgid "The login has expired"
-msgstr "De aanmelding moet worden vernieuwd"
+msgstr "De aanmelding is verlopen"
 
 #. Translators: authenticated, but not permitted to list nodes (HTTP 403).
 #: lib/model.js:480

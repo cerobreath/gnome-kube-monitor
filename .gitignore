@@ -8,3 +8,6 @@ node_modules/
 .codegraph/
 # Local agent state; the committed .claude/rules stubs stay tracked.
 .claude/settings.local.json
+# Local-only generator for the README brand art. Its output, docs/images/brand/*.svg,
+# is committed: the README renders those through <picture>.
+/.brand/

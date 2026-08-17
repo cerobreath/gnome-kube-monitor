@@ -23,6 +23,7 @@
     "lib/poller.js",
     "lib/alerts.js",
     "lib/log.js",
+    "lib/theme.js",
     "types/**/*.d.ts"
   ]
 }

@@ -91,7 +91,7 @@ gsettings --schemadir schemas set org.gnome.shell.extensions.kube-monitor debug-
 - **Coverage is 100%** on every shipped file, enforced by threshold, not by convention. A
   drop fails the build.
 - **Keep the pure core gi-free.** `lib/model.js`, `lib/schedule.js`, `lib/alerts.js`,
-  `lib/i18n.js` and `lib/log.js` must have **no `gi://` imports**: that is what lets them
+  `lib/i18n.js`, `lib/theme.js` and `lib/log.js` must have **no `gi://` imports**: that is what lets them
   run under node and carry the tests. New parsing, severity, scheduling, alerting or
   formatting logic goes there with a matching `tests/*.test.js`. IO stays in `client.js`,
   the timer loop in `poller.js`, widgets in `indicator.js`.

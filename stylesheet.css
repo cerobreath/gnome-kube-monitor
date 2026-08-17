@@ -275,3 +275,78 @@
     opacity: 0.55;
     max-width: 300px;
 }
+
+/* Light surfaces. St has no media queries, so indicator.js sets .kube-light on
+   the panel button and on the menu box whenever the theme paints dark text on
+   them. Values and their measured contrast: docs/architecture.md. */
+
+/* Dark text loses more contrast per step of opacity, so each dimmed row is
+   raised to where it matches its dark twin. */
+.kube-light .kube-caret,
+.kube-light .kube-context-empty {
+    opacity: 0.6;
+}
+
+.kube-light .kube-meter-label {
+    opacity: 0.65;
+}
+
+.kube-light .kube-pods-ok,
+.kube-light .kube-error-detail,
+.kube-light .kube-error-strip {
+    opacity: 0.7;
+}
+
+.kube-light .kube-time {
+    opacity: 0.75;
+}
+
+.kube-light .kube-node-qual,
+.kube-light .kube-meter-value {
+    opacity: 0.8;
+}
+
+/* The dark palette's greens and ambers cannot carry text here: they were picked
+   against #36363a and reach 1.6:1 on a light popup. */
+.kube-light .kube-dur-up {
+    color: #007c3d;
+}
+
+.kube-light .kube-pods-warn,
+.kube-light .kube-dur-warn {
+    color: #905400;
+}
+
+.kube-light .kube-pods-err,
+.kube-light .kube-dur-down,
+.kube-light .kube-error-title {
+    color: #c30000;
+}
+
+/* The bare .kube-dot stays first: scoped, it ties with the level classes on
+   specificity, and a tie is settled by source order. */
+.kube-light .kube-dot,
+.kube-light .kube-dot-unknown {
+    background-color: #646360;
+}
+
+.kube-light .kube-dot-ok,
+.kube-light .kube-meter-fill.kube-meter-ok {
+    background-color: #007c3d;
+}
+
+.kube-light .kube-dot-warning,
+.kube-light .kube-meter-fill.kube-meter-warning {
+    background-color: #905400;
+}
+
+.kube-light .kube-dot-error,
+.kube-light .kube-meter-fill.kube-meter-error {
+    background-color: #c30000;
+}
+
+.kube-light .kube-context-button:focus,
+.kube-light .kube-icon-button:focus,
+.kube-light .kube-context-row:focus {
+    box-shadow: inset 0 0 0 2px rgba(4, 97, 190, 0.85);
+}

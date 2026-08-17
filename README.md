@@ -1,8 +1,3 @@
-<!--
-  Brand art in docs/images/brand/ is generated, not hand-edited.
-  Each <picture> carries a dark and a light file; GitHub picks one by theme.
--->
-
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/images/brand/hero-dark.svg">
@@ -38,7 +33,7 @@ It runs on the `kubectl` and kubeconfig you already have, so whatever context an
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/images/brand/demo-dark.webp">
     <source media="(prefers-color-scheme: light)" srcset="docs/images/brand/demo-light.webp">
-    <img src="docs/images/brand/demo-light.webp" alt="The panel dot turns red as a node drops out, a notification reads worker-2 is down, then the menu opens showing that node alongside two healthy ones with CPU and memory meters" width="880">
+    <img src="docs/images/brand/demo-light.png" alt="A node drops out: a notification reads worker-2 is down, then the menu opens with that node marked NotReady above the two healthy ones and their CPU and memory meters" width="880">
   </picture>
 </p>
 
@@ -96,7 +91,7 @@ The Kubernetes helm sits in the panel with a status dot in the corner, tracking 
   </picture>
 </p>
 
-Open it and you get the current context, how stale the data is, a pods line (running, pending, crash-looping, failed), and your nodes worst-first: each with its state, how long it has been up or down, its role or the reason it is unhappy, and CPU/memory bars where metrics-server provides them. Plus a context switcher, a mute submenu, and settings.
+Open it and you get the current context, how stale the data is, a pods line (running, pending, crash-looping, failed), and your nodes worst-first: each with its state, how long it has been up or down, its role or the reason it is unhappy, and CPU/memory bars where metrics-server provides them. Plus a context switcher, a mute submenu, and settings. The panel and the menu each follow GNOME's Light and Dark styles, with the status colours picked per style so they stay legible either way.
 
 Outside the menu it does two things. It posts a desktop notification when a node stays NotReady, when the cluster stops answering, and again on recovery, withdrawing the outage banner that the recovery answers so the tray never fills up with resolved alarms. And clicking a node copies `kubectl describe node <name>` to your clipboard.
 
@@ -164,7 +159,7 @@ Kubernetes' own vocabulary stays in English on purpose. `Ready`, `NotReady`, `Sc
   </picture>
 </p>
 
-The parts that do the thinking, parsing, severity, sorting, scheduling, alerting and formatting, have no `gi://` imports at all. About 40% of the shipped JavaScript. They already run unchanged under Node, plain GJS and gnome-shell, which is what the whole test suite depends on. The rule started life as a testability constraint. It turns out to be a portability one too.
+The parts that do the thinking, parsing, severity, sorting, scheduling, alerting and formatting, have no `gi://` imports at all. Just under 40% of the shipped JavaScript. They already run unchanged under Node, plain GJS and gnome-shell, which is what the whole test suite depends on. The rule started life as a testability constraint. It turns out to be a portability one too.
 
 So the plan is to keep that core and rewrite only the edges: KDE Plasma first as a Plasmoid, then a Windows tray app and a macOS menu bar app, each replacing the same three files. No dates on any of it. GNOME Shell stays the reference implementation and gets fixes first.
 

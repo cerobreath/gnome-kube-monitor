@@ -34,6 +34,30 @@ shipped bugs. Each rule below exists because something broke.
 - Purely informational rows (`_podsItem`, the header, the error item) are left dim on
   purpose. There the disabled colour reads as "secondary", which is what they are.
 
+## Light surfaces
+
+- **Declare every hue and every dimming twice.** `stylesheet.css` carries a `.kube-light`
+  half, scoped by a class `indicator.js` sets, because St's CSS subset has no media queries.
+- **Why both halves are needed**: the palette was measured on the dark popup (`#36363a`).
+  On the light one (`#fafafb`) its greens reach 1.6:1, and the same `opacity` buys about a
+  fifth less contrast, because dark text loses more per step than white text gains.
+- **A neutral `rgba(128, 128, 128, …)` is exempt.** It reads the same either way, which is
+  what makes it the right way to write a hover fill in the first place.
+- **Read the surface, not the setting.** `color-scheme` is `prefer-light` only for GNOME's
+  own Light style. It says nothing about a user theme or high contrast, and a shell as old
+  as the 45 in `metadata.json` may ship no light stylesheet for the setting to select.
+  `styleVariant()` in `theme.js` reads the foreground instead: dark text means a light
+  surface. Foreground, not background, which a theme may leave transparent.
+- **Two surfaces, probed separately**: the panel button and `menu.box`. A theme can restyle
+  one and not the other, so a single shared read puts the wrong palette on one of them.
+  blur-my-shell's `force-light-text` does exactly that to the panel.
+- **`get_theme_node()` logs a critical outside the stage.** The panel adopts the button only
+  after `_init` returns, so the first read borrows `Main.panel`'s node. `menu.box` needs no
+  such workaround: `setMenu()` has already put it in `Main.uiGroup`.
+- **Disconnect both `style-changed` handlers in `destroy()`.** Unparenting restyles an actor,
+  and a handler still connected would read a theme node that has left the stage.
+- Values, their measured ratios and where they come from: `docs/architecture.md`.
+
 ## Direction-sensitive CSS must be split
 
 - **Write `margin-left`/`margin-right` twice**, once under `:ltr` and once under `:rtl`.
@@ -57,7 +81,7 @@ shipped bugs. Each rule below exists because something broke.
   instead of widening the popup. Never let unbounded text into the menu.
 - Status colour is class-based (`kube-dot-<level>`, `kube-meter-<level>`, level in
   `ok|warning|error|unknown`), not inline. The one exception is the panel logo:
-  `_syncIconColor()` pins it to the panel foreground and re-runs on `Main.panel`
+  `_syncPanelStyle()` pins it to the surface's own foreground and re-runs on
   `style-changed` so it tracks light and dark themes.
 - The "updated N ago" label uses `GLib.get_monotonic_time()`, immune to wall-clock jumps.
 

@@ -83,13 +83,14 @@ test('enable installs the indicator and starts polling; disable removes it', asy
     assert.equal(Main.messageTray.sources.length, 0, 'the tray source is gone');
 });
 
-test('disable releases the settings handler and the panel style handler', async () => {
+test('disable releases the settings handler and leaves the panel untouched', async () => {
     const {ext, settings} = makeExtension();
     const panelBefore = Main.panel.__handlerCount();
     ext.enable();
     await settle();
     assert.ok(settings.__handlerCount() > 0);
-    assert.ok(Main.panel.__handlerCount() > panelBefore);
+    assert.equal(Main.panel.__handlerCount(), panelBefore,
+        'the style handler belongs on the indicator, which takes it down with it');
 
     ext.disable();
     assert.equal(settings.__handlerCount(), 0, 'no GSettings handler survives disable');

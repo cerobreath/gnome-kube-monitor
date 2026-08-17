@@ -637,17 +637,39 @@ test('a cordoned-but-Ready node still reads as Ready to a screen reader', () => 
 
 test('the panel icon tracks the theme foreground and stops listening on destroy', () => {
     const {indicator} = makeIndicator();
-    const before = indicator._icon.get_style();
-    assert.match(before, /color: rgba\(255, 255, 255/);
+    assert.match(indicator._icon.get_style(), /color: rgba\(255, 255, 255/,
+        'the first read borrows the panel, the only node on the stage during _init');
 
-    Main.panel.__setForeground({red: 0, green: 0, blue: 0, alpha: 255});
+    indicator.__setForeground({red: 0, green: 0, blue: 0, alpha: 255});
     assert.match(indicator._icon.get_style(), /color: rgba\(0, 0, 0/,
         'the logo must follow light/dark themes');
 
-    const handlersBefore = Main.panel.__handlerCount();
+    assert.ok(indicator.__handlerCount() > 0);
+    // The fake throws on an id its emitter never handed out, so this also pins
+    // that each handler is released from the object it was connected to.
     indicator.destroy();
-    assert.equal(Main.panel.__handlerCount(), handlersBefore - 1,
-        'the style-changed handler must be released, or every lock/unlock leaks one');
+});
+
+test('each surface picks its palette from its own foreground', () => {
+    const {indicator} = makeIndicator();
+    const box = indicator.menu.box;
+    const dark = {red: 255, green: 255, blue: 255, alpha: 255};
+    const light = {red: 34, green: 34, blue: 38, alpha: 255};
+    assert.equal(indicator.has_style_class_name('kube-light'), false, 'dark is the default');
+    assert.equal(box.has_style_class_name('kube-light'), false);
+
+    // A theme can restyle one and not the other: forcing light text on a blurred
+    // panel leaves the popup light, and a shared read would mis-colour it.
+    box.__setForeground(light);
+    assert.equal(box.has_style_class_name('kube-light'), true);
+    assert.equal(indicator.has_style_class_name('kube-light'), false);
+
+    indicator.__setForeground(light);
+    assert.equal(indicator.has_style_class_name('kube-light'), true);
+
+    indicator.__setForeground(dark);
+    assert.equal(indicator.has_style_class_name('kube-light'), false,
+        'switching back has to take the class off again');
 });
 
 test('destroy clears the row map and removes the indicator from the panel', () => {

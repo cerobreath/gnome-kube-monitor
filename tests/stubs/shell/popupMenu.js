@@ -73,6 +73,11 @@ export class PopupMenu extends ItemHolder {
         super();
         this.sourceActor = sourceActor;
         this.isOpen = false;
+        // The real menu keeps its items in this actor and styles it; this one
+        // only stands in for the surface the view takes its palette from. Added
+        // as a child, so destroying the menu drops the handler on it too.
+        this.box = new Actor({style_class: 'popup-menu-content'});
+        this.add_child(this.box);
     }
 
     /** @param {boolean} open */

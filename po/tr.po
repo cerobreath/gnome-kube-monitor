@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Kube Node Monitor 0.1.0\n"
 "Report-Msgid-Bugs-To: https://github.com/cerobreath/gnome-kube-monitor\n"
-"POT-Creation-Date: 2026-08-17 17:22+0300\n"
+"POT-Creation-Date: 2026-08-17 22:35+0300\n"
 "PO-Revision-Date: 2026-07-31 01:05+0300\n"
 "Last-Translator: Kube Node Monitor contributors\n"
 "Language-Team: Turkish\n"
@@ -300,28 +300,28 @@ msgstr[0] "%d uyarı giderildi"
 msgstr[1] "%d uyarı giderildi"
 
 #. Translators: spoken cluster state. Every node is Ready.
-#: lib/indicator.js:30
+#: lib/indicator.js:51
 msgid "healthy"
 msgstr "sağlıklı"
 
 #. Translators: spoken cluster state. Something is wrong, nothing is down.
-#: lib/indicator.js:32
+#: lib/indicator.js:53
 msgid "degraded"
 msgstr "sorunlu"
 
 #. Translators: spoken cluster state. At least one node is down.
-#: lib/indicator.js:34
+#: lib/indicator.js:55
 msgid "critical"
 msgstr "kritik"
 
 #. Translators: spoken cluster state. No reading yet, or kubectl failed.
-#: lib/indicator.js:36
+#: lib/indicator.js:57
 msgid "status unknown"
 msgstr "durum bilinmiyor"
 
 #. Translators: a choice in the "Mute alerts" submenu. %d is a number
 #. of minutes.
-#: lib/indicator.js:56
+#: lib/indicator.js:77
 #, javascript-format
 msgid "For %d minute"
 msgid_plural "For %d minutes"
@@ -329,7 +329,7 @@ msgstr[0] "%d dakika boyunca"
 msgstr[1] "%d dakika boyunca"
 
 #. Translators: a choice in the "Mute alerts" submenu. %d is a number of hours.
-#: lib/indicator.js:60
+#: lib/indicator.js:81
 #, javascript-format
 msgid "For %d hour"
 msgid_plural "For %d hours"
@@ -337,12 +337,12 @@ msgstr[0] "%d saat boyunca"
 msgstr[1] "%d saat boyunca"
 
 #. Translators: placeholder in the menu header before the first poll lands.
-#: lib/indicator.js:166 lib/indicator.js:407
+#: lib/indicator.js:204 lib/indicator.js:445
 msgid "Loading…"
 msgstr "Yükleniyor…"
 
 #. Translators: spoken name of the icon-only refresh button.
-#: lib/indicator.js:191
+#: lib/indicator.js:229
 msgid "Refresh now"
 msgstr "Şimdi yenile"
 
@@ -350,64 +350,64 @@ msgstr "Şimdi yenile"
 #. until the poll answers.
 #. Translators: shown under the context name while the first poll of a
 #. cluster is still in flight.
-#: lib/indicator.js:197 lib/indicator.js:713
+#: lib/indicator.js:235 lib/indicator.js:751
 msgid "updating…"
 msgstr "güncelleniyor…"
 
 #. Translators: submenu that mutes alert banners for a while.
-#: lib/indicator.js:254 lib/indicator.js:306
+#: lib/indicator.js:292 lib/indicator.js:344
 msgid "Mute alerts"
 msgstr "Uyarıları sustur"
 
 #. Translators: menu row that cancels an active mute.
-#: lib/indicator.js:262
+#: lib/indicator.js:300
 msgid "Turn muting off"
 msgstr "Susturmayı kapat"
 
 #. Translators: menu row that opens the extension's preferences window.
-#: lib/indicator.js:271
+#: lib/indicator.js:309
 msgid "Settings"
 msgstr "Ayarlar"
 
 #. Translators: the "Mute alerts" row while muting is active. %s is a
 #. short duration such as "45m" or "2h".
-#: lib/indicator.js:303
+#: lib/indicator.js:341
 #, javascript-format
 msgid "Muted · %s left"
 msgstr "Susturuldu · %s kaldı"
 
 #. Translators: spoken state of the cluster switcher when its list is open.
-#: lib/indicator.js:324
+#: lib/indicator.js:362
 msgid "expanded"
 msgstr "genişletilmiş"
 
 #. Translators: spoken state of the cluster switcher when its list is closed.
-#: lib/indicator.js:326
+#: lib/indicator.js:364
 msgid "collapsed"
 msgstr "daraltılmış"
 
 #. Translators: spoken name of the menu header button. %1$s is the current
 #. context name, %2$s is "expanded" or "collapsed".
-#: lib/indicator.js:329
+#: lib/indicator.js:367
 #, javascript-format
 msgid "%1$s, %2$s, cluster switcher"
 msgstr "%1$s, %2$s, küme değiştirici"
 
 #. Translators: shown in the cluster switcher when the kubeconfig
 #. defines no contexts.
-#: lib/indicator.js:343
+#: lib/indicator.js:381
 msgid "No contexts"
 msgstr "Bağlam yok"
 
 #. Translators: last row of the cluster switcher; opens preferences so
 #. another kubeconfig can be added.
-#: lib/indicator.js:359
+#: lib/indicator.js:397
 msgid "Add connection…"
 msgstr "Bağlantı ekle…"
 
 #. Translators: spoken name of the selected row in the cluster switcher.
 #. %s is the context name, a cluster identifier, so leave it as it is.
-#: lib/indicator.js:386
+#: lib/indicator.js:424
 #, javascript-format
 msgid "%s, current"
 msgstr "%s, geçerli"
@@ -415,7 +415,7 @@ msgstr "%s, geçerli"
 #. Translators: spoken summary of the whole cluster. %1$s is a state word
 #. ("healthy", "degraded", …), %2$d is how many nodes are Ready and %3$d
 #. how many there are. The plural form follows the total, %3$d.
-#: lib/indicator.js:444
+#: lib/indicator.js:482
 #, javascript-format
 msgid "%1$s, %2$d of %3$d node ready"
 msgid_plural "%1$s, %2$d of %3$d nodes ready"
@@ -424,13 +424,13 @@ msgstr[1] "%1$s, %3$d düğümden %2$d tanesi hazır"
 
 #. Translators: shown in place of the node list when the cluster
 #. reports no nodes at all.
-#: lib/indicator.js:515
+#: lib/indicator.js:553
 msgid "No nodes"
 msgstr "Düğüm yok"
 
 #. Translators: closes a truncated node list. %d is how many
 #. further nodes exist that the menu did not draw.
-#: lib/indicator.js:528
+#: lib/indicator.js:566
 #, javascript-format
 msgid "… and %d more node"
 msgid_plural "… and %d more nodes"
@@ -439,26 +439,26 @@ msgstr[1] "… ve %d düğüm daha"
 
 #. Translators: spoken uptime on a node row: how long it has been
 #. Ready. %s is a short duration such as "3d".
-#: lib/indicator.js:619
+#: lib/indicator.js:657
 #, javascript-format
 msgid "up %s"
 msgstr "%s süredir çalışıyor"
 
 #. Translators: spoken downtime on a node row: how long it has been
 #. NotReady. %s is a short duration such as "3d".
-#: lib/indicator.js:622
+#: lib/indicator.js:660
 #, javascript-format
 msgid "down %s"
 msgstr "%s süredir çalışmıyor"
 
 #. Translators: spoken CPU load on a node row. %d is a percentage.
-#: lib/indicator.js:625
+#: lib/indicator.js:663
 #, javascript-format
 msgid "CPU %d%%"
 msgstr "CPU %%%d"
 
 #. Translators: spoken memory load on a node row. %d is a percentage.
-#: lib/indicator.js:629
+#: lib/indicator.js:667
 #, javascript-format
 msgid "memory %d%%"
 msgstr "bellek %%%d"
@@ -466,7 +466,7 @@ msgstr "bellek %%%d"
 #. Translators: pod counts under the menu header. English has one form for
 #. all counts, but %d selects the plural form your language needs. Keep
 #. these very short: up to four of them share one row.
-#: lib/indicator.js:675
+#: lib/indicator.js:713
 #, javascript-format
 msgid "%d running"
 msgid_plural "%d running"
@@ -474,7 +474,7 @@ msgstr[0] "%d çalışıyor"
 msgstr[1] "%d çalışıyor"
 
 #. Translators: pods accepted but not yet started. Keep it very short.
-#: lib/indicator.js:679
+#: lib/indicator.js:717
 #, javascript-format
 msgid "%d pending"
 msgid_plural "%d pending"
@@ -482,7 +482,7 @@ msgstr[0] "%d bekliyor"
 msgstr[1] "%d bekliyor"
 
 #. Translators: pods stuck restarting (CrashLoopBackOff). Keep it very short.
-#: lib/indicator.js:684
+#: lib/indicator.js:722
 #, javascript-format
 msgid "%d crashing"
 msgid_plural "%d crashing"
@@ -490,7 +490,7 @@ msgstr[0] "%d çöküyor"
 msgstr[1] "%d çöküyor"
 
 #. Translators: pods that terminated in failure. Keep it very short.
-#: lib/indicator.js:689
+#: lib/indicator.js:727
 #, javascript-format
 msgid "%d failed"
 msgid_plural "%d failed"
@@ -499,14 +499,14 @@ msgstr[1] "%d başarısız"
 
 #. Translators: spoken name of the panel button. "Kube Node Monitor" is
 #. the extension's name, so leave it as it is. %s is the cluster summary.
-#: lib/indicator.js:699
+#: lib/indicator.js:737
 #, javascript-format
 msgid "Kube Node Monitor: %s"
 msgstr "Kube Node Monitor: %s"
 
 #. Translators: shown under the context name when the reading is only a
 #. few seconds old, in place of a duration.
-#: lib/indicator.js:721
+#: lib/indicator.js:759
 msgid "now"
 msgstr "az önce"
 

@@ -59,6 +59,44 @@ test('every row a pointer can land on still says so', () => {
     }
 });
 
+// Greys written as equal channels read the same on either surface, which is why
+// the hovers and the meter track are exempt below; anything with a hue is not.
+const COLOUR = /#([0-9a-f]{6})\b|rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/gi;
+
+/** @param {string} body @returns {boolean} */
+function hasHue(body) {
+    for (const m of body.matchAll(COLOUR)) {
+        const [r, g, b] = m[1]
+            ? [m[1].slice(0, 2), m[1].slice(2, 4), m[1].slice(4, 6)].map(c => parseInt(c, 16))
+            : [m[2], m[3], m[4]].map(Number);
+        if (r !== g || g !== b)
+            return true;
+    }
+    return false;
+}
+
+test('every hue and every dimmed row is declared for light surfaces too', () => {
+    // The dark palette was picked against #36363a: on #fafafb its greens reach
+    // 1.6:1, and the same opacity buys a fifth less contrast. Both need a twin.
+    const scoped = new Set(rules()
+        .filter(r => r.selector.includes('.kube-light'))
+        .flatMap(r => r.selector.match(/\.kube-[a-z-]+/g) ?? []));
+    const missing = new Set();
+    for (const rule of rules()) {
+        if (rule.selector.includes('.kube-light'))
+            continue;
+        if (!hasHue(rule.body) && !/(?:^|[\s;])opacity\s*:/.test(rule.body))
+            continue;
+        for (const cls of rule.selector.match(/\.kube-[a-z-]+/g) ?? []) {
+            if (!scoped.has(cls))
+                missing.add(cls);
+        }
+    }
+    assert.deepEqual([...missing], [],
+        'these would keep their dark-surface value under GNOME\'s Light style; ' +
+        'add a `.kube-light` rule with a value measured against #fafafb');
+});
+
 test('the meter track width still matches METER_WIDTH in indicator.js', () => {
     // A constant duplicated across a file the tests execute and one they do not.
     const css = /\.kube-meter-track\s*\{[^}]*width:\s*(\d+)px/.exec(CSS);

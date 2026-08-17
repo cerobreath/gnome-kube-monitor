@@ -5,13 +5,14 @@ paths:
 
 # Test harness
 
-282 tests across 13 files, no dependencies, no cluster, no gnome-shell. Every shipped file
+340 tests across 14 files, no dependencies, no cluster, no gnome-shell. Every shipped file
 is held at 100% line, branch and function coverage by `npm run coverage`, which is part of
 `npm run check` and its own CI job.
 
 ## How gi-dependent code is testable at all
 
-- The gi-free modules (`model.js`, `schedule.js`, `alerts.js`, `i18n.js`, `log.js`) are
+- The gi-free modules (`model.js`, `schedule.js`, `alerts.js`, `i18n.js`, `theme.js`,
+  `log.js`) are
   tested directly, because node can resolve every import they have.
 - Everything else imports `gi://…` or `resource:///…`, which node cannot resolve.
   `tests/hooks.mjs` redirects those specifiers at `tests/stubs/` using `node:module`

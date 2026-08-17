@@ -60,6 +60,9 @@ export class Actor extends Emitter {
         this.opacity = 255;
         /** @type {string[]} */
         this.__classes = [];
+        // What the dark shell stylesheet paints text with; __setForeground moves
+        // the actor to another variant the way a theme switch does.
+        this.__fg = {red: 255, green: 255, blue: 255, alpha: 255};
         this.__text = '';
         Object.assign(this, params);
         if (typeof params.style_class === 'string')
@@ -103,6 +106,17 @@ export class Actor extends Emitter {
     /** @param {string} cls */
     has_style_class_name(cls) {
         return this.__classes.includes(cls);
+    }
+
+    /** The subset of StThemeNode the view reads. */
+    get_theme_node() {
+        return {get_foreground_color: () => this.__fg};
+    }
+
+    /** @param {{red: number, green: number, blue: number, alpha: number}} color */
+    __setForeground(color) {
+        this.__fg = color;
+        this.emit('style-changed');
     }
 
     /** @param {string} style */

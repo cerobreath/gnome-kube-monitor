@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 320" width="880" height="320" fill="none" role="img" aria-label="Contrast on the light popup: every dark palette value falls under its floor there, the lowest at 1.58, and each light value written for it clears the floor">
+<title>Contrast on the light popup: every dark palette value falls under its floor there, the lowest at 1.58, and each light value written for it clears the floor</title>
+<style>.cb{animation:grow 5s ease-out infinite;transform-box:fill-box;transform-origin:left center}
+@keyframes grow{0%{transform:scaleX(0)}22%,100%{transform:scaleX(1)}}@media (prefers-reduced-motion:reduce){*{animation:none!important}}</style>
+<defs>
+  <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M0,1 L9,5 L0,9 z" fill="rgba(243,231,236,0.66)"/>
+  </marker>
+  <marker id="ahA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M0,1 L9,5 L0,9 z" fill="#D8556A"/>
+  </marker>
+  <marker id="ahBad" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M0,1 L9,5 L0,9 z" fill="#FF5C5C"/>
+  </marker></defs>
+  <text x="26" y="22" text-anchor="start" font-family="system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="12.5" font-weight="400" fill="rgba(243,231,236,0.52)">Contrast ratio on the light popup, #fafafb</text>
+  <rect x="196" y="34" width="20" height="9" rx="2" fill="#FF5C5C"/>
+  <text x="224" y="42" text-anchor="start" font-family="system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="12.5" font-weight="600" fill="#F3E7EC">the dark value, reused</text>
+  <rect x="420" y="34" width="20" height="9" rx="2" fill="#2EC27E"/>
+  <text x="448" y="42" text-anchor="start" font-family="system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="12.5" font-weight="600" fill="#F3E7EC">the light value, written for it</text>
+  <line x1="401.3333333333333" y1="60" x2="401.3333333333333" y2="292" stroke="rgba(243,231,236,0.52)" stroke-width="1" stroke-dasharray="3 4"/>
+  <text x="401.3333333333333" y="54" text-anchor="middle" font-family="ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace" font-size="11" font-weight="400" fill="rgba(243,231,236,0.52)">3:1</text>
+  <line x1="555.3333333333334" y1="60" x2="555.3333333333334" y2="292" stroke="rgba(243,231,236,0.52)" stroke-width="1" stroke-dasharray="3 4"/>
+  <text x="555.3333333333334" y="54" text-anchor="middle" font-family="ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace" font-size="11" font-weight="400" fill="rgba(243,231,236,0.52)">4.5:1</text>
+  <text x="182" y="87" text-anchor="end" font-family="ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace" font-size="11.5" font-weight="400" fill="rgba(243,231,236,0.66)">.kube-dur-up</text>
+    <rect class="cb" style="animation-delay:0.00s" x="196" y="70" width="59.5" height="10" rx="2" fill="#FF5C5C"/>
+    <text x="262.5466666666667" y="79" text-anchor="start" font-family="ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace" font-size="10.5" font-weight="400" fill="#FF5C5C">1.58</text>
+    <rect class="cb" style="animation-delay:0.30s" x="196" y="86" width="420.9" height="10" rx="2" fill="#2EC27E"/>
+    <text x="623.9333333333333" y="95" text-anchor="start" font-family="ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace" font-size="10.5" font-weight="400" fill="#2EC27E">5.10</text>
+  <text x="182" y="119" text-anchor="end" font-family="ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace" font-size="11.5" font-weight="400" fill="rgba(243,231,236,0.66)">.kube-dur-warn</text>
+    <rect class="cb" style="animation-delay:0.10s" x="196" y="102" width="61.6" height="10" rx="2" fill="#FF5C5C"/>
+    <text x="264.6" y="111" text-anchor="start" font-family="ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace" font-size="10.5" font-weight="400" fill="#FF5C5C">1.60</text>
+    <rect class="cb" style="animation-delay:0.40s" x="196" y="118" width="495.9" height="10" rx="2" fill="#2EC27E"/>
+    <text x="698.8800000000001" y="127" text-anchor="start" font-family="ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace" font-size="10.5" font-weight="400" fill="#2EC27E">5.83</text>
+  <text x="182" y="151" text-anchor="end" font-family="ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace" font-size="11.5" font-weight="400" fill="rgba(243,231,236,0.66)">.kube-pods-warn</text>
+    <rect class="cb" style="animation-delay:0.20s" x="196" y="134" width="109.9" height="10" rx="2" fill="#FF5C5C"/>
+    <text x="312.85333333333335" y="143" text-anchor="start" font-family="ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace" font-size="10.5" font-weight="400" fill="#FF5C5C">2.07</text>
+    <rect class="cb" style="animation-delay:0.50s" x="196" y="150" width="495.9" height="10" rx="2" fill="#2EC27E"/>
+    <text x="698.8800000000001" y="159" text-anchor="start" font-family="ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace" font-size="10.5" font-weight="400" fill="#2EC27E">5.83</text>
+  <text x="182" y="183" text-anchor="end" font-family="ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace" font-size="11.5" font-weight="400" fill="rgba(243,231,236,0.66)">.kube-pods-err</text>
+    <rect class="cb" style="animation-delay:0.30s" x="196" y="166" width="145.8" height="10" rx="2" fill="#FF5C5C"/>
+    <text x="348.78666666666663" y="175" text-anchor="start" font-family="ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace" font-size="10.5" font-weight="400" fill="#FF5C5C">2.42</text>
+    <rect class="cb" style="animation-delay:0.60s" x="196" y="182" width="519.5" height="10" rx="2" fill="#2EC27E"/>
+    <text x="722.4933333333333" y="191" text-anchor="start" font-family="ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace" font-size="10.5" font-weight="400" fill="#2EC27E">6.06</text>
+  <text x="182" y="215" text-anchor="end" font-family="ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace" font-size="11.5" font-weight="400" fill="rgba(243,231,236,0.66)">.kube-dot-ok</text>
+    <rect class="cb" style="animation-delay:0.40s" x="196" y="198" width="123.2" height="10" rx="2" fill="#FF5C5C"/>
+    <text x="326.20000000000005" y="207" text-anchor="start" font-family="ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace" font-size="10.5" font-weight="400" fill="#FF5C5C">2.20</text>
+    <rect class="cb" style="animation-delay:0.70s" x="196" y="214" width="420.9" height="10" rx="2" fill="#2EC27E"/>
+    <text x="623.9333333333333" y="223" text-anchor="start" font-family="ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace" font-size="10.5" font-weight="400" fill="#2EC27E">5.10</text>
+  <text x="182" y="247" text-anchor="end" font-family="ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace" font-size="11.5" font-weight="400" fill="rgba(243,231,236,0.66)">.kube-dot-error</text>
+    <rect class="cb" style="animation-delay:0.50s" x="196" y="230" width="195.1" height="10" rx="2" fill="#FF5C5C"/>
+    <text x="398.06666666666666" y="239" text-anchor="start" font-family="ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace" font-size="10.5" font-weight="400" fill="#FF5C5C">2.90</text>
+    <rect class="cb" style="animation-delay:0.80s" x="196" y="246" width="519.5" height="10" rx="2" fill="#2EC27E"/>
+    <text x="722.4933333333333" y="255" text-anchor="start" font-family="ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace" font-size="10.5" font-weight="400" fill="#2EC27E">6.06</text>
+  <text x="182" y="279" text-anchor="end" font-family="ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace" font-size="11.5" font-weight="400" fill="rgba(243,231,236,0.66)">.kube-dot-unknown</text>
+    <rect class="cb" style="animation-delay:0.60s" x="196" y="262" width="177.6" height="10" rx="2" fill="#FF5C5C"/>
+    <text x="380.61333333333334" y="271" text-anchor="start" font-family="ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace" font-size="10.5" font-weight="400" fill="#FF5C5C">2.73</text>
+    <rect class="cb" style="animation-delay:0.90s" x="196" y="278" width="488.7" height="10" rx="2" fill="#2EC27E"/>
+    <text x="691.6933333333334" y="287" text-anchor="start" font-family="ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace" font-size="10.5" font-weight="400" fill="#2EC27E">5.76</text>
+  <line x1="196" y1="66" x2="196" y2="292" stroke="rgba(243,231,236,0.52)" stroke-width="1.4"/>
+  <text x="26" y="310" text-anchor="start" font-family="system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="11.5" font-weight="400" fill="rgba(243,231,236,0.52)">All seven fall short reused. 4.5:1 is the floor for text, 3:1 for a dot or a meter fill.</text>
+</svg>

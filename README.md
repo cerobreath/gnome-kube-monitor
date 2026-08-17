@@ -11,7 +11,7 @@
   <a href="https://github.com/cerobreath/gnome-kube-monitor/releases/latest"><img src="https://img.shields.io/github/v/release/cerobreath/gnome-kube-monitor?style=flat-square&label=release&labelColor=1B1119&color=A82740" alt="Latest release"></a>
   <img src="https://img.shields.io/badge/GNOME_Shell-45--50-A82740?style=flat-square&labelColor=1B1119" alt="GNOME Shell 45 to 50">
   <img src="https://img.shields.io/badge/coverage-100%25-2EC27E?style=flat-square&labelColor=1B1119" alt="100% test coverage">
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-GPL--2.0--or--later-A82740?style=flat-square&labelColor=1B1119" alt="GPL-2.0-or-later"></a>
+  <a href="COPYING"><img src="https://img.shields.io/badge/license-GPL--2.0--or--later-A82740?style=flat-square&labelColor=1B1119" alt="GPL-2.0-or-later"></a>
 </p>
 
 <!--
@@ -182,4 +182,4 @@ Bug reports and pull requests are welcome. For a bug, the extension version, you
 
 ## License
 
-Distributed under the terms of the [GNU General Public License, version 2 or later](LICENSE). © 2026 Denys Lysenok.
+Distributed under the terms of the [GNU General Public License, version 2 or later](COPYING). © 2026 Denys Lysenok.

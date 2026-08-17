@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Kube Node Monitor 0.1.0\n"
 "Report-Msgid-Bugs-To: https://github.com/cerobreath/gnome-kube-monitor\n"
-"POT-Creation-Date: 2026-08-17 22:35+0300\n"
+"POT-Creation-Date: 2026-08-18 01:38+0300\n"
 "PO-Revision-Date: 2026-07-31 01:05+0300\n"
 "Last-Translator: Kube Node Monitor contributors\n"
 "Language-Team: Arabic\n"
@@ -21,87 +21,87 @@ msgstr ""
 "Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
 "&& n%100<=10 ? 3 : n%100>=11 ? 4 : 5);\n"
 
-#: extension.js:72
+#: extension.js:76
 msgid "Copied to clipboard"
 msgstr "نُسخ إلى الحافظة"
 
 #. Translators: the only page of the preferences window.
-#: prefs.js:25
+#: prefs.js:29
 msgid "General"
 msgstr "عام"
 
 #. Translators: preferences group covering how often the cluster is polled.
-#: prefs.js:29
+#: prefs.js:33
 msgid "Monitoring"
 msgstr "المراقبة"
 
-#: prefs.js:33
+#: prefs.js:37
 msgid "Refresh interval"
 msgstr "فترة التحديث"
 
-#: prefs.js:34
+#: prefs.js:38
 msgid "Seconds between kubectl polls"
 msgstr "عدد الثواني بين استعلامات kubectl"
 
-#: prefs.js:41
+#: prefs.js:45
 msgid "Notifications"
 msgstr "التنبيهات"
 
-#: prefs.js:42
+#: prefs.js:46
 msgid "Choose which events notify you, and how long to wait first."
 msgstr "اختر الأحداث التي تُنبّهك، ومدة الانتظار قبل ذلك."
 
-#: prefs.js:47
+#: prefs.js:51
 msgid "Node problems"
 msgstr "مشكلات العقد"
 
 #. Translators: "Ready" is a Kubernetes node state, keep it as it is.
-#: prefs.js:49
+#: prefs.js:53
 msgid "Notify when a node stops being Ready"
 msgstr "التنبيه عند خروج عقدة من حالة Ready"
 
-#: prefs.js:55
+#: prefs.js:59
 msgid "Cluster unreachable"
 msgstr "تعذّر الوصول إلى العنقود"
 
-#: prefs.js:56
+#: prefs.js:60
 msgid "Notify when kubectl cannot reach the cluster"
 msgstr "التنبيه عند تعذّر وصول kubectl إلى العنقود"
 
-#: prefs.js:62
+#: prefs.js:66
 msgid "Recovery"
 msgstr "العودة للعمل"
 
-#: prefs.js:63
+#: prefs.js:67
 msgid "Also notify when a node or the cluster comes back"
 msgstr "التنبيه أيضًا عند عودة عقدة أو العنقود للعمل"
 
 #. Translators: how long a node must stay down before it notifies.
-#: prefs.js:70
+#: prefs.js:74
 msgid "Node delay"
 msgstr "مهلة العقدة"
 
 #. Translators: "NotReady" is a Kubernetes node state, keep it as it is.
-#: prefs.js:72
+#: prefs.js:76
 msgid "Seconds a node must stay NotReady before notifying"
 msgstr "عدد الثواني التي يجب أن تبقى فيها العقدة بحالة NotReady قبل التنبيه"
 
 #. Translators: how long the cluster must stay unreachable before it notifies.
-#: prefs.js:80
+#: prefs.js:84
 msgid "Cluster delay"
 msgstr "مهلة العنقود"
 
-#: prefs.js:81
+#: prefs.js:85
 msgid "Seconds the cluster must stay unreachable before notifying"
 msgstr "عدد الثواني التي يجب أن يبقى فيها العنقود غير متاح قبل التنبيه"
 
 #. Translators: an alert stays active this long after its cause clears.
-#: prefs.js:89
+#: prefs.js:93
 msgid "Hold time"
 msgstr "مدة الإبقاء"
 
 #. Translators: a node that "flaps" switches state repeatedly.
-#: prefs.js:91
+#: prefs.js:95
 msgid ""
 "Seconds an alert stays active after it clears, so a flapping node notifies "
 "once"
@@ -109,11 +109,11 @@ msgstr ""
 "عدد الثواني التي يبقى فيها التنبيه نشطًا بعد زوال سببه، حتى تُنبّه العقدة "
 "المتذبذبة مرة واحدة"
 
-#: prefs.js:98
+#: prefs.js:102
 msgid "Repeat reminder"
 msgstr "تكرار التذكير"
 
-#: prefs.js:99
+#: prefs.js:103
 msgid ""
 "Seconds before notifying again about a still-active alert, or zero to notify "
 "once"
@@ -122,104 +122,104 @@ msgstr ""
 "واحدة"
 
 #. Translators: alerts firing within this window become one notification.
-#: prefs.js:107
+#: prefs.js:111
 msgid "Batch window"
 msgstr "نافذة التجميع"
 
-#: prefs.js:108
+#: prefs.js:112
 msgid "Seconds to wait so alerts firing together arrive as one notification"
 msgstr "عدد ثواني الانتظار كي تصل التنبيهات المتزامنة في إشعار واحد"
 
-#: prefs.js:115
+#: prefs.js:119
 msgid "Connection"
 msgstr "الاتصال"
 
-#: prefs.js:116
+#: prefs.js:120
 msgid "kubectl and the kubeconfig are found automatically."
 msgstr "يُعثر على kubectl وملف kubeconfig تلقائيًا."
 
 #. Translators: "context" is the kubectl term for a saved cluster
 #. connection; use whatever kubectl's own translation uses.
-#: prefs.js:126
+#: prefs.js:130
 msgid "Context"
 msgstr "السياق"
 
-#: prefs.js:126 prefs.js:299
+#: prefs.js:130 prefs.js:303
 msgid "Which context to monitor"
 msgstr "السياق المراد مراقبته"
 
 #. Translators: tooltip on the status icon beside the kubectl row.
-#: prefs.js:137
+#: prefs.js:141
 msgid "Whether kubectl was found"
 msgstr "ما إذا كان قد عُثر على kubectl"
 
 #. Translators: tooltip on the status icon beside the kubeconfig row.
-#: prefs.js:144
+#: prefs.js:148
 msgid "Whether a kubeconfig was found"
 msgstr "ما إذا كان قد عُثر على ملف kubeconfig"
 
 #. Translators: button that tries the connection. Keep it to one word if
 #. you can, it is a compact button in a row.
-#: prefs.js:151
+#: prefs.js:155
 msgid "Test"
 msgstr "اختبار"
 
-#: prefs.js:153
+#: prefs.js:157
 msgid "Test connection"
 msgstr "اختبار الاتصال"
 
-#: prefs.js:153
+#: prefs.js:157
 msgid "Run kubectl and list contexts"
 msgstr "تشغيل kubectl وعرض السياقات"
 
-#: prefs.js:161
+#: prefs.js:165
 msgid "Advanced"
 msgstr "خيارات متقدمة"
 
-#: prefs.js:162
+#: prefs.js:166
 msgid "Extra kubeconfig files and a custom kubectl path"
 msgstr "ملفات kubeconfig إضافية ومسار مخصص لـ kubectl"
 
-#: prefs.js:166
+#: prefs.js:170
 msgid "kubectl path"
 msgstr "مسار kubectl"
 
-#: prefs.js:172
+#: prefs.js:176
 msgid "Log diagnostics"
 msgstr "تسجيل التشخيص"
 
-#: prefs.js:173
+#: prefs.js:177
 msgid "Record poll and alert decisions in the system log"
 msgstr "تسجيل قرارات الاستعلام والتنبيه في سجل النظام"
 
-#: prefs.js:184
+#: prefs.js:188
 msgid "Add kubeconfig file…"
 msgstr "إضافة ملف kubeconfig…"
 
-#: prefs.js:188
+#: prefs.js:192
 msgid "Add a kubeconfig file"
 msgstr "إضافة ملف kubeconfig"
 
-#: prefs.js:193
+#: prefs.js:197
 msgid "Select a kubeconfig file"
 msgstr "اختر ملف kubeconfig"
 
 #. Translators: tooltip on the trash button beside a kubeconfig
 #. file. %s is the file's name.
-#: prefs.js:228
+#: prefs.js:232
 #, javascript-format
 msgid "Remove %s"
 msgstr "إزالة %s"
 
 #. Translators: shown when kubectl is not on PATH. "Advanced" is the
 #. expander below, so use the same wording you gave its title.
-#: prefs.js:252
+#: prefs.js:256
 msgid "Not found on PATH. Set it under Advanced."
 msgstr "غير موجود في PATH. حدّد المسار ضمن الخيارات المتقدمة."
 
 #. Translators: how many kubeconfig files kubectl will merge into
 #. one configuration. %d is the count.
-#: prefs.js:259
+#: prefs.js:263
 #, javascript-format
 msgid "%d file"
 msgid_plural "%d files"
@@ -231,28 +231,28 @@ msgstr[4] "%d ملفًا"
 msgstr[5] "%d ملف"
 
 #. Translators: %s is a file path that does not exist.
-#: prefs.js:267
+#: prefs.js:271
 #, javascript-format
 msgid "%s (missing)"
 msgstr "%s (غير موجود)"
 
 #. Translators: first entry of the context picker. It follows whichever
 #. context kubectl has selected instead of pinning one.
-#: prefs.js:287
+#: prefs.js:291
 msgid "Current context (auto)"
 msgstr "السياق الحالي (تلقائي)"
 
 #. Translators: shown when no context is pinned, so the extension
 #. follows kubectl's selection. %s is that context's name.
 #. "current-context" is a kubeconfig field, keep it as it is.
-#: prefs.js:298
+#: prefs.js:302
 #, javascript-format
 msgid "Following current-context (%s)"
 msgstr "يتبع حقل current-context (%s)"
 
 #. Translators: toast after a successful connection test.
 #. %d is how many contexts the kubeconfig defines.
-#: prefs.js:315
+#: prefs.js:319
 #, javascript-format
 msgid "Connected. Found %d context."
 msgid_plural "Connected. Found %d contexts."
@@ -265,32 +265,32 @@ msgstr[5] "نجح الاتصال. عُثر على %d سياق."
 
 #. Translators: stands in for a node name in a grouped banner's list,
 #. e.g. "web-1, db-2, cluster". Lowercase, to read as one list item.
-#: lib/alerts.js:255
+#: lib/alerts.js:259
 msgid "cluster"
 msgstr "العنقود"
 
 #. Translators: notification title when the cluster answers again.
-#: lib/alerts.js:259
+#: lib/alerts.js:263
 msgid "Cluster reachable again"
 msgstr "عاد الوصول إلى العنقود"
 
 #. Translators: notification title when a node stops being Ready.
 #. %s is the node name as the cluster spells it; do not translate it.
-#: lib/alerts.js:375
+#: lib/alerts.js:379
 #, javascript-format
 msgid "%s is down"
 msgstr "توقفت العقدة %s"
 
 #. Translators: notification title when a node becomes Ready again.
 #. %s is the node's name.
-#: lib/alerts.js:379
+#: lib/alerts.js:383
 #, javascript-format
 msgid "%s recovered"
 msgstr "عادت العقدة %s للعمل"
 
 #. Translators: banner title when several alerts fire at the same time.
 #. %d is how many; the body lists the node names.
-#: lib/alerts.js:425
+#: lib/alerts.js:429
 #, javascript-format
 msgid "%d alert firing"
 msgid_plural "%d alerts firing"
@@ -303,7 +303,7 @@ msgstr[5] "%d تنبيه نشط"
 
 #. Translators: banner title when several alerts clear at the same time.
 #. %d is how many; the body lists the node names.
-#: lib/alerts.js:428
+#: lib/alerts.js:432
 #, javascript-format
 msgid "%d alert recovered"
 msgid_plural "%d alerts recovered"
@@ -315,28 +315,28 @@ msgstr[4] "%d تنبيهًا عاد للوضع الطبيعي"
 msgstr[5] "%d تنبيه عاد للوضع الطبيعي"
 
 #. Translators: spoken cluster state. Every node is Ready.
-#: lib/indicator.js:51
+#: lib/indicator.js:55
 msgid "healthy"
 msgstr "سليم"
 
 #. Translators: spoken cluster state. Something is wrong, nothing is down.
-#: lib/indicator.js:53
+#: lib/indicator.js:57
 msgid "degraded"
 msgstr "متدهور"
 
 #. Translators: spoken cluster state. At least one node is down.
-#: lib/indicator.js:55
+#: lib/indicator.js:59
 msgid "critical"
 msgstr "حرج"
 
 #. Translators: spoken cluster state. No reading yet, or kubectl failed.
-#: lib/indicator.js:57
+#: lib/indicator.js:61
 msgid "status unknown"
 msgstr "الحالة غير معروفة"
 
 #. Translators: a choice in the "Mute alerts" submenu. %d is a number
 #. of minutes.
-#: lib/indicator.js:77
+#: lib/indicator.js:81
 #, javascript-format
 msgid "For %d minute"
 msgid_plural "For %d minutes"
@@ -348,7 +348,7 @@ msgstr[4] "لمدة %d دقيقة"
 msgstr[5] "لمدة %d دقيقة"
 
 #. Translators: a choice in the "Mute alerts" submenu. %d is a number of hours.
-#: lib/indicator.js:81
+#: lib/indicator.js:85
 #, javascript-format
 msgid "For %d hour"
 msgid_plural "For %d hours"
@@ -360,12 +360,12 @@ msgstr[4] "لمدة %d ساعة"
 msgstr[5] "لمدة %d ساعة"
 
 #. Translators: placeholder in the menu header before the first poll lands.
-#: lib/indicator.js:204 lib/indicator.js:445
+#: lib/indicator.js:208 lib/indicator.js:449
 msgid "Loading…"
 msgstr "جارٍ التحميل…"
 
 #. Translators: spoken name of the icon-only refresh button.
-#: lib/indicator.js:229
+#: lib/indicator.js:233
 msgid "Refresh now"
 msgstr "تحديث الآن"
 
@@ -373,64 +373,64 @@ msgstr "تحديث الآن"
 #. until the poll answers.
 #. Translators: shown under the context name while the first poll of a
 #. cluster is still in flight.
-#: lib/indicator.js:235 lib/indicator.js:751
+#: lib/indicator.js:239 lib/indicator.js:755
 msgid "updating…"
 msgstr "جارٍ التحديث…"
 
 #. Translators: submenu that mutes alert banners for a while.
-#: lib/indicator.js:292 lib/indicator.js:344
+#: lib/indicator.js:296 lib/indicator.js:348
 msgid "Mute alerts"
 msgstr "كتم التنبيهات"
 
 #. Translators: menu row that cancels an active mute.
-#: lib/indicator.js:300
+#: lib/indicator.js:304
 msgid "Turn muting off"
 msgstr "إلغاء الكتم"
 
 #. Translators: menu row that opens the extension's preferences window.
-#: lib/indicator.js:309
+#: lib/indicator.js:313
 msgid "Settings"
 msgstr "الإعدادات"
 
 #. Translators: the "Mute alerts" row while muting is active. %s is a
 #. short duration such as "45m" or "2h".
-#: lib/indicator.js:341
+#: lib/indicator.js:345
 #, javascript-format
 msgid "Muted · %s left"
 msgstr "مكتوم · يتبقى %s"
 
 #. Translators: spoken state of the cluster switcher when its list is open.
-#: lib/indicator.js:362
+#: lib/indicator.js:366
 msgid "expanded"
 msgstr "موسّع"
 
 #. Translators: spoken state of the cluster switcher when its list is closed.
-#: lib/indicator.js:364
+#: lib/indicator.js:368
 msgid "collapsed"
 msgstr "مطوي"
 
 #. Translators: spoken name of the menu header button. %1$s is the current
 #. context name, %2$s is "expanded" or "collapsed".
-#: lib/indicator.js:367
+#: lib/indicator.js:371
 #, javascript-format
 msgid "%1$s, %2$s, cluster switcher"
 msgstr "%1$s، %2$s، مبدّل العناقيد"
 
 #. Translators: shown in the cluster switcher when the kubeconfig
 #. defines no contexts.
-#: lib/indicator.js:381
+#: lib/indicator.js:385
 msgid "No contexts"
 msgstr "لا توجد سياقات"
 
 #. Translators: last row of the cluster switcher; opens preferences so
 #. another kubeconfig can be added.
-#: lib/indicator.js:397
+#: lib/indicator.js:401
 msgid "Add connection…"
 msgstr "إضافة اتصال…"
 
 #. Translators: spoken name of the selected row in the cluster switcher.
 #. %s is the context name, a cluster identifier, so leave it as it is.
-#: lib/indicator.js:424
+#: lib/indicator.js:428
 #, javascript-format
 msgid "%s, current"
 msgstr "%s، الحالي"
@@ -438,7 +438,7 @@ msgstr "%s، الحالي"
 #. Translators: spoken summary of the whole cluster. %1$s is a state word
 #. ("healthy", "degraded", …), %2$d is how many nodes are Ready and %3$d
 #. how many there are. The plural form follows the total, %3$d.
-#: lib/indicator.js:482
+#: lib/indicator.js:486
 #, javascript-format
 msgid "%1$s, %2$d of %3$d node ready"
 msgid_plural "%1$s, %2$d of %3$d nodes ready"
@@ -451,13 +451,13 @@ msgstr[5] "%1$s، %2$d من %3$d عقدة جاهزة"
 
 #. Translators: shown in place of the node list when the cluster
 #. reports no nodes at all.
-#: lib/indicator.js:553
+#: lib/indicator.js:557
 msgid "No nodes"
 msgstr "لا توجد عقد"
 
 #. Translators: closes a truncated node list. %d is how many
 #. further nodes exist that the menu did not draw.
-#: lib/indicator.js:566
+#: lib/indicator.js:570
 #, javascript-format
 msgid "… and %d more node"
 msgid_plural "… and %d more nodes"
@@ -470,26 +470,26 @@ msgstr[5] "… و%d عقدة أخرى"
 
 #. Translators: spoken uptime on a node row: how long it has been
 #. Ready. %s is a short duration such as "3d".
-#: lib/indicator.js:657
+#: lib/indicator.js:661
 #, javascript-format
 msgid "up %s"
 msgstr "تعمل منذ %s"
 
 #. Translators: spoken downtime on a node row: how long it has been
 #. NotReady. %s is a short duration such as "3d".
-#: lib/indicator.js:660
+#: lib/indicator.js:664
 #, javascript-format
 msgid "down %s"
 msgstr "متوقفة منذ %s"
 
 #. Translators: spoken CPU load on a node row. %d is a percentage.
-#: lib/indicator.js:663
+#: lib/indicator.js:667
 #, javascript-format
 msgid "CPU %d%%"
 msgstr "CPU %d%%"
 
 #. Translators: spoken memory load on a node row. %d is a percentage.
-#: lib/indicator.js:667
+#: lib/indicator.js:671
 #, javascript-format
 msgid "memory %d%%"
 msgstr "الذاكرة %d%%"
@@ -497,7 +497,7 @@ msgstr "الذاكرة %d%%"
 #. Translators: pod counts under the menu header. English has one form for
 #. all counts, but %d selects the plural form your language needs. Keep
 #. these very short: up to four of them share one row.
-#: lib/indicator.js:713
+#: lib/indicator.js:717
 #, javascript-format
 msgid "%d running"
 msgid_plural "%d running"
@@ -509,7 +509,7 @@ msgstr[4] "%d قيد التشغيل"
 msgstr[5] "%d قيد التشغيل"
 
 #. Translators: pods accepted but not yet started. Keep it very short.
-#: lib/indicator.js:717
+#: lib/indicator.js:721
 #, javascript-format
 msgid "%d pending"
 msgid_plural "%d pending"
@@ -521,7 +521,7 @@ msgstr[4] "%d قيد الانتظار"
 msgstr[5] "%d قيد الانتظار"
 
 #. Translators: pods stuck restarting (CrashLoopBackOff). Keep it very short.
-#: lib/indicator.js:722
+#: lib/indicator.js:726
 #, javascript-format
 msgid "%d crashing"
 msgid_plural "%d crashing"
@@ -533,7 +533,7 @@ msgstr[4] "%d ينهار"
 msgstr[5] "%d ينهار"
 
 #. Translators: pods that terminated in failure. Keep it very short.
-#: lib/indicator.js:727
+#: lib/indicator.js:731
 #, javascript-format
 msgid "%d failed"
 msgid_plural "%d failed"
@@ -546,20 +546,20 @@ msgstr[5] "%d فاشل"
 
 #. Translators: spoken name of the panel button. "Kube Node Monitor" is
 #. the extension's name, so leave it as it is. %s is the cluster summary.
-#: lib/indicator.js:737
+#: lib/indicator.js:741
 #, javascript-format
 msgid "Kube Node Monitor: %s"
 msgstr "Kube Node Monitor: %s"
 
 #. Translators: shown under the context name when the reading is only a
 #. few seconds old, in place of a duration.
-#: lib/indicator.js:759
+#: lib/indicator.js:763
 msgid "now"
 msgstr "الآن"
 
 #. Translators: abbreviated duration in seconds, e.g. "45s". %d is the
 #. number of seconds. Keep it short: it shares a menu row with the node name.
-#: lib/model.js:146
+#: lib/model.js:150
 #, javascript-format
 msgctxt "duration"
 msgid "%ds"
@@ -567,7 +567,7 @@ msgstr "%d ث"
 
 #. Translators: abbreviated duration in minutes, e.g. "45m". %d is the
 #. number of minutes.
-#: lib/model.js:151
+#: lib/model.js:155
 #, javascript-format
 msgctxt "duration"
 msgid "%dm"
@@ -575,7 +575,7 @@ msgstr "%d د"
 
 #. Translators: abbreviated duration in hours, e.g. "5h". %d is the
 #. number of hours.
-#: lib/model.js:156
+#: lib/model.js:160
 #, javascript-format
 msgctxt "duration"
 msgid "%dh"
@@ -583,64 +583,64 @@ msgstr "%d س"
 
 #. Translators: abbreviated duration in days, e.g. "3d". %d is the number
 #. of days.
-#: lib/model.js:160
+#: lib/model.js:164
 #, javascript-format
 msgctxt "duration"
 msgid "%dd"
 msgstr "%d ي"
 
 #. Translators: shown when the cluster did not respond before the timeout.
-#: lib/model.js:590
+#: lib/model.js:594
 msgid "The cluster didn't answer in time"
 msgstr "لم يستجب العنقود في الوقت المحدد"
 
 #. Translators: TLS/x509 certificate verification failed.
-#: lib/model.js:592
+#: lib/model.js:596
 msgid "The cluster's certificate can't be verified"
 msgstr "تعذّر التحقق من شهادة العنقود"
 
 #. Translators: the API server rejected the credentials (HTTP 401).
-#: lib/model.js:594
+#: lib/model.js:598
 msgid "The cluster rejected the login"
 msgstr "رفض العنقود بيانات الدخول"
 
 #. Translators: an expired token that a credential helper must refresh.
-#: lib/model.js:596
+#: lib/model.js:600
 msgid "The login has expired"
 msgstr "انتهت صلاحية تسجيل الدخول"
 
 #. Translators: authenticated, but not permitted to list nodes (HTTP 403).
-#: lib/model.js:598
+#: lib/model.js:602
 msgid "This login can't read the cluster"
 msgstr "لا تملك بيانات الدخول هذه صلاحية قراءة العنقود"
 
 #. Translators: the kubectl binary itself could not be found or executed.
-#: lib/model.js:600
+#: lib/model.js:604
 msgid "Can't find kubectl"
 msgstr "تعذّر العثور على kubectl"
 
 #. Translators: the network could not reach the API server at all.
-#: lib/model.js:602
+#: lib/model.js:606
 msgid "Can't reach the cluster"
 msgstr "تعذّر الوصول إلى العنقود"
 
 #. Translators: the machine itself is offline, so the failure is local.
-#: lib/model.js:604
+#: lib/model.js:608
 msgid "No internet connection"
 msgstr "لا يوجد اتصال بالإنترنت"
 
 #. Translators: no kubeconfig file exists to read a cluster from.
-#: lib/model.js:606
+#: lib/model.js:610
 msgid "No kubeconfig found"
 msgstr "لم يُعثر على ملف kubeconfig"
 
 #. Translators: the selected context is missing from the kubeconfig.
-#: lib/model.js:608
+#: lib/model.js:612
 msgid "The selected context doesn't exist"
 msgstr "السياق المحدد غير موجود"
 
 #. Translators: catch-all when kubectl failed for none of the above reasons.
-#: lib/model.js:610
+#: lib/model.js:614
 msgid "kubectl ran into a problem"
 msgstr "واجه kubectl مشكلة"
 

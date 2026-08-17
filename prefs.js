@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Denys Lysenok
+//
+// SPDX-License-Identifier: GPL-2.0-or-later
+
 // Preferences window (libadwaita). Runs in its own process, so it has Adw, Gtk,
 // Gio and GLib but no St/Clutter/Main. Reuses lib/client.js to detect
 // kubectl/kubeconfig and list contexts.

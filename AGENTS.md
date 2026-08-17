@@ -126,6 +126,9 @@ House style is gnome-shell's own: short, factual, written for the next maintaine
   or a bug it prevents, not by narrating how the decision was reached.
 - **Rationale, benchmarks and measurement notes go in `docs/`,** not into a comment block.
 - JSDoc tags are the type layer and stay. Their prose gets one line.
+- The `SPDX-FileCopyrightText` / `SPDX-License-Identifier` block heading every shipped
+  source file is licensing metadata, not a comment. It does not count against the header
+  limit, and removing it drops the only copyright notice those files carry.
 - `// Translators:` comments stay directly above their string. Rewording one makes the
   `.pot` stale, so re-run `npm run i18n:pot && npm run i18n:update`.
 

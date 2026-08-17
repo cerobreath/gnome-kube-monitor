@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Denys Lysenok
+//
+// SPDX-License-Identifier: GPL-2.0-or-later
+
 // Extension entry point: builds the indicator, the poller and the GSettings
 // bridge in enable(), tears them down in disable(), and folds each poll
 // observation through the alert state machine (lib/alerts.js).

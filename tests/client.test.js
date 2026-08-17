@@ -8,8 +8,8 @@ import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 
 import {
-    fetchHealth, fetchNodesDetail, fetchNodeMetrics, fetchPodsSummary,
-    fetchContexts, fetchCurrentContext,
+    fetchHealth, fetchHealthTable, fetchNodesDetail, fetchNodeMetrics,
+    fetchPodsSummary, fetchContexts, fetchCurrentContext, NodeWatcher,
 } from '../lib/client.js';
 
 const OPTS = {kubectlPath: '', kubeconfig: '', context: ''};
@@ -255,4 +255,132 @@ test('parsing is delegated: each fetch returns model-shaped data', async () => {
     const pods = await fetchPodsSummary(opts(), null);
     assert.equal(pods.running, 1);
     assert.equal(pods.pending, 1);
+});
+
+// The node watch
+
+/** Spawn a watcher against a scriptable streaming subprocess. */
+function watchHarness(watcherOpts = OPTS) {
+    reset();
+    Gio.__setSpawn(() => ({stream: true}));
+    const seen = {lines: /** @type {string[]} */ ([]), exits: /** @type {any[]} */ ([])};
+    const watcher = new NodeWatcher(watcherOpts, {
+        onLine: l => seen.lines.push(l),
+        onExit: i => seen.exits.push(i),
+    });
+    watcher.start();
+    return {watcher, seen, proc: Gio.__lastStreamProc()};
+}
+
+test('watch argv: --watch and event output, no request timeout, context as one element', () => {
+    const {proc} = watchHarness(opts({context: 'demo'}));
+    const argv = Gio.__lastCall().argv;
+    assert.ok(argv.includes('--watch'), argv.join(' '));
+    assert.ok(argv.includes('--output-watch-events'));
+    assert.ok(!argv.some(a => a.startsWith('--request-timeout')),
+        'a request timeout would cleanly kill the watch after it elapsed');
+    assert.ok(argv.includes('--context=demo'));
+    assert.ok(argv[argv.length - 1].startsWith('jsonpath='));
+    assert.ok(proc, 'the watch child is a streaming subprocess');
+});
+
+test('watch lines stream to onLine as they arrive; a clean exit reports ok', async () => {
+    const {seen, proc} = watchHarness();
+    proc.__pushLine('ADDED|n1||Ready|True');
+    await GLib.__settle();
+    assert.deepEqual(seen.lines, ['ADDED|n1||Ready|True']);
+
+    proc.__pushLine('MODIFIED|n1||Ready|False');
+    await GLib.__settle();
+    assert.equal(seen.lines.length, 2);
+
+    GLib.__setClock(45_000);             // lifetime comes from the monotonic clock
+    proc.__exit({ok: true});
+    await GLib.__settle();
+    assert.equal(seen.exits.length, 1);
+    assert.equal(seen.exits[0].ok, true);
+    assert.equal(seen.exits[0].detail, '');
+    assert.equal(seen.exits[0].lifetimeMs, 45_000);
+});
+
+test('watch failure carries a bounded stderr tail for classification', async () => {
+    const {seen, proc} = watchHarness();
+    proc.__pushErr('E0817 klog preamble nobody wants');
+    proc.__pushErr('The connection to the server 10.0.0.1:6443 was refused - did you specify the right host or port?');
+    proc.__exit({ok: false});
+    await GLib.__settle();
+    assert.equal(seen.exits.length, 1);
+    assert.equal(seen.exits[0].ok, false);
+    assert.ok(seen.exits[0].detail.includes('connection to the server'), seen.exits[0].detail);
+
+    // The tail is capped, keeping the end where kubectl puts its summary.
+    const {seen: seen2, proc: proc2} = watchHarness();
+    for (let i = 0; i < 200; i++)
+        proc2.__pushErr(`line ${i} ${'x'.repeat(100)}`);
+    proc2.__pushErr('final summary');
+    proc2.__exit({ok: false});
+    await GLib.__settle();
+    assert.ok(seen2.exits[0].detail.length <= 4096);
+    assert.ok(seen2.exits[0].detail.endsWith('final summary'));
+});
+
+test('watch stop() kills the child and silences onExit', async () => {
+    const {watcher, seen, proc} = watchHarness();
+    proc.__pushLine('ADDED|n1||Ready|True');
+    await GLib.__settle();
+    watcher.stop();
+    await GLib.__settle();
+    assert.equal(Gio.__killCount(), 1, 'the kubectl child must not linger');
+    assert.equal(seen.exits.length, 0, 'teardown is silent');
+    watcher.stop();                      // idempotent
+    await GLib.__settle();
+    assert.equal(seen.exits.length, 0);
+});
+
+test('a failed spawn reports through onExit asynchronously', async () => {
+    reset();
+    Gio.__setSpawn(() => ({spawnThrows: new Error('No such file or directory')}));
+    /** @type {any[]} */
+    const exits = [];
+    const watcher = new NodeWatcher(opts(), {onLine: () => {}, onExit: i => exits.push(i)});
+    watcher.start();
+    assert.equal(exits.length, 0, 'not synchronously, or the poller would re-enter');
+    await GLib.__settle();
+    assert.equal(exits.length, 1);
+    assert.equal(exits[0].ok, false);
+    assert.ok(exits[0].detail.includes('No such file'));
+});
+
+test('a watch killed from outside reports a not-ok exit', async () => {
+    const {seen, proc} = watchHarness();
+    proc.force_exit();                   // the OS or the user killed kubectl
+    await GLib.__settle();
+    assert.equal(seen.exits.length, 1);
+    assert.equal(seen.exits[0].ok, false);
+});
+
+test('fetchHealthTable asks for the server-printed table and parses it', async () => {
+    reset();
+    respond('n1   Ready   <none>   10d   v1.34.6+k3s1\nn2   NotReady   <none>   9d   v1.34.6+k3s1\n');
+    const rows = await fetchHealthTable(opts(), null);
+    const argv = Gio.__lastCall().argv;
+    assert.ok(argv.includes('--no-headers'), argv.join(' '));
+    assert.ok(argv.includes('--request-timeout=5s'), 'the reconcile is a bounded poll');
+    assert.ok(!argv.some(a => a.startsWith('-o')), 'no output flag: the server prints');
+    assert.deepEqual(rows, [
+        {name: 'n1', ready: true, unschedulable: false},
+        {name: 'n2', ready: false, unschedulable: false},
+    ]);
+});
+
+test('a mid-stream read failure kills the child and reports an abnormal exit', async () => {
+    const {seen, proc} = watchHarness();
+    proc.__pushLine('ADDED|n1||Ready|True');
+    await GLib.__settle();
+    proc.__failOut(new Error('Input/output error'));
+    await GLib.__settle();
+    assert.equal(seen.exits.length, 1);
+    assert.equal(seen.exits[0].ok, false);
+    assert.ok(seen.exits[0].detail.includes('Input/output error'), seen.exits[0].detail);
+    assert.ok(Gio.__killCount() >= 1, 'the child and the sibling stream are torn down');
 });

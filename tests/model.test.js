@@ -6,6 +6,11 @@ import assert from 'node:assert/strict';
 import {
     NodeLevel,
     parseCpuMilli,
+    parseWatchEvent,
+    applyWatchEvent,
+    summarizeHealthMap,
+    parseNodesTable,
+    reconcileDiffers,
     parseMemBytes,
     formatAge,
     parseHealth,
@@ -363,4 +368,118 @@ test('classifyError caps the detail length and honours the watchdog flag', () =>
     // The watchdog killed the poll: timeout headline, no misleading detail.
     assert.deepEqual(classifyError('Operation was cancelled', {timedOut: true}),
         {key: 'timeout', title: "The cluster didn't answer in time", detail: ''});
+});
+
+// Watch tier
+
+test('parseWatchEvent: zipped condition lists become a health node', () => {
+    const e = parseWatchEvent(
+        'ADDED|n1||MemoryPressure DiskPressure PIDPressure Ready|False False False True');
+    assert.equal(e.type, 'ADDED');
+    assert.equal(e.name, 'n1');
+    assert.equal(e.node.ready, true);
+    assert.equal(e.node.unschedulable, false);
+    assert.equal(e.node.level, NodeLevel.OK);
+    assert.equal(e.node.statusText, 'Ready');
+});
+
+test('parseWatchEvent: cordon, pressure and Unknown carry through to severity', () => {
+    const cordoned = parseWatchEvent('MODIFIED|n1|true|Ready|True');
+    assert.equal(cordoned.node.unschedulable, true);
+    assert.equal(cordoned.node.statusText, 'Ready,SchedulingDisabled');
+
+    const pressured = parseWatchEvent('MODIFIED|n1||MemoryPressure Ready|True True');
+    assert.deepEqual(pressured.node.issues, ['MemoryPressure']);
+    assert.equal(pressured.node.level, NodeLevel.WARNING);
+
+    // A kubelet gone dark posts Unknown on every condition.
+    const dark = parseWatchEvent('MODIFIED|n1||MemoryPressure Ready|Unknown Unknown');
+    assert.equal(dark.node.ready, false);
+    assert.equal(dark.node.statusText, 'Unknown');
+});
+
+test('parseWatchEvent: DELETED carries only the name', () => {
+    const e = parseWatchEvent('DELETED|n1|true|Ready|True');
+    assert.deepEqual(e, {type: 'DELETED', name: 'n1'});
+});
+
+test('parseWatchEvent: blanks, bookmarks, garbage and nameless events are null', () => {
+    assert.equal(parseWatchEvent(''), null);
+    assert.equal(parseWatchEvent('   '), null);
+    assert.equal(parseWatchEvent('BOOKMARK|n1|||'), null);
+    assert.equal(parseWatchEvent('ERROR||||'), null);
+    assert.equal(parseWatchEvent('kubectl: some stray line'), null);
+    assert.equal(parseWatchEvent('ADDED|||Ready|True'), null);
+});
+
+test('parseWatchEvent: a status list shorter than the types never crashes', () => {
+    const e = parseWatchEvent('ADDED|n1||MemoryPressure Ready|False');
+    assert.equal(e.node.ready, false, 'a missing Ready status reads as not ready');
+    assert.equal(e.node.statusText, 'Unknown');
+});
+
+test('parseWatchEvent sanitizes the node name like the poll parsers do', () => {
+    const e = parseWatchEvent('ADDED|bad;name$(x)||Ready|True');
+    assert.equal(e.name, 'badnamex');
+});
+
+test('applyWatchEvent: add, modify and delete against the map', () => {
+    const map = new Map();
+    applyWatchEvent(map, parseWatchEvent('ADDED|n1||Ready|True'));
+    applyWatchEvent(map, parseWatchEvent('ADDED|n2||Ready|True'));
+    assert.equal(map.size, 2);
+    applyWatchEvent(map, parseWatchEvent('MODIFIED|n2||Ready|False'));
+    assert.equal(map.get('n2').ready, false);
+    applyWatchEvent(map, parseWatchEvent('DELETED|n1||Ready|True'));
+    assert.equal(map.size, 1);
+    assert.ok(!map.has('n1'));
+});
+
+test('summarizeHealthMap sorts by name and aggregates like a poll', () => {
+    const map = new Map();
+    applyWatchEvent(map, parseWatchEvent('ADDED|zeta||Ready|True'));
+    applyWatchEvent(map, parseWatchEvent('ADDED|alpha||Ready|False'));
+    const s = summarizeHealthMap(map);
+    assert.deepEqual(s.nodes.map(n => n.name), ['alpha', 'zeta']);
+    assert.equal(s.total, 2);
+    assert.equal(s.readyCount, 1);
+    assert.equal(s.level, NodeLevel.ERROR);
+    assert.equal(summarizeHealthMap(new Map()).total, 0);
+});
+
+// Reconcile table
+
+test('parseNodesTable: status segments map to ready and cordon', () => {
+    const rows = parseNodesTable([
+        'n1     Ready                      control-plane   10d   v1.34.6+k3s1',
+        'n2     NotReady                   <none>          10d   v1.34.6+k3s1',
+        'n3     Ready,SchedulingDisabled   <none>          10d   v1.34.6+k3s1',
+        'n4     Unknown                    <none>          10d   v1.34.6+k3s1',
+        '',
+        'stray-line-without-columns',
+    ].join('\n'));
+    assert.deepEqual(rows, [
+        {name: 'n1', ready: true, unschedulable: false},
+        {name: 'n2', ready: false, unschedulable: false},
+        {name: 'n3', ready: true, unschedulable: true},
+        {name: 'n4', ready: false, unschedulable: false},
+    ]);
+});
+
+test('reconcileDiffers: any membership, readiness or cordon drift counts', () => {
+    const map = new Map();
+    applyWatchEvent(map, parseWatchEvent('ADDED|n1||Ready|True'));
+    applyWatchEvent(map, parseWatchEvent('ADDED|n2|true|Ready|True'));
+    const same = [
+        {name: 'n1', ready: true, unschedulable: false},
+        {name: 'n2', ready: true, unschedulable: true},
+    ];
+    assert.equal(reconcileDiffers(map, same), false);
+    assert.equal(reconcileDiffers(map, same.slice(0, 1)), true, 'a node vanished');
+    assert.equal(reconcileDiffers(map, [...same.slice(0, 1),
+        {name: 'n9', ready: true, unschedulable: false}]), true, 'membership changed');
+    assert.equal(reconcileDiffers(map, [{...same[0], ready: false}, same[1]]), true,
+        'readiness flipped');
+    assert.equal(reconcileDiffers(map, [same[0], {...same[1], unschedulable: false}]), true,
+        'cordon flipped');
 });

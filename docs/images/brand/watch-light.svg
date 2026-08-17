@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 268" width="880" height="268" fill="none" role="img" aria-label="Five minutes of steady state: thirty kubectl processes when polling, one when the watch holds the stream open">
+<title>Five minutes of steady state: thirty kubectl processes when polling, one when the watch holds the stream open</title>
+<style>.sp{animation:spawn 4.6s ease-out infinite}
+@keyframes spawn{0%,70%,100%{opacity:.42}6%,14%{opacity:1}}@media (prefers-reduced-motion:reduce){*{animation:none!important}}</style>
+<defs>
+  <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M0,1 L9,5 L0,9 z" fill="rgba(43,12,28,0.68)"/>
+  </marker>
+  <marker id="ahA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M0,1 L9,5 L0,9 z" fill="#A82740"/>
+  </marker>
+  <marker id="ahBad" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M0,1 L9,5 L0,9 z" fill="#FF5C5C"/>
+  </marker></defs>
+  
+  <text x="32" y="42" text-anchor="start" font-family="system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="14" font-weight="700" fill="#2B0C1C">Polling</text>
+  <text x="184" y="42" text-anchor="start" font-family="system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="12" font-weight="400" fill="rgba(43,12,28,0.62)">a fresh kubectl every 10 s</text>
+  <line x1="32" y1="102" x2="648" y2="102" stroke="rgba(43,12,28,0.22)" stroke-width="1.2"/>
+  <rect class="sp" style="animation-delay:0.00s" x="39.8" y="54" width="5" height="42" rx="2" fill="#FF5C5C"/>
+  <rect class="sp" style="animation-delay:0.13s" x="60.3" y="54" width="5" height="42" rx="2" fill="#FF5C5C"/>
+  <rect class="sp" style="animation-delay:0.26s" x="80.8" y="54" width="5" height="42" rx="2" fill="#FF5C5C"/>
+  <rect class="sp" style="animation-delay:0.39s" x="101.4" y="54" width="5" height="42" rx="2" fill="#FF5C5C"/>
+  <rect class="sp" style="animation-delay:0.52s" x="121.9" y="54" width="5" height="42" rx="2" fill="#FF5C5C"/>
+  <rect class="sp" style="animation-delay:0.65s" x="142.4" y="54" width="5" height="42" rx="2" fill="#FF5C5C"/>
+  <rect class="sp" style="animation-delay:0.78s" x="163.0" y="54" width="5" height="42" rx="2" fill="#FF5C5C"/>
+  <rect class="sp" style="animation-delay:0.91s" x="183.5" y="54" width="5" height="42" rx="2" fill="#FF5C5C"/>
+  <rect class="sp" style="animation-delay:1.04s" x="204.0" y="54" width="5" height="42" rx="2" fill="#FF5C5C"/>
+  <rect class="sp" style="animation-delay:1.17s" x="224.6" y="54" width="5" height="42" rx="2" fill="#FF5C5C"/>
+  <rect class="sp" style="animation-delay:1.30s" x="245.1" y="54" width="5" height="42" rx="2" fill="#FF5C5C"/>
+  <rect class="sp" style="animation-delay:1.43s" x="265.6" y="54" width="5" height="42" rx="2" fill="#FF5C5C"/>
+  <rect class="sp" style="animation-delay:1.56s" x="286.2" y="54" width="5" height="42" rx="2" fill="#FF5C5C"/>
+  <rect class="sp" style="animation-delay:1.69s" x="306.7" y="54" width="5" height="42" rx="2" fill="#FF5C5C"/>
+  <rect class="sp" style="animation-delay:1.82s" x="327.2" y="54" width="5" height="42" rx="2" fill="#FF5C5C"/>
+  <rect class="sp" style="animation-delay:1.95s" x="347.8" y="54" width="5" height="42" rx="2" fill="#FF5C5C"/>
+  <rect class="sp" style="animation-delay:2.08s" x="368.3" y="54" width="5" height="42" rx="2" fill="#FF5C5C"/>
+  <rect class="sp" style="animation-delay:2.21s" x="388.8" y="54" width="5" height="42" rx="2" fill="#FF5C5C"/>
+  <rect class="sp" style="animation-delay:2.34s" x="409.4" y="54" width="5" height="42" rx="2" fill="#FF5C5C"/>
+  <rect class="sp" style="animation-delay:2.47s" x="429.9" y="54" width="5" height="42" rx="2" fill="#FF5C5C"/>
+  <rect class="sp" style="animation-delay:2.60s" x="450.4" y="54" width="5" height="42" rx="2" fill="#FF5C5C"/>
+  <rect class="sp" style="animation-delay:2.73s" x="471.0" y="54" width="5" height="42" rx="2" fill="#FF5C5C"/>
+  <rect class="sp" style="animation-delay:2.86s" x="491.5" y="54" width="5" height="42" rx="2" fill="#FF5C5C"/>
+  <rect class="sp" style="animation-delay:2.99s" x="512.0" y="54" width="5" height="42" rx="2" fill="#FF5C5C"/>
+  <rect class="sp" style="animation-delay:3.12s" x="532.6" y="54" width="5" height="42" rx="2" fill="#FF5C5C"/>
+  <rect class="sp" style="animation-delay:3.25s" x="553.1" y="54" width="5" height="42" rx="2" fill="#FF5C5C"/>
+  <rect class="sp" style="animation-delay:3.38s" x="573.6" y="54" width="5" height="42" rx="2" fill="#FF5C5C"/>
+  <rect class="sp" style="animation-delay:3.51s" x="594.2" y="54" width="5" height="42" rx="2" fill="#FF5C5C"/>
+  <rect class="sp" style="animation-delay:3.64s" x="614.7" y="54" width="5" height="42" rx="2" fill="#FF5C5C"/>
+  <rect class="sp" style="animation-delay:3.77s" x="635.2" y="54" width="5" height="42" rx="2" fill="#FF5C5C"/>
+  
+  <text x="684" y="64" text-anchor="start" font-family="ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace" font-size="15" font-weight="700" fill="#FF5C5C">5.5 s</text>
+  <text x="684" y="84" text-anchor="start" font-family="system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="12" font-weight="400" fill="rgba(43,12,28,0.68)">of CPU, and 30 process starts</text>
+
+  
+  <text x="32" y="138" text-anchor="start" font-family="system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="14" font-weight="700" fill="#2B0C1C">One watch</text>
+  <text x="184" y="138" text-anchor="start" font-family="system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="12" font-weight="400" fill="rgba(43,12,28,0.62)">the stream stays open</text>
+  <line x1="32" y1="198" x2="648" y2="198" stroke="rgba(43,12,28,0.22)" stroke-width="1.2"/>
+  <rect x="32" y="150" width="616" height="42" rx="4" fill="#2EC27E" opacity="0.9"/>
+  <rect x="69.0" y="150" width="3" height="26" rx="1.5" fill="#FFFFFF" opacity="0.9"/><rect x="223.0" y="150" width="3" height="26" rx="1.5" fill="#FFFFFF" opacity="0.9"/><rect x="389.3" y="150" width="3" height="26" rx="1.5" fill="#FFFFFF" opacity="0.9"/><rect x="518.6" y="150" width="3" height="26" rx="1.5" fill="#FFFFFF" opacity="0.9"/>
+  
+  <text x="684" y="160" text-anchor="start" font-family="ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace" font-size="15" font-weight="700" fill="#2EC27E">0.17 s</text>
+  <text x="684" y="180" text-anchor="start" font-family="system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="12" font-weight="400" fill="rgba(43,12,28,0.68)">of CPU, paid once at startup</text>
+
+  <text x="32" y="234" text-anchor="start" font-family="ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace" font-size="11" font-weight="400" fill="rgba(43,12,28,0.62)">0</text>
+  <text x="648" y="234" text-anchor="end" font-family="ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace" font-size="11" font-weight="400" fill="rgba(43,12,28,0.62)">5 min</text>
+  <text x="340" y="234" text-anchor="middle" font-family="system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="11.5" font-weight="400" fill="rgba(43,12,28,0.62)">ticks on the lower lane are node changes reaching the pipe</text>
+</svg>

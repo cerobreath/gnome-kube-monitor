@@ -34,19 +34,22 @@ A GNOME Shell extension that puts Kubernetes node health in the top bar. A dot s
 
 It runs on the `kubectl` and kubeconfig you already have, so whatever context and auth work in your terminal work here. It never writes to your cluster.
 
-<!-- MEDIA: demo  (replaces the 0.1.0 recording)
-  ~30s walkthrough at 1.0.0: open the menu, node meters, click-to-copy, context
-  switcher, preferences. Drag the .mp4 into any issue on this repo and paste the
-  resulting user-attachments URL here. GitHub only plays <video> from its own hosts.
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/brand/demo-dark.webp">
+    <source media="(prefers-color-scheme: light)" srcset="docs/images/brand/demo-light.webp">
+    <img src="docs/images/brand/demo-light.webp" alt="The panel dot turns red as a node drops out, a notification reads worker-2 is down, then the menu opens showing that node alongside two healthy ones with CPU and memory meters" width="880">
+  </picture>
+</p>
+
+<!-- MEDIA: full walkthrough
+  The long cut lives on GitHub's CDN, not in the repo: drag the .mp4 into any issue
+  on this repo and paste the resulting user-attachments URL below.
 
   <p align="center">
-    <video src="https://github.com/user-attachments/assets/…" controls muted width="880"></video>
+    <a href="https://github.com/user-attachments/assets/…"><b>Watch the full walkthrough</b></a>
   </p>
 -->
-
-<p align="center">
-  <img src="docs/images/hero.png" alt="The menu open over a desktop, showing three nodes with CPU and memory meters" width="880">
-</p>
 
 ## Install
 
@@ -97,15 +100,6 @@ Open it and you get the current context, how stale the data is, a pods line (run
 
 Outside the menu it does two things. It posts a desktop notification when a node stays NotReady, when the cluster stops answering, and again on recovery, withdrawing the outage banner that the recovery answers so the tray never fills up with resolved alarms. And clicking a node copies `kubectl describe node <name>` to your clipboard.
 
-<!-- MEDIA: notification
-  The "worker-2 is down" banner, ideally with the red panel dot in frame.
-  Reproduce with: docker stop k3d-demo-agent-1. Drop at docs/images/notification.png.
-
-  <p align="center">
-    <img src="docs/images/notification.png" alt="Desktop notification: worker-2 is down" width="520">
-  </p>
--->
-
 ## Settings
 
 <p align="center">
@@ -123,21 +117,25 @@ Leave context, kubeconfig and kubectl empty and it finds your current context, `
 
 ## How it works
 
-Polling happens inside the compositor process, which means a slow poll is a stuttering desktop. So there are two tiers, chosen by whether the menu is open.
+All of this runs inside the compositor process, so a slow call is a stuttering desktop. The answer is to spend almost nothing while the menu is closed, which is nearly always.
 
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/images/brand/polling-dark.svg">
-    <source media="(prefers-color-scheme: light)" srcset="docs/images/brand/polling-light.svg">
-    <img src="docs/images/brand/polling-light.svg" alt="Poll payload over time: about 251 bytes per poll with the menu closed, and roughly 36 KB per node for the few polls while it is open" width="880">
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/brand/watch-dark.svg">
+    <source media="(prefers-color-scheme: light)" srcset="docs/images/brand/watch-light.svg">
+    <img src="docs/images/brand/watch-light.svg" alt="Five minutes of steady state: thirty kubectl processes when polling, one when the watch holds the stream open" width="880">
   </picture>
 </p>
 
-With the menu closed, which is nearly always, one compact jsonpath query returns about 251 bytes for the whole cluster, and that is the entire steady-state cost. Opening the menu switches to full node detail at roughly 36 KB per node, measured rather than guessed. Rows update in place and the list is capped at 50, sorted most-severe-first, which holds menu-open cost flat however large the cluster gets. Without that cap a 1000-node cluster freezes the shell for nearly two seconds on every open.
+It used to poll. Every ten seconds a fresh `kubectl` started, asked for every node, printed a few hundred bytes and exited. The small output made it look cheap, but the output was never the cost. Starting `kubectl` at all is 56 MB of memory and 90 ms of CPU before it has spoken to anything, and the request pulls the full node objects, about 27 KB per node on a real cluster. Over an hour that is 360 processes and 66 seconds of CPU.
 
-An unreachable cluster backs off rather than hammering the network, and a watchdog kills any hung `kubectl` so the menu cannot wedge on "Loading". It also tells your cluster being down apart from your laptop being off the network: with no route there is no outage alert, just a quiet note, and the moment the connection returns it re-polls instead of sitting out the backoff.
+Now one `kubectl get nodes --watch` stays open. The API server sends the list once, then only what changed. A node dropping reaches the extension in under a tenth of a second instead of waiting out an interval, and the stream costs 170 ms of CPU once and then holds flat at 62 MB.
 
-Details on the module layering, the alert state machine and the benchmarks behind the row cap: [`docs/architecture.md`](docs/architecture.md). Threat model and trust boundaries: [`SECURITY.md`](SECURITY.md).
+Polling did not go away, it became the fallback. It carries the load until the watch delivers its first snapshot, and any trouble with the stream brings it straight back, so every failure path is the one that was already there: backoff on an unreachable cluster, a watchdog that kills a hung `kubectl`, and no outage alert when it is your laptop that is offline rather than the cluster.
+
+Opening the menu is the expensive tier, and it is the one you asked for: full node detail at roughly 36 KB per node, capped at 50 rows sorted worst-first. Without that cap a 1000-node cluster freezes the shell for nearly two seconds on every open.
+
+Details on the module layering, the alert state machine and the measurements behind all of this: [`docs/architecture.md`](docs/architecture.md). Threat model and trust boundaries: [`SECURITY.md`](SECURITY.md).
 
 ## Translations
 

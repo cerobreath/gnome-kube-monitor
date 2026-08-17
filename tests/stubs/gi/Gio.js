@@ -78,7 +78,119 @@ export class Cancellable {
  * @property {boolean} [defer]    resolve only when __release() is called, so a
  *                                test can land a poll after stop()
  * @property {Error} [throws]     reject instead of resolving
+ * @property {boolean} [stream]   stay open; the test drives __pushLine/__exit
+ * @property {Error} [spawnThrows]  spawnv itself throws (missing binary)
  */
+
+/**
+ * One pipe of a streaming subprocess: lines a test pushes come out of
+ * read_line_async in order, null after __end, cancellation rejects.
+ */
+class FakeLineStream {
+    constructor() {
+        /** @type {string[]} */
+        this._buf = [];
+        this._eof = false;
+        /** @type {{resolve: (v: [string | null, number]) => void,
+         *          reject: (e: Error) => void} | null} */
+        this._waiter = null;
+    }
+
+    /** @param {string} line */
+    __push(line) {
+        const w = this._waiter;
+        if (w) {
+            this._waiter = null;
+            w.resolve([line, line.length]);
+        } else {
+            this._buf.push(line);
+        }
+    }
+
+    __end() {
+        this._eof = true;
+        const w = this._waiter;
+        if (w) {
+            this._waiter = null;
+            w.resolve([null, 0]);
+        }
+    }
+
+    /** Fail the stream: the pending (or next) read rejects. @param {Error} err */
+    __fail(err) {
+        this._err = err;
+        const w = this._waiter;
+        if (w) {
+            this._waiter = null;
+            w.reject(err);
+        }
+    }
+
+    /**
+     * @param {number} _prio
+     * @param {Cancellable | null} cancellable
+     * @returns {Promise<[string | null, number]>}
+     */
+    read_line_async(_prio, cancellable) {
+        return new Promise((resolve, reject) => {
+            const fail = () => reject(
+                new GioError('Operation was cancelled', IOErrorEnum, IOErrorEnum.CANCELLED));
+            if (cancellable?.is_cancelled()) {
+                fail();
+                return;
+            }
+            const line = this._buf.shift();
+            if (line !== undefined) {
+                resolve([line, line.length]);
+                return;
+            }
+            if (this._err) {
+                reject(this._err);
+                return;
+            }
+            if (this._eof) {
+                resolve([null, 0]);
+                return;
+            }
+            this._waiter = {resolve, reject};
+            cancellable?.connect(() => {
+                if (this._waiter) {
+                    this._waiter = null;
+                    fail();
+                }
+            });
+        });
+    }
+}
+
+/**
+ * Real code reads its pipes callback-style (gnome-shell pre-promisifies
+ * read_line_async with the byte finisher); the fake keeps that split.
+ */
+export class DataInputStream {
+    /** @param {{base_stream: FakeLineStream, close_base_stream?: boolean}} params */
+    constructor(params) {
+        this._base = params.base_stream;
+    }
+
+    /**
+     * @param {number} prio
+     * @param {Cancellable | null} cancellable
+     * @param {(s: DataInputStream, res: unknown) => void} callback
+     */
+    read_line_async(prio, cancellable, callback) {
+        this._base.read_line_async(prio, cancellable).then(
+            tuple => callback(this, {ok: true, tuple}),
+            err => callback(this, {ok: false, err}));
+    }
+
+    /** @param {any} res */
+    read_line_finish_utf8(res) {
+        if (!res.ok)
+            throw res.err;
+        return res.tuple;
+    }
+}
 
 /** @type {(call: {argv: string[], environ: string[]}) => SpawnResult} */
 let spawnHandler = () => ({stdout: '', stderr: '', ok: true});
@@ -87,6 +199,8 @@ let calls = [];
 let killed = 0;
 /** @type {(() => void)[]} */
 let deferred = [];
+/** @type {Subprocess[]} */
+let streamProcs = [];
 
 /** Complete every deferred call, so a test chooses when a poll lands. */
 export function __release() {
@@ -122,8 +236,18 @@ export function __reset() {
     calls = [];
     killed = 0;
     deferred = [];
+    streamProcs = [];
     files = {'/usr/bin/kubectl': {type: FileType.REGULAR, executable: true}};
     networkMonitor = new FakeNetworkMonitor();
+}
+
+/** Streaming subprocesses (SpawnResult.stream), oldest first. */
+export function __streamProcs() {
+    return [...streamProcs];
+}
+
+export function __lastStreamProc() {
+    return streamProcs.length ? streamProcs[streamProcs.length - 1] : null;
 }
 
 export class Subprocess {
@@ -134,18 +258,112 @@ export class Subprocess {
         this._result = spawnHandler({argv, environ}) ?? {};
         this._exited = false;
         this._completed = false;
+        this._forceFailed = false;
+        this._stdout = new FakeLineStream();
+        this._stderr = new FakeLineStream();
+        /** @type {{resolve: (v: boolean) => void, reject: (e: Error) => void}[]} */
+        this._exitWaiters = [];
+        if (this._result.spawnThrows) {
+            // spawnv throws before anyone can read this instance.
+        } else if (this._result.stream) {
+            streamProcs.push(this);
+        } else if (!this._result.hang) {
+            // Scripted one-shot results also work through the streaming API:
+            // stdout arrives as lines, both pipes EOF, and the wait resolves.
+            for (const line of (this._result.stdout ?? '').split('\n'))
+                if (line !== '')
+                    this._stdout.__push(line);
+            for (const line of (this._result.stderr ?? '').split('\n'))
+                if (line !== '')
+                    this._stderr.__push(line);
+            this._completed = true;
+            this._stdout.__end();
+            this._stderr.__end();
+        }
     }
 
     // Latched at completion, not derived from _exited: killing an already-finished
     // process must not retroactively turn its success into a failure.
     get_successful() {
-        return this._completed && this._result.ok !== false;
+        return this._completed && this._result.ok !== false && !this._forceFailed;
     }
 
     force_exit() {
         killed++;
         this._exited = true;
         this._onKill?.();
+        if (!this._completed)
+            this._forceFailed = true;
+        this._completed = true;
+        this._stdout.__end();
+        this._stderr.__end();
+        this._settleExit();
+    }
+
+    get_stdout_pipe() {
+        return this._stdout;
+    }
+
+    get_stderr_pipe() {
+        return this._stderr;
+    }
+
+    /** Test control: push a stdout line into a streaming subprocess. @param {string} line */
+    __pushLine(line) {
+        this._stdout.__push(line);
+    }
+
+    /** @param {string} line */
+    __pushErr(line) {
+        this._stderr.__push(line);
+    }
+
+    /** Test control: fail the stdout stream mid-read. @param {Error} err */
+    __failOut(err) {
+        this._stdout.__fail(err);
+    }
+
+    /** Test control: end a streaming subprocess like the real child exiting. @param {{ok?: boolean}} [opts] */
+    __exit(opts = {}) {
+        this._result = {...this._result, ok: opts.ok !== false};
+        this._completed = true;
+        this._stdout.__end();
+        this._stderr.__end();
+        this._settleExit();
+    }
+
+    _settleExit() {
+        const waiters = this._exitWaiters;
+        this._exitWaiters = [];
+        for (const w of waiters)
+            w.resolve(true);
+    }
+
+    /**
+     * @param {Cancellable | null} cancellable
+     * @returns {Promise<boolean>}
+     */
+    wait_async(cancellable) {
+        return new Promise((resolve, reject) => {
+            const fail = () => reject(
+                new GioError('Operation was cancelled', IOErrorEnum, IOErrorEnum.CANCELLED));
+            if (cancellable?.is_cancelled()) {
+                fail();
+                return;
+            }
+            if (this._completed || this._exited) {
+                resolve(true);
+                return;
+            }
+            const waiter = {resolve, reject};
+            this._exitWaiters.push(waiter);
+            cancellable?.connect(() => {
+                if (this._exitWaiters.includes(waiter)) {
+                    this._exitWaiters = this._exitWaiters.filter(w => w !== waiter);
+                    fail();
+                }
+            });
+        });
     }
 
     /**
@@ -200,7 +418,10 @@ export class SubprocessLauncher {
     /** @param {string[]} argv */
     spawnv(argv) {
         calls.push({argv: [...argv], environ: [...this._environ]});
-        return new Subprocess(argv, this._environ);
+        const proc = new Subprocess(argv, this._environ);
+        if (proc._result.spawnThrows)
+            throw proc._result.spawnThrows;
+        return proc;
     }
 }
 
@@ -291,10 +512,10 @@ export function icon_new_for_string(/** @type {string} */ str) {
 
 export default {
     IOErrorEnum, SubprocessFlags, FileType, FileQueryInfoFlags, SettingsBindFlags,
-    Cancellable, Subprocess, SubprocessLauncher, File, GioError, NetworkMonitor,
-    _promisify, icon_new_for_string,
+    Cancellable, Subprocess, SubprocessLauncher, DataInputStream, File, GioError,
+    NetworkMonitor, _promisify, icon_new_for_string,
     __setSpawn, __calls, __lastCall, __killCount, __setFiles, __reset,
-    __release, __pendingSpawns, __networkMonitor,
+    __release, __pendingSpawns, __networkMonitor, __streamProcs, __lastStreamProc,
     get Settings() {
         return Settings;
     },

@@ -21,16 +21,23 @@ const DETAIL_OUT = JSON.stringify({
  * @param {string[]} argv
  */
 function answerFor(argv) {
+    if (argv.includes('--watch'))
+        return {stream: true};             // stays open; watch tests drive it
     if (argv.includes('--raw'))
         return {stdout: JSON.stringify({items: []})};          // metrics
     if (argv.includes('pods'))
         return {stdout: 'Running|\n'};
     if (argv.includes('nodes') && argv.includes('json'))
         return {stdout: DETAIL_OUT};                           // detail tier
+    if (argv.includes('nodes') && argv.includes('--no-headers'))
+        return {stdout: 'n1   Ready   <none>   1d   v1.35\nn2   NotReady   <none>   1d   v1.35\n'};
     if (argv.includes('nodes'))
         return {stdout: HEALTH_OUT};                           // health tier
     return {stdout: ''};
 }
+
+// kubectl polls only: the health watch spawned by start() is asserted separately.
+const pollCalls = () => Gio.__calls().filter(c => !c.argv.includes('--watch'));
 
 /**
  * A poller wired to recording callbacks and a default spawn handler.
@@ -93,7 +100,7 @@ test('menu closed uses the cheap health tier; opening it pulls detail at once', 
     h.poller.start();
     await settle();
     assert.equal(h.states[0].tier, 'health');
-    assert.equal(Gio.__calls().length, 1, 'health tier is a single spawn');
+    assert.equal(pollCalls().length, 1, 'health tier is a single spawn');
 
     h.poller.setMenuOpen(true);          // must not wait for the next tick
     await settle();
@@ -101,7 +108,7 @@ test('menu closed uses the cheap health tier; opening it pulls detail at once', 
     await settle();
     const detail = h.states.find(s => s.tier === 'detail');
     assert.ok(detail, 'opening the menu triggers a detail poll');
-    assert.ok(Gio.__calls().length >= 4, 'detail tier fans out to nodes+metrics+pods');
+    assert.ok(pollCalls().length >= 4, 'detail tier fans out to nodes+metrics+pods');
     h.poller.stop();
 });
 
@@ -223,11 +230,11 @@ test('polls never overlap: a tick during an in-flight poll is dropped', async ()
     Gio.__setSpawn(() => ({hang: true}));
     h.poller.start();
     await settle();
-    assert.equal(Gio.__calls().length, 1);
+    assert.equal(pollCalls().length, 1);
 
     h.poller.refreshNow();               // in-flight -> should not spawn a second now
     await settle();
-    assert.equal(Gio.__calls().length, 1, 'no second spawn while one is in flight');
+    assert.equal(pollCalls().length, 1, 'no second spawn while one is in flight');
     h.poller.stop();
 });
 
@@ -271,7 +278,7 @@ test('a refresh identical to the in-flight poll coalesces into it', async () => 
     Gio.__setSpawn(({argv}) => ({...answerFor(argv), defer: true}));
     h.poller.start();
     await settle();
-    assert.equal(Gio.__calls().length, 1);
+    assert.equal(pollCalls().length, 1);
 
     h.poller.refreshNow();               // same tier, same options
     await settle();
@@ -280,7 +287,7 @@ test('a refresh identical to the in-flight poll coalesces into it', async () => 
     Gio.__release();
     await settle();
     assert.equal(h.states.length, 1, 'and its result is delivered, not discarded');
-    assert.equal(Gio.__calls().length, 1, 'no wasted respawn of an identical poll');
+    assert.equal(pollCalls().length, 1, 'no wasted respawn of an identical poll');
     h.poller.stop();
 });
 
@@ -292,7 +299,7 @@ test('a forced refresh restarts even an identical in-flight poll', async () => {
 
     h.poller.refreshNow(true);           // the network flipped: that socket is dead
     await settle();
-    assert.equal(Gio.__killCount(), 1, 'the doomed poll is put down at once');
+    assert.equal(Gio.__killCount(), 2, 'the doomed poll and the stale watch are put down at once');
 
     Gio.__setSpawn(({argv}) => answerFor(argv));
     await GLib.__advance(50);
@@ -382,11 +389,11 @@ test('reentrancy: a second start() while a poll is in flight does not overlap it
     Gio.__setSpawn(({argv}) => ({...answerFor(argv), defer: true}));
     h.poller.start();
     await settle();
-    assert.equal(Gio.__calls().length, 1);
+    assert.equal(pollCalls().length, 1);
 
     h.poller.start();                    // start() does not itself check _polling
     await settle();
-    assert.equal(Gio.__calls().length, 1, '_tick must refuse to run concurrently');
+    assert.equal(pollCalls().length, 1, '_tick must refuse to run concurrently');
 
     Gio.__release();
     await settle();
@@ -471,7 +478,7 @@ test('intervalChanged during an in-flight poll is ignored (the finally re-arms)'
     await settle();
     h.poller.intervalChanged();          // _polling -> early return
     await settle();
-    assert.equal(Gio.__calls().length, 1);
+    assert.equal(pollCalls().length, 1);
     h.poller.stop();
 });
 
@@ -503,12 +510,12 @@ test('onState and onObservation really are optional', async () => {
 
     bare.start();                        // success path with no callbacks
     await settle();
-    assert.equal(Gio.__calls().length, 1);
+    assert.equal(pollCalls().length, 1);
 
     Gio.__setSpawn(() => ({stdout: '', stderr: 'boom', ok: false}));
     await GLib.__advance(10_500);        // error path with no callbacks
     await settle();
-    assert.equal(Gio.__calls().length, 2);
+    assert.equal(pollCalls().length, 2);
     bare.stop();
 });
 
@@ -518,4 +525,566 @@ test('the delivered state carries a monotonic stamp for the "updated N ago" labe
     await settle();
     assert.equal(typeof h.states[0].monotonic, 'number');
     h.poller.stop();
+});
+
+// The watch tier
+
+/** The watch child spawned at start(); answerFor scripts it as a silent stream. */
+const watchProc = () => Gio.__lastStreamProc();
+
+/** Feed the initial ADDED burst and let the coalescing window flush it. */
+async function activateWatch(lines = ['ADDED|n1||Ready|True', 'ADDED|n2||Ready|True']) {
+    const proc = watchProc();
+    for (const line of lines)
+        proc.__pushLine(line);
+    await settle();
+    await GLib.__advance(300);           // WATCH_QUIET_MS elapses, snapshot flushes
+    await settle();
+    return proc;
+}
+
+test('the initial burst coalesces into one complete snapshot', async () => {
+    const h = harness();
+    h.poller.start();
+    await settle();
+    assert.equal(h.states.length, 1, 'the bridging poll delivered first');
+
+    const proc = watchProc();
+    proc.__pushLine('ADDED|n1||Ready|True');
+    await settle();
+    assert.equal(h.states.length, 1, 'a half-listed cluster is never delivered');
+    proc.__pushLine('ADDED|n2||Ready|False');
+    await settle();
+    await GLib.__advance(300);
+    await settle();
+
+    assert.equal(h.states.length, 2, 'exactly one snapshot for the whole burst');
+    const snap = h.states[1];
+    assert.equal(snap.tier, 'health');
+    assert.equal(snap.total, 2);
+    assert.equal(snap.readyCount, 1);
+    assert.deepEqual(h.observations[h.observations.length - 1].nodes.map(n => n.name),
+        ['n1', 'n2']);
+    h.poller.stop();
+});
+
+test('an active watch suspends health polling and events keep the state fresh', async () => {
+    const h = harness();
+    h.poller.start();
+    await settle();
+    const proc = await activateWatch();
+    const polls = pollCalls().length;
+
+    await GLib.__advance(60_000);        // six base intervals
+    await settle();
+    assert.equal(pollCalls().length, polls, 'no health polls while the watch is active');
+
+    proc.__pushLine('MODIFIED|n2||Ready|False');
+    await settle();
+    await GLib.__advance(300);
+    await settle();
+    const last = h.states[h.states.length - 1];
+    assert.equal(last.readyCount, 1, 'the event reshaped the delivered state');
+    assert.equal(last.level, 'error');
+    assert.equal(pollCalls().length, polls, 'still without a single poll');
+    h.poller.stop();
+});
+
+test('a DELETED event removes the node from the snapshot', async () => {
+    const h = harness();
+    h.poller.start();
+    await settle();
+    const proc = await activateWatch();
+
+    proc.__pushLine('DELETED|n2||Ready|True');
+    await settle();
+    await GLib.__advance(300);
+    await settle();
+    const last = h.states[h.states.length - 1];
+    assert.equal(last.total, 1);
+    assert.deepEqual(last.nodes.map(n => n.name), ['n1']);
+    h.poller.stop();
+});
+
+test('a busy stream still snapshots at the coalescing ceiling', async () => {
+    const h = harness();
+    h.poller.start();
+    await settle();
+    const proc = watchProc();
+
+    // An event every 100ms keeps the quiet window from ever expiring.
+    for (let i = 0; i < 16; i++) {
+        proc.__pushLine(`MODIFIED|churner||Ready|${i % 2 ? 'True' : 'False'}`);
+        await settle();
+        await GLib.__advance(100);
+    }
+    await settle();
+    // Only a watch snapshot can carry this node; the bridging poll cannot.
+    const snapshots = h.states.filter(s => s.nodes.some(n => n.name === 'churner'));
+    assert.ok(snapshots.length >= 1, 'the 1500ms ceiling forced a flush mid-churn');
+    h.poller.stop();
+});
+
+test('the heartbeat re-observes at the base interval without spawning kubectl', async () => {
+    const h = harness();
+    h.poller.start();
+    await settle();
+    await activateWatch();
+    const calls = Gio.__calls().length;
+    const observed = h.observations.length;
+
+    await GLib.__advance(10_500);
+    await settle();
+    assert.equal(h.observations.length, observed + 1, 'one heartbeat observation');
+    assert.equal(h.observations[h.observations.length - 1].reachable, true);
+    assert.equal(Gio.__calls().length, calls, 'and not a single spawn for it');
+
+    await GLib.__advance(10_000);
+    await settle();
+    assert.equal(h.observations.length, observed + 2, 'and it keeps its cadence');
+    h.poller.stop();
+});
+
+test('a watch death after activation falls back to polling and respawns with backoff', async () => {
+    const h = harness();
+    h.poller.start();
+    await settle();
+    const proc = await activateWatch();
+    const polls = pollCalls().length;
+    const watches = Gio.__calls().length - polls;
+
+    GLib.__setClock(GLib.__now() + 30_000);   // lifetime 30s < stable
+    proc.__exit({ok: false});
+    await settle();
+    await GLib.__advance(50);
+    await settle();
+    assert.equal(pollCalls().length, polls + 1, 'an immediate poll re-establishes truth');
+
+    await GLib.__advance(4_500);         // first quick death respawns after 4s
+    await settle();
+    assert.equal(Gio.__calls().length - pollCalls().length, watches + 1,
+        'the watch respawned on the backoff schedule');
+    h.poller.stop();
+});
+
+test('a stable watch death respawns at once, with no bridging poll', async () => {
+    const h = harness();
+    h.poller.start();
+    await settle();
+    const proc = await activateWatch();
+    const polls = pollCalls().length;
+    const watches = Gio.__calls().length - polls;
+
+    GLib.__setClock(GLib.__now() + 1_800_000);   // the server closed it after 30min
+    proc.__exit({ok: true});
+    await settle();
+    assert.equal(Gio.__calls().length - pollCalls().length, watches + 1,
+        'respawned immediately');
+    assert.equal(pollCalls().length, polls, 'without waking the poll loop');
+
+    // The fresh stream re-lists and re-activates.
+    await activateWatch();
+    await GLib.__advance(30_000);
+    await settle();
+    assert.equal(pollCalls().length, polls, 'polling stays suspended');
+    h.poller.stop();
+});
+
+test('three quick deaths park the watch and polling carries the load', async () => {
+    const h = harness();
+    h.poller.start();
+    await settle();
+
+    // The initial watch never activates; kill it thrice through the backoff.
+    for (const delay of [4_500, 8_500]) {
+        watchProc().__exit({ok: false});
+        await settle();
+        await GLib.__advance(delay);
+        await settle();
+    }
+    watchProc().__exit({ok: false});     // third quick death -> parked for 300s
+    await settle();
+    const watches = Gio.__calls().length - pollCalls().length;
+
+    await GLib.__advance(200_000);
+    await settle();
+    assert.equal(Gio.__calls().length - pollCalls().length, watches,
+        'no watch attempt before the slow retry');
+    assert.ok(pollCalls().length > 3, 'polling kept the data flowing meanwhile');
+
+    await GLib.__advance(105_000);       // past the 300s retry
+    await settle();
+    assert.equal(Gio.__calls().length - pollCalls().length, watches + 1,
+        'the slow retry finally re-attempted the watch');
+    h.poller.stop();
+});
+
+test('the startup watchdog kills a watch that never produces a snapshot', async () => {
+    const h = harness();
+    h.poller.start();
+    await settle();
+    assert.ok(watchProc(), 'a watch was spawned');
+
+    await GLib.__advance(30_500);        // WATCH_STARTUP_SECONDS with no output
+    await settle();
+    assert.ok(Gio.__killCount() >= 1, 'the silent watch was put down');
+    // It counted as a quick death, so a respawn is already scheduled.
+    await GLib.__advance(4_500);
+    await settle();
+    assert.ok(Gio.__streamProcs().length >= 2, 'and the watch was re-attempted');
+    h.poller.stop();
+});
+
+test('the reconcile cross-checks with a table poll and restarts the watch on drift', async () => {
+    const h = harness();
+    h.poller.start();
+    await settle();
+    await activateWatch();               // map: n1 Ready, n2 Ready
+    const watchesBefore = Gio.__streamProcs().length;
+
+    // answerFor's table says n1 Ready, n2 NotReady: that is drift.
+    await GLib.__advance(300_500);       // RECONCILE_SECONDS
+    await settle();
+    const table = pollCalls().filter(c => c.argv.includes('--no-headers'));
+    assert.equal(table.length, 1, 'one server-printed table poll');
+    assert.equal(Gio.__streamProcs().length, watchesBefore + 1,
+        'the stale watch was restarted');
+    h.poller.stop();
+});
+
+test('a clean reconcile leaves the watch alone and re-arms itself', async () => {
+    const h = harness();
+    Gio.__setSpawn(({argv}) => {
+        if (argv.includes('--no-headers'))
+            return {stdout: 'n1   Ready   <none>   1d   v1.35\nn2   Ready   <none>   1d   v1.35\n'};
+        return answerFor(argv);
+    });
+    h.poller.start();
+    await settle();
+    await activateWatch();               // map matches the table above
+    const watches = Gio.__streamProcs().length;
+
+    await GLib.__advance(300_500);
+    await settle();
+    assert.equal(Gio.__streamProcs().length, watches, 'no restart without drift');
+
+    await GLib.__advance(300_500);
+    await settle();
+    const tables = pollCalls().filter(c => c.argv.includes('--no-headers'));
+    assert.equal(tables.length, 2, 'the reconcile keeps its cadence');
+    h.poller.stop();
+});
+
+test('two consecutive reconcile failures restart the watch', async () => {
+    const h = harness();
+    Gio.__setSpawn(({argv}) => {
+        if (argv.includes('--no-headers'))
+            return {stdout: '', stderr: 'connection refused', ok: false};
+        return answerFor(argv);
+    });
+    h.poller.start();
+    await settle();
+    await activateWatch();
+    const watches = Gio.__streamProcs().length;
+
+    await GLib.__advance(300_500);       // first miss: tolerated
+    await settle();
+    assert.equal(Gio.__streamProcs().length, watches);
+    await GLib.__advance(300_500);       // second miss: the stream is suspect
+    await settle();
+    assert.equal(Gio.__streamProcs().length, watches + 1);
+    h.poller.stop();
+});
+
+test('a forced refresh restarts the watch; changed options do too', async () => {
+    let context = '';
+    const h = harness({getOpts: () => ({kubectlPath: '', kubeconfig: '', context})});
+    h.poller.start();
+    await settle();
+    await activateWatch();
+    const watches = Gio.__streamProcs().length;
+
+    h.poller.refreshNow(true);           // network flip: sockets are dead
+    await settle();
+    assert.equal(Gio.__streamProcs().length, watches + 1);
+
+    context = 'other';
+    h.poller.refreshNow();               // context switch reaches the watch too
+    await settle();
+    assert.equal(Gio.__streamProcs().length, watches + 2);
+    const argv = Gio.__calls().filter(c => c.argv.includes('--watch')).pop().argv;
+    assert.ok(argv.includes('--context=other'), 'the new stream uses the new options');
+    h.poller.stop();
+});
+
+test('with the menu open, events observe but never repaint the detail view', async () => {
+    const h = harness();
+    h.poller.start();
+    await settle();
+    const proc = await activateWatch();
+
+    h.poller.setMenuOpen(true);
+    await settle();
+    await GLib.__advance(50);
+    await settle();
+    assert.equal(h.states[h.states.length - 1].tier, 'detail');
+    const states = h.states.length;
+    const observed = h.observations.length;
+
+    proc.__pushLine('MODIFIED|n2||Ready|False');
+    await settle();
+    await GLib.__advance(300);
+    await settle();
+    assert.equal(h.states.length, states, 'no health state under an open menu');
+    assert.ok(h.observations.length > observed, 'but the alert machine heard it');
+
+    // Closing the menu swaps the stale detail view for a live snapshot.
+    h.poller.setMenuOpen(false);
+    await settle();
+    const last = h.states[h.states.length - 1];
+    assert.equal(last.tier, 'health');
+    assert.equal(last.readyCount, 1);
+
+    // And the leftover detail cadence is gone: no further polls.
+    const polls = pollCalls().length;
+    await GLib.__advance(30_000);
+    await settle();
+    assert.equal(pollCalls().length, polls);
+    h.poller.stop();
+});
+
+test('watch lines arriving after stop() are ignored', async () => {
+    const h = harness();
+    h.poller.start();
+    await settle();
+    const proc = await activateWatch();
+    const states = h.states.length;
+
+    h.poller.stop();
+    proc.__pushLine('MODIFIED|n1||Ready|False');
+    await settle();
+    await GLib.__advance(2_000);
+    await settle();
+    assert.equal(h.states.length, states, 'a stopped poller stays silent');
+    assert.equal(GLib.__pendingTimers(), 0, 'and holds no timers');
+});
+
+test('a watch exit after stop() schedules nothing', async () => {
+    const h = harness();
+    h.poller.start();
+    await settle();
+    const proc = watchProc();
+    h.poller.stop();
+    proc.__exit({ok: false});
+    await settle();
+    assert.equal(GLib.__pendingTimers(), 0, 'no respawn timer after teardown');
+});
+
+test('garbage lines on the watch stream are ignored', async () => {
+    const h = harness();
+    h.poller.start();
+    await settle();
+    const proc = watchProc();
+    proc.__pushLine('some stray warning kubectl printed');
+    await settle();
+    await GLib.__advance(1_000);
+    await settle();
+    assert.equal(h.states.length, 1, 'only the bridging poll delivered');
+    proc.__pushLine('ADDED|n1||Ready|True');
+    await settle();
+    await GLib.__advance(300);
+    await settle();
+    assert.equal(h.states.length, 2, 'real events still work afterwards');
+    h.poller.stop();
+});
+
+test('intervalChanged re-arms the heartbeat at the new cadence', async () => {
+    let interval = 10;
+    const h = harness({getIntervalSec: () => interval});
+    h.poller.start();
+    await settle();
+    await activateWatch();
+    const observed = h.observations.length;
+
+    interval = 2;
+    h.poller.intervalChanged();
+    await settle();
+    await GLib.__advance(2_500);
+    await settle();
+    assert.equal(h.observations.length, observed + 1,
+        'the heartbeat follows the new interval');
+    h.poller.stop();
+});
+
+test('intervalChanged on a stopped poller does nothing', async () => {
+    const h = harness();
+    h.poller.stop();
+    h.poller.intervalChanged();
+    await settle();
+    assert.equal(GLib.__pendingTimers(), 0);
+});
+
+test('stop() during a coalescing window clears the pending flush', async () => {
+    const h = harness();
+    h.poller.start();
+    await settle();
+    watchProc().__pushLine('ADDED|n1||Ready|True');
+    await settle();                      // event queued, quiet window armed
+    const states = h.states.length;
+    h.poller.stop();
+    assert.equal(GLib.__pendingTimers(), 0, 'the flush timer is gone');
+    await GLib.__advance(2_000);
+    await settle();
+    assert.equal(h.states.length, states, 'the pending snapshot never delivered');
+});
+
+test('a line from a superseded watcher is ignored (white-box guard check)', async () => {
+    // Not reachable through the stub, whose cancelled reads never deliver, but
+    // real GJS could land a queued read after a restart swapped the watcher.
+    const h = harness();
+    h.poller.start();
+    await settle();
+    await activateWatch();
+    const states = h.states.length;
+    h.poller._onWatchLine(/** @type {any} */ ({}), 'MODIFIED|n1||Ready|False');
+    await GLib.__advance(2_000);
+    await settle();
+    assert.equal(h.states.length, states, 'the stale line must not flush');
+});
+
+test('an exit from a superseded watcher schedules nothing (white-box guard check)', async () => {
+    const h = harness();
+    h.poller.start();
+    await settle();
+    await activateWatch();
+    const timers = GLib.__pendingTimers();
+    h.poller._onWatchExit(/** @type {any} */ ({}), {ok: false, detail: '', lifetimeMs: 0});
+    assert.equal(GLib.__pendingTimers(), timers, 'no respawn for a watcher we replaced');
+    h.poller.stop();
+});
+
+test('a reconcile firing mid-poll defers to the poll (white-box guard check)', async () => {
+    // Aligning the 300s reconcile with an in-flight detail poll through the
+    // clock alone is timing soup; the guard is asserted directly instead.
+    const h = harness();
+    h.poller.start();
+    await settle();
+    await activateWatch();
+    const tablesBefore = pollCalls().filter(c => c.argv.includes('--no-headers')).length;
+    h.poller._polling = true;            // a detail poll is on the wire
+    await h.poller._reconcile();
+    h.poller._polling = false;
+    const tablesAfter = pollCalls().filter(c => c.argv.includes('--no-headers')).length;
+    assert.equal(tablesAfter, tablesBefore, 'no table poll on top of a live poll');
+    h.poller.stop();
+});
+
+test('a reconcile landing after the watch died is discarded', async () => {
+    const h = harness();
+    Gio.__setSpawn(({argv}) => argv.includes('--no-headers')
+        ? {stdout: 'n1   Ready   <none>   1d   v1.35\n', defer: true}
+        : answerFor(argv));
+    h.poller.start();
+    await settle();
+    const proc = await activateWatch();
+
+    await GLib.__advance(300_500);       // the table poll is now in flight
+    await settle();
+    proc.__exit({ok: false});            // and the watch dies under it
+    await settle();
+    const watches = Gio.__streamProcs().length;
+
+    Gio.__release();                     // the late table answer lands
+    await settle();
+    assert.equal(Gio.__streamProcs().length, watches,
+        'a stale reconcile must not restart anything');
+    h.poller.stop();
+});
+
+test('a failing reconcile landing after the watch died is discarded too', async () => {
+    const h = harness();
+    Gio.__setSpawn(({argv}) => argv.includes('--no-headers')
+        ? {stdout: '', stderr: 'boom', ok: false, defer: true}
+        : answerFor(argv));
+    h.poller.start();
+    await settle();
+    const proc = await activateWatch();
+
+    await GLib.__advance(300_500);
+    await settle();
+    proc.__exit({ok: false});
+    await settle();
+    const watches = Gio.__streamProcs().length;
+
+    Gio.__release();
+    await settle();
+    assert.equal(Gio.__streamProcs().length, watches,
+        'a stale failure neither counts nor restarts');
+    h.poller.stop();
+});
+
+test('stop() during a reconcile unwinds it as a quiet cancellation', async () => {
+    const h = harness();
+    Gio.__setSpawn(({argv}) => argv.includes('--no-headers')
+        ? {stdout: 'n1   Ready   <none>   1d   v1.35\n', defer: true}
+        : answerFor(argv));
+    h.poller.start();
+    await settle();
+    await activateWatch();
+
+    await GLib.__advance(300_500);       // reconcile in flight
+    await settle();
+    h.poller.stop();                     // cancels it mid-air
+    await settle();
+    assert.equal(GLib.__pendingTimers(), 0, 'teardown left nothing armed');
+});
+
+test('a non-Error reconcile failure is still classified and counted', async () => {
+    const h = harness();
+    Gio.__setSpawn(({argv}) => argv.includes('--no-headers')
+        ? {throws: 'plain string failure'}
+        : answerFor(argv));
+    h.poller.start();
+    await settle();
+    await activateWatch();
+    const watches = Gio.__streamProcs().length;
+
+    await GLib.__advance(300_500);       // first miss
+    await settle();
+    assert.equal(Gio.__streamProcs().length, watches);
+    await GLib.__advance(300_500);       // second miss restarts the watch
+    await settle();
+    assert.equal(Gio.__streamProcs().length, watches + 1);
+    h.poller.stop();
+});
+
+test('heartbeat guards: no double-arm, and a raced firing re-arms nothing (white-box)', async () => {
+    const h = harness();
+    h.poller.start();
+    await settle();
+    await activateWatch();
+    const timers = GLib.__pendingTimers();
+    h.poller._startHeartbeat();          // already armed -> must not stack
+    assert.equal(GLib.__pendingTimers(), timers);
+
+    // GLib can dispatch an already-queued source in the same iteration that
+    // teardown flips the state, so the callback re-checks before observing.
+    h.poller._watchActive = false;
+    const observed = h.observations.length;
+    await GLib.__advance(10_500);
+    await settle();
+    assert.equal(h.observations.length, observed, 'no observation from a dead watch');
+    h.poller._watchActive = true;        // restore for a clean stop
+    h.poller.stop();
+});
+
+test('a reconcile invoked after teardown does nothing (white-box guard check)', async () => {
+    const h = harness();
+    h.poller.start();
+    await settle();
+    await activateWatch();
+    h.poller.stop();
+    const calls = Gio.__calls().length;
+    await h.poller._reconcile();
+    assert.equal(Gio.__calls().length, calls, 'no table poll after stop()');
 });

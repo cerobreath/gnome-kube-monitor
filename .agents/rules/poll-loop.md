@@ -8,7 +8,7 @@ paths:
 # Poll loop invariants
 
 This loop runs inside the compositor process, so a wedge here freezes the desktop. Preserve
-all five.
+all five, plus the watch rules below.
 
 - **Reentrancy**: `_polling` guards against overlapping polls. The timer is a
   self-rescheduling single-shot, not a fixed recurring one, which guarantees the next poll
@@ -30,6 +30,27 @@ all five.
 - **Tier agreement**: both polling tiers derive `level` and `ready` from the same
   `model.js` helpers, so the panel dot means the same thing either way. A new severity
   source goes into `deriveStatus`/`nodeLevel`, never into one tier.
+
+## Watch rules
+
+Tier 1 is normally a long-lived `kubectl get nodes --watch` (`NodeWatcher` in
+`lib/client.js`); polling is the bridge, the fallback and the menu-open detail tier.
+
+- **Polling never goes away.** `_shouldPoll()` is `menuOpen || !watchActive`. The watch
+  only suspends health polls after its first complete snapshot; any exit resumes them, so
+  every failure surface stays the tested poll path.
+- **The watch argv must not carry `--request-timeout`**: the flag cleanly ends a watch
+  when it elapses (rc 0, measured). Its jsonpath cannot use `{range}` on watch events
+  (broken in kubectl 1.35), hence the zipped condition lists.
+- **Snapshots are complete or not at all.** Events coalesce (quiet 250 ms, cap 1.5 s)
+  before the alert machine observes them; never deliver a half-listed cluster.
+- **Every watch timer is owned and cleared in `_teardownWatch()`**: startup watchdog,
+  coalesce, heartbeat, reconcile, retry. `stop()` must leave zero sources armed.
+- **Respawn policy lives in `schedule.js`** (`classifyWatchExit`): stable exits respawn at
+  once, quick deaths back off, three park the watch behind the slow retry. Keep the math
+  pure and tested.
+- The reconcile table cross-checks membership, readiness and cordon only; it cannot see
+  pressure conditions, so it must never feed the panel dot directly.
 
 ## Observations
 

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Kube Node Monitor 0.1.0\n"
 "Report-Msgid-Bugs-To: https://github.com/cerobreath/gnome-kube-monitor\n"
-"POT-Creation-Date: 2026-08-16 18:41+0300\n"
+"POT-Creation-Date: 2026-08-17 17:22+0300\n"
 "PO-Revision-Date: 2026-07-31 01:05+0300\n"
 "Last-Translator: Kube Node Monitor contributors\n"
 "Language-Team: Ukrainian\n"
@@ -552,57 +552,57 @@ msgid "%dd"
 msgstr "%dд"
 
 #. Translators: shown when the cluster did not respond before the timeout.
-#: lib/model.js:472
+#: lib/model.js:590
 msgid "The cluster didn't answer in time"
 msgstr "Кластер не відповів вчасно"
 
 #. Translators: TLS/x509 certificate verification failed.
-#: lib/model.js:474
+#: lib/model.js:592
 msgid "The cluster's certificate can't be verified"
 msgstr "Сертифікат кластера не пройшов перевірку"
 
 #. Translators: the API server rejected the credentials (HTTP 401).
-#: lib/model.js:476
+#: lib/model.js:594
 msgid "The cluster rejected the login"
 msgstr "Кластер не прийняв облікові дані"
 
 #. Translators: an expired token that a credential helper must refresh.
-#: lib/model.js:478
+#: lib/model.js:596
 msgid "The login has expired"
 msgstr "Потрібно увійти повторно"
 
 #. Translators: authenticated, but not permitted to list nodes (HTTP 403).
-#: lib/model.js:480
+#: lib/model.js:598
 msgid "This login can't read the cluster"
 msgstr "Недостатньо прав для читання кластера"
 
 #. Translators: the kubectl binary itself could not be found or executed.
-#: lib/model.js:482
+#: lib/model.js:600
 msgid "Can't find kubectl"
 msgstr "Не вдалося знайти kubectl"
 
 #. Translators: the network could not reach the API server at all.
-#: lib/model.js:484
+#: lib/model.js:602
 msgid "Can't reach the cluster"
 msgstr "Немає зв'язку з кластером"
 
 #. Translators: the machine itself is offline, so the failure is local.
-#: lib/model.js:486
+#: lib/model.js:604
 msgid "No internet connection"
 msgstr "Немає з'єднання з інтернетом"
 
 #. Translators: no kubeconfig file exists to read a cluster from.
-#: lib/model.js:488
+#: lib/model.js:606
 msgid "No kubeconfig found"
 msgstr "Не знайдено kubeconfig"
 
 #. Translators: the selected context is missing from the kubeconfig.
-#: lib/model.js:490
+#: lib/model.js:608
 msgid "The selected context doesn't exist"
 msgstr "Вибраного контексту не існує"
 
 #. Translators: catch-all when kubectl failed for none of the above reasons.
-#: lib/model.js:492
+#: lib/model.js:610
 msgid "kubectl ran into a problem"
 msgstr "У kubectl виникла помилка"
 

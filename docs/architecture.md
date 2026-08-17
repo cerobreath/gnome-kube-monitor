@@ -24,8 +24,8 @@ A pure core with thin IO and UI edges. Dependencies point inward toward `model.j
 | `lib/schedule.js` | Poll-cadence math: interval clamp, exponential backoff. Pure. |
 | `lib/alerts.js` | The alert state machine. Pure. |
 | `lib/log.js` | Opt-in diagnostics behind `debug-logging`. Pure. |
-| `lib/client.js` | The only file that spawns `kubectl`. |
-| `lib/poller.js` | The poll loop: tier selection, backoff, watchdog, reentrancy. |
+| `lib/client.js` | The only file that spawns `kubectl`, including the long-lived node watch. |
+| `lib/poller.js` | The poll loop and the watch lifecycle: tier selection, backoff, watchdog, reentrancy, coalescing, reconcile. |
 | `lib/indicator.js` | The view: `PanelMenu.Button` and its menu. |
 | `lib/notifier.js` | The notification edge: a dedicated `MessageTray.Source`. |
 | `extension.js` | Wiring only. |
@@ -65,22 +65,69 @@ Four things sit on top of that lifecycle:
 
 `nowMs` is wall-clock, because the state has to survive a reboot. State is serialized into the `alert-state` GSettings key, and `MAX_TRACKED_ALERTS` caps the persisted map. `groupActions()` coalesces a batch into at most two banners: fires at high urgency, which is deliberately not critical because a critical banner never auto-hides, and resolves at normal.
 
-## Two-tier polling
+## Two-tier polling, and the watch that replaces tier 1
 
 Polling cost lands inside the compositor process, so steady state has to be minimal. The poller picks a tier by menu state.
 
 | | Menu closed (almost always) | Menu open |
 | --- | --- | --- |
-| Call | `fetchHealth` | `fetchNodesDetail` + `fetchNodeMetrics` + `fetchPodsSummary` |
-| Query | one compact jsonpath | `-o json`, the last two best-effort |
-| Payload | ~250 B for the whole cluster | ~36 KB per node |
+| Call | node watch (poll fallback: `fetchHealth`) | `fetchNodesDetail` + `fetchNodeMetrics` + `fetchPodsSummary` |
+| Query | `--watch --output-watch-events` jsonpath | `-o json`, the last two best-effort |
+| Payload | one LIST per stream, then deltas only | ~36 KB per node |
 | Drives | panel dot and notifications | the full menu |
 
 `setMenuOpen(true)` triggers an immediate detail poll instead of waiting for the next tick.
 
+### Why the watch exists
+
+kubectl's jsonpath is a client-side printer, so the small output hid what a poll actually cost. Measured on a live 4-node k3s cluster, kubectl 1.35, median of six runs:
+
+| | wire, per node | CPU | RSS |
+| --- | --- | --- | --- |
+| `kubectl version --client`, no API call at all | none | 88 ms | 56 MB |
+| jsonpath health poll | 26.5 KB | 183 ms | 61 MB |
+| server-printed table (`kubectl get nodes`) | 8.1 KB | 169 ms | 60 MB |
+
+Three things fall out of that.
+
+**The output was never the cost.** jsonpath sends `Accept: application/json` and pulls the full node objects. The ~250 B is only what survives into stdout.
+
+**Most of the cost is not the payload either.** A kubectl that makes no API call still burns 88 ms of CPU and 56 MB of RSS. That is the Go runtime, client-go and TLS setup, paid on every spawn whatever you ask for. Bytes are the smaller half of the bill.
+
+**The cheap representation does not help enough.** The default table is printed server-side (`as=Table`) and moves 3.3x fewer bytes, but costs the same process. Its rows still carry `PartialObjectMetadata` with `managedFields`; `includeObject=None` would be 21x fewer bytes and the CLI cannot pass it.
+
+So the win is not a smaller query. It is not spawning the process 360 times an hour.
+
+### What the watch costs instead
+
+One stream, a full LIST when it opens, then only deltas from the apiserver's watch cache. Measured over 45 s on the same cluster: **170 ms of CPU total, which never rose again**, and 61.8 MB resident and flat. A cordon reached the pipe in 85 ms, with kubectl's duplicate MODIFIED 6 ms behind it, which is what the coalescing window exists for.
+
+| over | polling at the 10 s default | one watch |
+| --- | --- | --- |
+| 5 minutes | 30 spawns, 5.5 s of CPU | 1 spawn, 0.17 s |
+| 1 hour | 360 spawns, 66 s of CPU | 1 spawn, 0.17 s |
+| 8 hours | 2880 spawns, 8.8 min of CPU | 1 spawn, 0.17 s |
+
+The byte saving scales with how much metadata the nodes carry, so it is not a universal figure. The same measurement against a 3-node k3d cluster gives 10.3 KB per node and only a 1.5x table ratio, because k3d nodes carry far less annotation bloat than a real one. The process saving does not vary: it is one spawn either way.
+
+### How the watch is wired
+
+Polling never went away: `start()` still polls immediately, and the poll loop keeps running until the watch delivers its first complete snapshot. From then on health polls stand down and any watch trouble brings them straight back, so every failure surface (classification, backoff, offline inhibition) is the poll path unchanged.
+
+- **The stream.** `kubectl get nodes --watch --output-watch-events -o jsonpath=…`, spawned deliberately without `--request-timeout`. Measured: that flag ends a watch cleanly when it elapses, exit code 0, which would look like a healthy server close.
+- **Two kubectl 1.35 printer quirks shape the template.** `{range}` does not work on watch events and fails with "not in range, nothing to end", so condition types and statuses arrive as two space-joined lists that `parseWatchEvent` zips back together. And the watch printer pushes output through a tabwriter that pads `\t` into alignment spaces, so fields are separated by `|` instead, which cannot occur in a node name, a condition type or a status.
+- **Coalescing.** Events fold into a name-keyed map and flush as one snapshot after 250 ms of quiet, capped at 1.5 s. The initial ADDED burst and kubectl's several-MODIFIED-per-change habit become single deliveries, and the alert machine never observes a half-listed cluster.
+- **Heartbeat.** The alert machine steps on observations, so while the stream is silent the current map is re-observed at the poll cadence. No kubectl involved.
+- **Respawn.** `classifyWatchExit` reads a stream that lived 60 s as healthy and respawns it at once. Servers close watches after 30 to 60 minutes, and the fresh LIST is the resync.
+- **Giving up gracefully.** Short-lived exits back off exponentially. After three, the watch parks behind a 300 s retry and polling carries the load, so a proxy that kills long connections degrades to exactly the old behaviour.
+- **Startup watchdog.** A spawn that produces no snapshot within 30 s is killed. A black-holed route can hang a dial far longer than any poll would wait.
+- **Reconcile.** Every 300 s a server-printed table (`fetchHealthTable`, the cheap representation above) is compared against the map on membership, readiness and cordon state; drift or two consecutive misses restart the stream. The table cannot see pressure conditions, which is why it only cross-checks the watch and never feeds the dot directly.
+
+The panel dot means the same thing in all three sources because watch, poll and table all derive severity through the same `model.js` helpers.
+
 ## Scale limits
 
-Measured on a real 3-node k3s cluster: tier 2 costs about **36 KB per node** (`status.images` is 40% of that) against **251 B for the entire cluster** in tier 1. A 1000-node cluster therefore means roughly 36 MB going through `JSON.parse` on the compositor's main loop while the menu is open.
+Tier 2 is the expensive one, and it is bounded by the menu being open. Measured on a real 3-node k3s cluster it costs about **36 KB per node**, of which `status.images` is 40%. A 1000-node cluster therefore means roughly 36 MB going through `JSON.parse` on the compositor's main loop while you are looking at the menu.
 
 `MAX_NODE_ROWS` (`indicator.js`) caps rows at 50, sorted most-severe-first with the remainder summarised. The cap was profiled rather than reasoned about, on a Ryzen 7 5800HS under headless GNOME 50, with synthetic nodes tuned to the measured 37 KB.
 

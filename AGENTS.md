@@ -159,6 +159,16 @@ lives inside the heavy gnome-shell package, so both workflows build the zip thro
 the one pairing left to keep by hand.** A `v*` tag runs the full gate and publishes that
 zip as a GitHub release.
 
+**The release body is the annotated tag's message** (`gh release create
+--notes-from-tag`), so write it with `git tag -a vX.Y.Z --cleanup=verbatim -F notes`
+before pushing the tag. **`--cleanup=verbatim` is not optional**: the default mode treats
+`#` lines as comments and silently drops every markdown heading from the body.
+`--generate-notes` is deliberately unused: it builds from merged pull requests and there
+are none here. Bump `version-name` in `metadata.json` in the same change, and leave the
+integer `version` out of the file, because extensions.gnome.org owns it and overrides
+whatever is there. There is no changelog file; the release page is the changelog, which is
+also what every large extension does.
+
 The panel icon is the official Kubernetes helm: regenerate it by extracting the helm path
 from the source logo SVG rather than hand-editing path data.
 

@@ -102,7 +102,9 @@ const menuOf = ind => /** @type {any} */ (ind.menu);
 test('the panel shows the helm icon plus a status dot, and starts unknown', () => {
     const {indicator} = makeIndicator();
     const classes = classesUnder(indicator);
-    assert.ok(classes.includes('kube-panel-icon'));
+    assert.match(indicator._icon.gicon.to_string(), /kubernetes-symbolic\.svg$/,
+        'the helm, not a theme icon');
+    assert.ok(classes.includes('kube-panel-dot'), 'and the dot is sized for the panel');
     assert.ok(classes.includes('kube-dot-unknown'), 'no data yet -> unknown');
     assert.match(indicator.accessible_name, /Kube Node Monitor/);
 });

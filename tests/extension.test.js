@@ -575,21 +575,14 @@ test('the extension\'s own helpers are inert after disable', async () => {
     assert.equal(GLib.__pendingTimers(), 0, 'and no timer is armed by a late call');
 });
 
-test('the config falls back to schema defaults when settings are gone', async () => {
+test('the alert config reads the schema defaults while settings are live', async () => {
     const {ext} = makeExtension();
     ext.enable();
     await settle();
     const live = ext._alertConfig();
     assert.equal(live.nodeForSec, 30);
     assert.equal(live.clusterEnabled, true);
-
     ext.disable();
-    const fallback = ext._alertConfig();
-    assert.deepEqual(fallback, {
-        nodeEnabled: true, clusterEnabled: true, resolveNotify: true,
-        nodeForSec: 30, clusterForSec: 120, keepFiringForSec: 60,
-        repeatIntervalSec: 0, intervalSec: 10, settleFactor: 3, silencedUntilMs: 0,
-    });
 });
 
 test('a settings change arriving after disable is ignored', async () => {
@@ -743,4 +736,23 @@ test('a bound locale reaches the view, the pure alert machine and the banners', 
     assert.match(Main.panel.statusArea['kube-monitor@cerobreath.dev'].accessible_name,
         /^Kube Node Monitor: healthy, /);
     plain.disable();
+});
+
+test('an enable() that throws unwinds its own partial build', async () => {
+    // The shell leaves a failed extension in ERROR and never calls disable()
+    // for it, so everything enable() managed to build has to come back here.
+    const {ext} = makeExtension();
+    const monitor = Gio.NetworkMonitor.get_default();
+    // A leftover indicator: the real panel refuses the role rather than
+    // replacing it, which throws after the netmonitor handler is connected.
+    Main.panel.statusArea['kube-monitor@cerobreath.dev'] = {};
+
+    assert.throws(() => ext.enable(), /Extension point conflict/);
+    await settle();
+
+    assert.equal(monitor._handlers.size, 0, 'no handler left on the singleton');
+    assert.equal(GLib.__pendingTimers(), 0, 'no timer left armed');
+    assert.equal(Main.messageTray.sources.length, 0, 'the tray source is gone');
+    assert.equal(isDebugEnabled(), false, 'logging is off again');
+    assert.equal(ext._settings, null, 'and nothing is still referenced');
 });

@@ -28,7 +28,66 @@ import {bindTranslations, unbindTranslations, _, format} from './lib/i18n.js';
 const STAMP_TOLERANCE_MS = 300_000;   // 5 minutes
 
 export default class KubeMonitorExtension extends Extension {
+    // A throw here leaves the extension in ERROR and the shell never calls
+    // disable() for it (extensionSystem.js), so a partial build unwinds itself.
     enable() {
+        try {
+            this._build();
+        } catch (e) {
+            this.disable();
+            throw e;
+        }
+    }
+
+    disable() {
+        this._poller?.stop();
+        this._poller = null;
+        // Teardown must not post banners, so buffered actions are rolled back
+        // in the notify-log for the next enable().
+        if (this._groupTimerId) {
+            GLib.source_remove(this._groupTimerId);
+            this._groupTimerId = 0;
+        }
+        // enable() calls this on its own failure path, so nothing here may
+        // assume enable() ran to the end.
+        if (this._pendingActions?.length) {
+            this._alertState = rollbackDelivery(this._alertState, this._pendingActions);
+            this._pendingActions = [];
+        }
+        // Flush the alert state so a warm restart (screen lock) resumes where it
+        // stopped.
+        this._persistAlertState();
+        if (this._cancellable) {
+            this._cancellable.cancel();
+            this._cancellable = null;
+        }
+        if (this._settingsChangedId) {
+            this._settings?.disconnect(this._settingsChangedId);
+            this._settingsChangedId = 0;
+        }
+        // The monitor is a process-wide singleton: only the handler belongs here.
+        if (this._netChangedId) {
+            this._netMonitor.disconnect(this._netChangedId);
+            this._netChangedId = 0;
+        }
+        this._netMonitor = null;
+        for (const id of this._indicatorIds ?? [])
+            this._indicator?.disconnect(id);
+        this._indicatorIds = [];
+        this._indicator?.destroy();
+        this._indicator = null;
+        this._notifier?.destroy();
+        this._notifier = null;
+        this._settings = null;
+        this._alertState = null;
+        this._persistedState = null;
+        setDebugEnabled(false);   // never keep logging after teardown
+        // Drop the gettext backend last: it holds this extension object, which
+        // module state would otherwise keep alive past disable().
+        unbindTranslations();
+    }
+
+    _build() {
         // Must run before anything can build a string.
         bindTranslations(this);
         this._settings = this.getSettings();
@@ -39,12 +98,12 @@ export default class KubeMonitorExtension extends Extension {
         this._notifier = new KubeNotifier(this);
 
         this._netMonitor = Gio.NetworkMonitor.get_default();
-        // No null-guard on the poller: the handler is disconnected in disable()
-        // and enable() finishes building the poller before the loop can dispatch.
+        // The monitor outlives every enable cycle, so this handler must survive
+        // firing before the poller exists or after teardown dropped it.
         this._netChangedId = this._netMonitor.connect('network-changed',
             (/** @type {unknown} */ _m, /** @type {boolean} */ available) => {
                 if (available)
-                    this._poller.refreshNow(true);
+                    this._poller?.refreshNow(true);
             });
 
         // Resume the persisted lifecycle instead of replaying it after a restart.
@@ -116,53 +175,6 @@ export default class KubeMonitorExtension extends Extension {
         this._poller.start();
     }
 
-    disable() {
-        this._poller?.stop();
-        this._poller = null;
-        // Teardown must not post banners, so buffered actions are rolled back
-        // in the notify-log for the next enable().
-        if (this._groupTimerId) {
-            GLib.source_remove(this._groupTimerId);
-            this._groupTimerId = 0;
-        }
-        // The shell calls disable() even when enable() bailed out, so nothing
-        // here may assume enable() ran.
-        if (this._pendingActions?.length) {
-            this._alertState = rollbackDelivery(this._alertState, this._pendingActions);
-            this._pendingActions = [];
-        }
-        // Flush the alert state so a warm restart (screen lock) resumes where it
-        // stopped.
-        this._persistAlertState();
-        if (this._cancellable) {
-            this._cancellable.cancel();
-            this._cancellable = null;
-        }
-        if (this._settingsChangedId) {
-            this._settings?.disconnect(this._settingsChangedId);
-            this._settingsChangedId = 0;
-        }
-        // The monitor is a process-wide singleton: only the handler is ours.
-        if (this._netChangedId) {
-            this._netMonitor.disconnect(this._netChangedId);
-            this._netChangedId = 0;
-        }
-        this._netMonitor = null;
-        for (const id of this._indicatorIds ?? [])
-            this._indicator?.disconnect(id);
-        this._indicatorIds = [];
-        this._indicator?.destroy();
-        this._indicator = null;
-        this._notifier?.destroy();
-        this._notifier = null;
-        this._settings = null;
-        this._alertState = null;
-        setDebugEnabled(false);   // never keep logging after teardown
-        // Drop the gettext backend last: it holds this extension object, which
-        // module state would otherwise keep alive past disable().
-        unbindTranslations();
-    }
-
     _readOpts() {
         return {
             kubectlPath: this._settings?.get_string('kubectl-path') ?? '',
@@ -231,7 +243,7 @@ export default class KubeMonitorExtension extends Extension {
         if (!this._settings)
             return;   // torn down; nothing owns the timer
         if (this._groupTimerId)
-            return;   // a window is already collecting
+            return;
         const waitSec = Math.max(0, this._settings.get_int('alert-group-wait'));
         this._groupTimerId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, waitSec * 1000, () => {
             this._groupTimerId = 0;
@@ -249,20 +261,21 @@ export default class KubeMonitorExtension extends Extension {
         }
     }
 
+    // Only reached from _onObservation, which returns early without settings.
     /** @returns {import('./lib/alerts.js').AlertConfig} */
     _alertConfig() {
         const s = this._settings;
         return {
-            nodeEnabled: s?.get_boolean('notify-node-changes') ?? true,
-            clusterEnabled: s?.get_boolean('notify-cluster-unreachable') ?? true,
-            resolveNotify: s?.get_boolean('notify-on-recovery') ?? true,
-            nodeForSec: s?.get_int('alert-node-for') ?? 30,
-            clusterForSec: s?.get_int('alert-cluster-for') ?? 120,
-            keepFiringForSec: s?.get_int('alert-keep-firing-for') ?? 60,
-            repeatIntervalSec: s?.get_int('alert-repeat-interval') ?? 0,
-            intervalSec: s?.get_int('refresh-interval') ?? 10,
+            nodeEnabled: s.get_boolean('notify-node-changes'),
+            clusterEnabled: s.get_boolean('notify-cluster-unreachable'),
+            resolveNotify: s.get_boolean('notify-on-recovery'),
+            nodeForSec: s.get_int('alert-node-for'),
+            clusterForSec: s.get_int('alert-cluster-for'),
+            keepFiringForSec: s.get_int('alert-keep-firing-for'),
+            repeatIntervalSec: s.get_int('alert-repeat-interval'),
+            intervalSec: s.get_int('refresh-interval'),
             settleFactor: 3,
-            silencedUntilMs: s?.get_int64('alert-silence-until') ?? 0,
+            silencedUntilMs: s.get_int64('alert-silence-until'),
         };
     }
 

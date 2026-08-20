@@ -45,6 +45,9 @@ class Panel extends Emitter {
 
     /** @param {string} role @param {any} indicator */
     addToStatusArea(role, indicator) {
+        // The real panel refuses a second indicator for one role (panel.js).
+        if (this.statusArea[role])
+            throw new Error(`Extension point conflict: there is already a status indicator for role ${role}`);
         this.statusArea[role] = indicator;
         // The real panel deletes its entry when the indicator is destroyed.
         indicator.connect?.('destroy', () => {

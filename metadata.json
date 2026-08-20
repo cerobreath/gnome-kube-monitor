@@ -3,7 +3,7 @@
   "name": "Kube Node Monitor",
   "description": "Kubernetes node health in the GNOME top bar, on the kubectl and kubeconfig you already have.\n\nThe panel dot is green while every node is Ready, amber when one degrades, red when one drops out. Open it for your nodes worst-first, each with how long it has been up or down, its role or failure reason, and CPU/memory where metrics-server provides them, plus a pods line and one-click context switching.\n\nIt notifies when a node stays NotReady, when the cluster stops answering, and again on recovery. Clicking a node copies its 'kubectl describe node' command to the clipboard.\n\nRead-only: it never writes to your cluster. Translated into 14 languages. Bugs and requests on GitHub.",
   "shell-version": ["45", "46", "47", "48", "49", "50"],
-  "version-name": "1.0.1",
+  "version-name": "1.0.2",
   "url": "https://github.com/cerobreath/gnome-kube-monitor",
   "settings-schema": "org.gnome.shell.extensions.kube-monitor",
   "gettext-domain": "kube-monitor@cerobreath.dev"

@@ -12,9 +12,9 @@ import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 
 import {ExtensionPreferences} from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
-import {fetchContexts, fetchCurrentContext} from './lib/client.js';
+import {fetchContexts, fetchCurrentContext, findKubectl} from './lib/client.js';
 import {classifyError} from './lib/model.js';
-import {bindTranslations, _, ngettext, format} from './lib/i18n.js';
+import {bindTranslations, unbindTranslations, _, ngettext, format} from './lib/i18n.js';
 
 export default class KubeMonitorPreferences extends ExtensionPreferences {
     /** @param {Adw.PreferencesWindow} window */
@@ -24,6 +24,14 @@ export default class KubeMonitorPreferences extends ExtensionPreferences {
         // ExtensionBase, so the instance carries the same gettext methods.
         bindTranslations(this);
         const settings = this.getSettings();
+        // Closing the window must kill any kubectl it started, and drop the
+        // gettext backend that holds this instance.
+        const cancellable = new Gio.Cancellable();
+        window.connect('close-request', () => {
+            cancellable.cancel();
+            unbindTranslations();
+            return false;
+        });
 
         // Translators: the only page of the preferences window.
         const page = new Adw.PreferencesPage({title: _('General'), icon_name: 'preferences-system-symbolic'});
@@ -34,7 +42,7 @@ export default class KubeMonitorPreferences extends ExtensionPreferences {
         page.add(monitorGroup);
 
         const interval = new Adw.SpinRow({
-            title: _('Refresh interval'),
+            title: _('Refresh Interval'),
             subtitle: _('Seconds between kubectl polls'),
             adjustment: new Gtk.Adjustment({lower: 2, upper: 3600, step_increment: 1, page_increment: 5}),
         });
@@ -43,12 +51,12 @@ export default class KubeMonitorPreferences extends ExtensionPreferences {
 
         const notifyGroup = new Adw.PreferencesGroup({
             title: _('Notifications'),
-            description: _('Choose which events notify you, and how long to wait first.'),
+            description: _('Choose which events notify you, and how long to wait first'),
         });
         page.add(notifyGroup);
 
         const notify = new Adw.SwitchRow({
-            title: _('Node problems'),
+            title: _('Node Problems'),
             // Translators: "Ready" is a Kubernetes node state, keep it as it is.
             subtitle: _('Notify when a node stops being Ready'),
         });
@@ -56,7 +64,7 @@ export default class KubeMonitorPreferences extends ExtensionPreferences {
         settings.bind('notify-node-changes', notify, 'active', Gio.SettingsBindFlags.DEFAULT);
 
         const cluster = new Adw.SwitchRow({
-            title: _('Cluster unreachable'),
+            title: _('Cluster Unreachable'),
             subtitle: _('Notify when kubectl cannot reach the cluster'),
         });
         notifyGroup.add(cluster);
@@ -71,7 +79,7 @@ export default class KubeMonitorPreferences extends ExtensionPreferences {
 
         const nodeFor = new Adw.SpinRow({
             // Translators: how long a node must stay down before it notifies.
-            title: _('Node delay'),
+            title: _('Node Delay'),
             // Translators: "NotReady" is a Kubernetes node state, keep it as it is.
             subtitle: _('Seconds a node must stay NotReady before notifying'),
             adjustment: new Gtk.Adjustment({lower: 0, upper: 3600, step_increment: 5, page_increment: 30}),
@@ -81,7 +89,7 @@ export default class KubeMonitorPreferences extends ExtensionPreferences {
 
         const clusterFor = new Adw.SpinRow({
             // Translators: how long the cluster must stay unreachable before it notifies.
-            title: _('Cluster delay'),
+            title: _('Cluster Delay'),
             subtitle: _('Seconds the cluster must stay unreachable before notifying'),
             adjustment: new Gtk.Adjustment({lower: 0, upper: 3600, step_increment: 5, page_increment: 30}),
         });
@@ -90,7 +98,7 @@ export default class KubeMonitorPreferences extends ExtensionPreferences {
 
         const keepFiring = new Adw.SpinRow({
             // Translators: an alert stays active this long after its cause clears.
-            title: _('Hold time'),
+            title: _('Hold Time'),
             // Translators: a node that "flaps" switches state repeatedly.
             subtitle: _('Seconds an alert stays active after it clears, so a flapping node notifies once'),
             adjustment: new Gtk.Adjustment({lower: 0, upper: 3600, step_increment: 5, page_increment: 30}),
@@ -99,7 +107,7 @@ export default class KubeMonitorPreferences extends ExtensionPreferences {
         settings.bind('alert-keep-firing-for', keepFiring, 'value', Gio.SettingsBindFlags.DEFAULT);
 
         const repeat = new Adw.SpinRow({
-            title: _('Repeat reminder'),
+            title: _('Repeat Reminder'),
             subtitle: _('Seconds before notifying again about a still-active alert, or zero to notify once'),
             adjustment: new Gtk.Adjustment({lower: 0, upper: 86400, step_increment: 60, page_increment: 300}),
         });
@@ -108,7 +116,7 @@ export default class KubeMonitorPreferences extends ExtensionPreferences {
 
         const groupWait = new Adw.SpinRow({
             // Translators: alerts firing within this window become one notification.
-            title: _('Batch window'),
+            title: _('Batch Window'),
             subtitle: _('Seconds to wait so alerts firing together arrive as one notification'),
             adjustment: new Gtk.Adjustment({lower: 0, upper: 300, step_increment: 1, page_increment: 5}),
         });
@@ -117,7 +125,7 @@ export default class KubeMonitorPreferences extends ExtensionPreferences {
 
         const connGroup = new Adw.PreferencesGroup({
             title: _('Connection'),
-            description: _('kubectl and the kubeconfig are found automatically.'),
+            description: _('kubectl and the kubeconfig are found automatically'),
         });
         page.add(connGroup);
 
@@ -154,7 +162,7 @@ export default class KubeMonitorPreferences extends ExtensionPreferences {
         // you can, it is a compact button in a row.
         const testBtn = new Gtk.Button({label: _('Test'), valign: Gtk.Align.CENTER});
         const testRow = new Adw.ActionRow({
-            title: _('Test connection'), subtitle: _('Run kubectl and list contexts'),
+            title: _('Test Connection'), subtitle: _('Run kubectl and list contexts'),
         });
         testRow.add_suffix(testBtn);
         testRow.activatable_widget = testBtn;
@@ -167,13 +175,20 @@ export default class KubeMonitorPreferences extends ExtensionPreferences {
         });
         connGroup.add(advanced);
 
-        const kubectlEntry = new Adw.EntryRow({title: _('kubectl path')});
+        // Apply on Enter, not per keystroke: a bound entry would rewrite the key
+        // on every character, and both processes re-list the cluster on that key.
+        const kubectlEntry = new Adw.EntryRow({
+            title: _('kubectl Path'),
+            show_apply_button: true,
+            text: settings.get_string('kubectl-path'),
+        });
         advanced.add_row(kubectlEntry);
-        settings.bind('kubectl-path', kubectlEntry, 'text', Gio.SettingsBindFlags.DEFAULT);
+        kubectlEntry.connect('apply',
+            () => settings.set_string('kubectl-path', kubectlEntry.text));
 
         // Off by default; see lib/log.js for what it does and does not write.
         const debugRow = new Adw.SwitchRow({
-            title: _('Log diagnostics'),
+            title: _('Diagnostic Logging'),
             subtitle: _('Record poll and alert decisions in the system log'),
         });
         advanced.add_row(debugRow);
@@ -185,7 +200,7 @@ export default class KubeMonitorPreferences extends ExtensionPreferences {
         const setKubeconfigs = (/** @type {string[]} */ list) =>
             settings.set_string('kubeconfig-path', list.join(':'));
 
-        const addRow = new Adw.ActionRow({title: _('Add kubeconfig file…')});
+        const addRow = new Adw.ActionRow({title: _('Add kubeconfig File…')});
         const addBtn = new Gtk.Button({
             icon_name: 'list-add-symbolic', valign: Gtk.Align.CENTER, css_classes: ['flat'],
             // Icon-only: without this a screen reader announces "button".
@@ -194,7 +209,7 @@ export default class KubeMonitorPreferences extends ExtensionPreferences {
         addRow.add_suffix(addBtn);
         addRow.activatable_widget = addBtn;
         addBtn.connect('clicked', () => {
-            const dialog = new Gtk.FileDialog({title: _('Select a kubeconfig file')});
+            const dialog = new Gtk.FileDialog({title: _('Select a kubeconfig File')});
             dialog.open(window, null, (_source, res) => {
                 let file;
                 try {
@@ -249,7 +264,9 @@ export default class KubeMonitorPreferences extends ExtensionPreferences {
 
         const detectPaths = () => {
             const o = opts();
-            const kubectl = o.kubectlPath || GLib.find_program_in_path('kubectl') || '';
+            // Same resolver the shell spawns with, so this row cannot claim a
+            // kubectl the poller will fail to find.
+            const kubectl = findKubectl(o.kubectlPath);
             kubectlIcon.icon_name = kubectl ? 'object-select-symbolic' : 'dialog-warning-symbolic';
             // Translators: shown when kubectl is not on PATH. "Advanced" is the
             // expander below, so use the same wording you gave its title.
@@ -277,13 +294,13 @@ export default class KubeMonitorPreferences extends ExtensionPreferences {
 
         const populate = async () => {
             try {
-                contexts = await fetchContexts(opts(), null);
+                contexts = await fetchContexts(opts(), cancellable);
             } catch {
                 contexts = [];
             }
             // No .catch: fetchCurrentContext resolves '' on any failure by
             // contract (see client.js), so a rejection is not reachable.
-            const current = await fetchCurrentContext(opts(), null);
+            const current = await fetchCurrentContext(opts(), cancellable);
 
             syncing = true;
             // Translators: first entry of the context picker. It follows whichever
@@ -312,7 +329,7 @@ export default class KubeMonitorPreferences extends ExtensionPreferences {
 
         testBtn.connect('clicked', () => {
             testBtn.sensitive = false;
-            fetchContexts(opts(), null)
+            fetchContexts(opts(), cancellable)
                 .then(list => window.add_toast(new Adw.Toast({
                     // Translators: toast after a successful connection test.
                     // %d is how many contexts the kubeconfig defines.
@@ -323,10 +340,14 @@ export default class KubeMonitorPreferences extends ExtensionPreferences {
                 // classifyError picks kubectl's own summary over the klog noise
                 // and redacts credential material an exec plugin may have logged.
                 // use_markup off: Adw.Toast parses Pango markup by default.
-                .catch(e => window.add_toast(new Adw.Toast({
-                    title: classifyError(e?.message ?? e).title,
-                    use_markup: false,
-                })))
+                .catch(e => {
+                    if (cancellable.is_cancelled())
+                        return;   // the window closed under the check
+                    window.add_toast(new Adw.Toast({
+                        title: classifyError(e?.message ?? e).title,
+                        use_markup: false,
+                    }));
+                })
                 .finally(() => { testBtn.sensitive = true; });
         });
 
@@ -336,9 +357,16 @@ export default class KubeMonitorPreferences extends ExtensionPreferences {
             populate();
             rebuildKubeconfigRows();
         });
-        settings.connect('changed::kubectl-path', () => { detectPaths(); populate(); });
+        settings.connect('changed::kubectl-path', () => {
+            if (kubectlEntry.text !== settings.get_string('kubectl-path'))
+                kubectlEntry.text = settings.get_string('kubectl-path');
+            detectPaths();
+            populate();
+        });
 
         detectPaths();
-        await populate();
+        // Not awaited: the shell presents the window when this returns, and the
+        // context list is the only thing still missing.
+        populate();
     }
 }

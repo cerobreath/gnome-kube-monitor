@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Kube Node Monitor 0.1.0\n"
 "Report-Msgid-Bugs-To: https://github.com/cerobreath/gnome-kube-monitor\n"
-"POT-Creation-Date: 2026-08-18 01:38+0300\n"
+"POT-Creation-Date: 2026-08-20 00:49+0300\n"
 "PO-Revision-Date: 2026-07-31 01:05+0300\n"
 "Last-Translator: Kube Node Monitor contributors\n"
 "Language-Team: German\n"
@@ -20,94 +20,94 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: extension.js:76
+#: extension.js:135
 msgid "Copied to clipboard"
 msgstr "In die Zwischenablage kopiert"
 
 #. Translators: the only page of the preferences window.
-#: prefs.js:29
+#: prefs.js:37
 msgid "General"
 msgstr "Allgemein"
 
 #. Translators: preferences group covering how often the cluster is polled.
-#: prefs.js:33
+#: prefs.js:41
 msgid "Monitoring"
 msgstr "Überwachung"
 
-#: prefs.js:37
-msgid "Refresh interval"
+#: prefs.js:45
+msgid "Refresh Interval"
 msgstr "Aktualisierungsintervall"
 
-#: prefs.js:38
+#: prefs.js:46
 msgid "Seconds between kubectl polls"
 msgstr "Sekunden zwischen kubectl-Abfragen"
 
-#: prefs.js:45
+#: prefs.js:53
 msgid "Notifications"
 msgstr "Benachrichtigungen"
 
-#: prefs.js:46
-msgid "Choose which events notify you, and how long to wait first."
+#: prefs.js:54
+msgid "Choose which events notify you, and how long to wait first"
 msgstr ""
 "Auswählen, welche Ereignisse eine Benachrichtigung auslösen und wie lange "
 "zuvor gewartet wird."
 
-#: prefs.js:51
-msgid "Node problems"
+#: prefs.js:59
+msgid "Node Problems"
 msgstr "Knotenprobleme"
 
 #. Translators: "Ready" is a Kubernetes node state, keep it as it is.
-#: prefs.js:53
+#: prefs.js:61
 msgid "Notify when a node stops being Ready"
 msgstr "Benachrichtigen, wenn ein Knoten nicht mehr Ready ist"
 
-#: prefs.js:59
-msgid "Cluster unreachable"
+#: prefs.js:67
+msgid "Cluster Unreachable"
 msgstr "Cluster nicht erreichbar"
 
-#: prefs.js:60
+#: prefs.js:68
 msgid "Notify when kubectl cannot reach the cluster"
 msgstr "Benachrichtigen, wenn kubectl den Cluster nicht erreichen kann"
 
-#: prefs.js:66
+#: prefs.js:74
 msgid "Recovery"
 msgstr "Wiederherstellung"
 
-#: prefs.js:67
+#: prefs.js:75
 msgid "Also notify when a node or the cluster comes back"
 msgstr ""
 "Auch benachrichtigen, wenn ein Knoten oder der Cluster wieder verfügbar ist"
 
 #. Translators: how long a node must stay down before it notifies.
-#: prefs.js:74
-msgid "Node delay"
+#: prefs.js:82
+msgid "Node Delay"
 msgstr "Knotenverzögerung"
 
 #. Translators: "NotReady" is a Kubernetes node state, keep it as it is.
-#: prefs.js:76
+#: prefs.js:84
 msgid "Seconds a node must stay NotReady before notifying"
 msgstr ""
 "Sekunden, die ein Knoten im Zustand NotReady bleiben muss, bevor "
 "benachrichtigt wird"
 
 #. Translators: how long the cluster must stay unreachable before it notifies.
-#: prefs.js:84
-msgid "Cluster delay"
+#: prefs.js:92
+msgid "Cluster Delay"
 msgstr "Cluster-Verzögerung"
 
-#: prefs.js:85
+#: prefs.js:93
 msgid "Seconds the cluster must stay unreachable before notifying"
 msgstr ""
 "Sekunden, die der Cluster nicht erreichbar bleiben muss, bevor "
 "benachrichtigt wird"
 
 #. Translators: an alert stays active this long after its cause clears.
-#: prefs.js:93
-msgid "Hold time"
+#: prefs.js:101
+msgid "Hold Time"
 msgstr "Haltezeit"
 
 #. Translators: a node that "flaps" switches state repeatedly.
-#: prefs.js:95
+#: prefs.js:103
 msgid ""
 "Seconds an alert stays active after it clears, so a flapping node notifies "
 "once"
@@ -115,11 +115,11 @@ msgstr ""
 "Sekunden, die eine Warnung aktiv bleibt, nachdem ihre Ursache behoben ist, "
 "damit ein instabiler Knoten nur eine Benachrichtigung auslöst"
 
-#: prefs.js:102
-msgid "Repeat reminder"
+#: prefs.js:110
+msgid "Repeat Reminder"
 msgstr "Erneute Erinnerung"
 
-#: prefs.js:103
+#: prefs.js:111
 msgid ""
 "Seconds before notifying again about a still-active alert, or zero to notify "
 "once"
@@ -128,107 +128,107 @@ msgstr ""
 "Warnung; bei null wird nur einmal benachrichtigt"
 
 #. Translators: alerts firing within this window become one notification.
-#: prefs.js:111
-msgid "Batch window"
+#: prefs.js:119
+msgid "Batch Window"
 msgstr "Sammelzeitraum"
 
-#: prefs.js:112
+#: prefs.js:120
 msgid "Seconds to wait so alerts firing together arrive as one notification"
 msgstr ""
 "Sekunden, die gewartet wird, damit gleichzeitig ausgelöste Warnungen als "
 "eine Benachrichtigung eintreffen"
 
-#: prefs.js:119
+#: prefs.js:127
 msgid "Connection"
 msgstr "Verbindung"
 
-#: prefs.js:120
-msgid "kubectl and the kubeconfig are found automatically."
-msgstr "kubectl und die kubeconfig werden automatisch gefunden."
+#: prefs.js:128
+msgid "kubectl and the kubeconfig are found automatically"
+msgstr "kubectl und die kubeconfig werden automatisch gefunden"
 
 #. Translators: "context" is the kubectl term for a saved cluster
 #. connection; use whatever kubectl's own translation uses.
-#: prefs.js:130
+#: prefs.js:138
 msgid "Context"
 msgstr "Kontext"
 
-#: prefs.js:130 prefs.js:303
+#: prefs.js:138 prefs.js:320
 msgid "Which context to monitor"
 msgstr "Der zu überwachende Kontext"
 
 #. Translators: tooltip on the status icon beside the kubectl row.
-#: prefs.js:141
+#: prefs.js:149
 msgid "Whether kubectl was found"
 msgstr "Zeigt an, ob kubectl gefunden wurde"
 
 #. Translators: tooltip on the status icon beside the kubeconfig row.
-#: prefs.js:148
+#: prefs.js:156
 msgid "Whether a kubeconfig was found"
 msgstr "Zeigt an, ob eine kubeconfig gefunden wurde"
 
 #. Translators: button that tries the connection. Keep it to one word if
 #. you can, it is a compact button in a row.
-#: prefs.js:155
+#: prefs.js:163
 msgid "Test"
 msgstr "Testen"
 
-#: prefs.js:157
-msgid "Test connection"
+#: prefs.js:165
+msgid "Test Connection"
 msgstr "Verbindung testen"
 
-#: prefs.js:157
+#: prefs.js:165
 msgid "Run kubectl and list contexts"
 msgstr "kubectl ausführen und Kontexte auflisten"
 
-#: prefs.js:165
+#: prefs.js:173
 msgid "Advanced"
 msgstr "Erweitert"
 
-#: prefs.js:166
+#: prefs.js:174
 msgid "Extra kubeconfig files and a custom kubectl path"
 msgstr "Zusätzliche kubeconfig-Dateien und ein eigener kubectl-Pfad"
 
-#: prefs.js:170
-msgid "kubectl path"
+#: prefs.js:181
+msgid "kubectl Path"
 msgstr "kubectl-Pfad"
 
-#: prefs.js:176
-msgid "Log diagnostics"
-msgstr "Diagnosedaten protokollieren"
+#: prefs.js:191
+msgid "Diagnostic Logging"
+msgstr "Diagnoseprotokollierung"
 
-#: prefs.js:177
+#: prefs.js:192
 msgid "Record poll and alert decisions in the system log"
 msgstr ""
 "Entscheidungen zu Abfragen und Warnungen im Systemprotokoll aufzeichnen"
 
-#: prefs.js:188
-msgid "Add kubeconfig file…"
+#: prefs.js:203
+msgid "Add kubeconfig File…"
 msgstr "kubeconfig-Datei hinzufügen …"
 
-#: prefs.js:192
+#: prefs.js:207
 msgid "Add a kubeconfig file"
 msgstr "Eine kubeconfig-Datei hinzufügen"
 
-#: prefs.js:197
-msgid "Select a kubeconfig file"
+#: prefs.js:212
+msgid "Select a kubeconfig File"
 msgstr "kubeconfig-Datei auswählen"
 
 #. Translators: tooltip on the trash button beside a kubeconfig
 #. file. %s is the file's name.
-#: prefs.js:232
+#: prefs.js:247
 #, javascript-format
 msgid "Remove %s"
 msgstr "%s entfernen"
 
 #. Translators: shown when kubectl is not on PATH. "Advanced" is the
 #. expander below, so use the same wording you gave its title.
-#: prefs.js:256
+#: prefs.js:273
 msgid "Not found on PATH. Set it under Advanced."
 msgstr "Nicht im PATH gefunden. Pfad unter »Erweitert« angeben."
 
 #. Translators: how many kubeconfig files kubectl will merge into
 #. one configuration. %d is the count.
-#: prefs.js:263
+#: prefs.js:280
 #, javascript-format
 msgid "%d file"
 msgid_plural "%d files"
@@ -236,28 +236,28 @@ msgstr[0] "%d Datei"
 msgstr[1] "%d Dateien"
 
 #. Translators: %s is a file path that does not exist.
-#: prefs.js:271
+#: prefs.js:288
 #, javascript-format
 msgid "%s (missing)"
 msgstr "%s (fehlt)"
 
 #. Translators: first entry of the context picker. It follows whichever
 #. context kubectl has selected instead of pinning one.
-#: prefs.js:291
+#: prefs.js:308
 msgid "Current context (auto)"
 msgstr "Aktueller Kontext (automatisch)"
 
 #. Translators: shown when no context is pinned, so the extension
 #. follows kubectl's selection. %s is that context's name.
 #. "current-context" is a kubeconfig field, keep it as it is.
-#: prefs.js:302
+#: prefs.js:319
 #, javascript-format
 msgid "Following current-context (%s)"
 msgstr "Folgt dem current-context (%s)"
 
 #. Translators: toast after a successful connection test.
 #. %d is how many contexts the kubeconfig defines.
-#: prefs.js:319
+#: prefs.js:336
 #, javascript-format
 msgid "Connected. Found %d context."
 msgid_plural "Connected. Found %d contexts."
@@ -345,12 +345,12 @@ msgstr[0] "Für %d Stunde"
 msgstr[1] "Für %d Stunden"
 
 #. Translators: placeholder in the menu header before the first poll lands.
-#: lib/indicator.js:208 lib/indicator.js:449
+#: lib/indicator.js:207 lib/indicator.js:456
 msgid "Loading…"
 msgstr "Wird geladen …"
 
 #. Translators: spoken name of the icon-only refresh button.
-#: lib/indicator.js:233
+#: lib/indicator.js:232
 msgid "Refresh now"
 msgstr "Jetzt aktualisieren"
 
@@ -358,64 +358,64 @@ msgstr "Jetzt aktualisieren"
 #. until the poll answers.
 #. Translators: shown under the context name while the first poll of a
 #. cluster is still in flight.
-#: lib/indicator.js:239 lib/indicator.js:755
+#: lib/indicator.js:238 lib/indicator.js:764
 msgid "updating…"
 msgstr "wird aktualisiert …"
 
 #. Translators: submenu that mutes alert banners for a while.
-#: lib/indicator.js:296 lib/indicator.js:348
+#: lib/indicator.js:295 lib/indicator.js:347
 msgid "Mute alerts"
 msgstr "Warnungen stummschalten"
 
 #. Translators: menu row that cancels an active mute.
-#: lib/indicator.js:304
+#: lib/indicator.js:303
 msgid "Turn muting off"
 msgstr "Stummschaltung aufheben"
 
 #. Translators: menu row that opens the extension's preferences window.
-#: lib/indicator.js:313
+#: lib/indicator.js:312
 msgid "Settings"
 msgstr "Einstellungen"
 
 #. Translators: the "Mute alerts" row while muting is active. %s is a
 #. short duration such as "45m" or "2h".
-#: lib/indicator.js:345
+#: lib/indicator.js:344
 #, javascript-format
 msgid "Muted · %s left"
 msgstr "Stumm · noch %s"
 
 #. Translators: spoken state of the cluster switcher when its list is open.
-#: lib/indicator.js:366
+#: lib/indicator.js:372
 msgid "expanded"
 msgstr "ausgeklappt"
 
 #. Translators: spoken state of the cluster switcher when its list is closed.
-#: lib/indicator.js:368
+#: lib/indicator.js:374
 msgid "collapsed"
 msgstr "eingeklappt"
 
 #. Translators: spoken name of the menu header button. %1$s is the current
 #. context name, %2$s is "expanded" or "collapsed".
-#: lib/indicator.js:371
+#: lib/indicator.js:377
 #, javascript-format
 msgid "%1$s, %2$s, cluster switcher"
 msgstr "%1$s, %2$s, Cluster-Umschalter"
 
 #. Translators: shown in the cluster switcher when the kubeconfig
 #. defines no contexts.
-#: lib/indicator.js:385
+#: lib/indicator.js:391
 msgid "No contexts"
 msgstr "Keine Kontexte"
 
 #. Translators: last row of the cluster switcher; opens preferences so
 #. another kubeconfig can be added.
-#: lib/indicator.js:401
+#: lib/indicator.js:407
 msgid "Add connection…"
 msgstr "Verbindung hinzufügen …"
 
 #. Translators: spoken name of the selected row in the cluster switcher.
 #. %s is the context name, a cluster identifier, so leave it as it is.
-#: lib/indicator.js:428
+#: lib/indicator.js:434
 #, javascript-format
 msgid "%s, current"
 msgstr "%s, aktuell"
@@ -423,7 +423,7 @@ msgstr "%s, aktuell"
 #. Translators: spoken summary of the whole cluster. %1$s is a state word
 #. ("healthy", "degraded", …), %2$d is how many nodes are Ready and %3$d
 #. how many there are. The plural form follows the total, %3$d.
-#: lib/indicator.js:486
+#: lib/indicator.js:495
 #, javascript-format
 msgid "%1$s, %2$d of %3$d node ready"
 msgid_plural "%1$s, %2$d of %3$d nodes ready"
@@ -432,13 +432,13 @@ msgstr[1] "%1$s, %2$d von %3$d Knoten bereit"
 
 #. Translators: shown in place of the node list when the cluster
 #. reports no nodes at all.
-#: lib/indicator.js:557
+#: lib/indicator.js:566
 msgid "No nodes"
 msgstr "Keine Knoten"
 
 #. Translators: closes a truncated node list. %d is how many
 #. further nodes exist that the menu did not draw.
-#: lib/indicator.js:570
+#: lib/indicator.js:579
 #, javascript-format
 msgid "… and %d more node"
 msgid_plural "… and %d more nodes"
@@ -447,26 +447,26 @@ msgstr[1] "… und %d weitere Knoten"
 
 #. Translators: spoken uptime on a node row: how long it has been
 #. Ready. %s is a short duration such as "3d".
-#: lib/indicator.js:661
+#: lib/indicator.js:670
 #, javascript-format
 msgid "up %s"
 msgstr "aktiv seit %s"
 
 #. Translators: spoken downtime on a node row: how long it has been
 #. NotReady. %s is a short duration such as "3d".
-#: lib/indicator.js:664
+#: lib/indicator.js:673
 #, javascript-format
 msgid "down %s"
 msgstr "ausgefallen seit %s"
 
 #. Translators: spoken CPU load on a node row. %d is a percentage.
-#: lib/indicator.js:667
+#: lib/indicator.js:676
 #, javascript-format
 msgid "CPU %d%%"
 msgstr "CPU %d%%"
 
 #. Translators: spoken memory load on a node row. %d is a percentage.
-#: lib/indicator.js:671
+#: lib/indicator.js:680
 #, javascript-format
 msgid "memory %d%%"
 msgstr "Speicher %d%%"
@@ -474,7 +474,7 @@ msgstr "Speicher %d%%"
 #. Translators: pod counts under the menu header. English has one form for
 #. all counts, but %d selects the plural form your language needs. Keep
 #. these very short: up to four of them share one row.
-#: lib/indicator.js:717
+#: lib/indicator.js:726
 #, javascript-format
 msgid "%d running"
 msgid_plural "%d running"
@@ -482,7 +482,7 @@ msgstr[0] "%d läuft"
 msgstr[1] "%d laufen"
 
 #. Translators: pods accepted but not yet started. Keep it very short.
-#: lib/indicator.js:721
+#: lib/indicator.js:730
 #, javascript-format
 msgid "%d pending"
 msgid_plural "%d pending"
@@ -490,7 +490,7 @@ msgstr[0] "%d ausstehend"
 msgstr[1] "%d ausstehend"
 
 #. Translators: pods stuck restarting (CrashLoopBackOff). Keep it very short.
-#: lib/indicator.js:726
+#: lib/indicator.js:735
 #, javascript-format
 msgid "%d crashing"
 msgid_plural "%d crashing"
@@ -498,7 +498,7 @@ msgstr[0] "%d stürzt ab"
 msgstr[1] "%d stürzen ab"
 
 #. Translators: pods that terminated in failure. Keep it very short.
-#: lib/indicator.js:731
+#: lib/indicator.js:740
 #, javascript-format
 msgid "%d failed"
 msgid_plural "%d failed"
@@ -507,14 +507,14 @@ msgstr[1] "%d fehlgeschlagen"
 
 #. Translators: spoken name of the panel button. "Kube Node Monitor" is
 #. the extension's name, so leave it as it is. %s is the cluster summary.
-#: lib/indicator.js:741
+#: lib/indicator.js:750
 #, javascript-format
 msgid "Kube Node Monitor: %s"
 msgstr "Kube Node Monitor: %s"
 
 #. Translators: shown under the context name when the reading is only a
 #. few seconds old, in place of a duration.
-#: lib/indicator.js:763
+#: lib/indicator.js:772
 msgid "now"
 msgstr "gerade eben"
 
@@ -604,6 +604,9 @@ msgstr "Den ausgewählten Kontext gibt es nicht"
 #: lib/model.js:614
 msgid "kubectl ran into a problem"
 msgstr "kubectl ist auf ein Problem gestoßen"
+
+#~ msgid "Log diagnostics"
+#~ msgstr "Diagnosedaten protokollieren"
 
 #~ msgctxt "meter"
 #~ msgid "CPU"

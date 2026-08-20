@@ -23,6 +23,8 @@ async function openPrefs(settingsInitial = {}, env = {}) {
         GLib.__setPrograms(env.programs);
     if (env.files)
         GLib.__setExistingFiles(env.files);
+    if (env.binaries)
+        Gio.__setFiles(env.binaries);
     if (env.getenv)
         GLib.__setGetenv(env.getenv);
     Gtk.__setFileDialogResult({dismissed: true});
@@ -40,6 +42,9 @@ async function openPrefs(settingsInitial = {}, env = {}) {
     });
     const window = new Adw.PreferencesWindow();
     await prefs.fillPreferencesWindow(window);
+    // The context list fills after the window is presented, so tests that read
+    // it have to let that land.
+    await GLib.__settle();
     return {prefs, window, settings: prefs.getSettings(), page: window.__pages[0]};
 }
 
@@ -70,7 +75,6 @@ test('every control is bound to its schema key', async () => {
         'alert-node-for:value',
         'alert-repeat-interval:value',
         'debug-logging:active',
-        'kubectl-path:text',
         'notify-cluster-unreachable:active',
         'notify-node-changes:active',
         'notify-on-recovery:active',
@@ -82,12 +86,12 @@ test('spin ranges match the schema, so the UI cannot write an out-of-range value
     const {page} = await openPrefs();
     /** @type {[string, number, number][]} */
     const expected = [
-        ['Refresh interval', 2, 3600],
-        ['Node delay', 0, 3600],
-        ['Cluster delay', 0, 3600],
-        ['Hold time', 0, 3600],
-        ['Repeat reminder', 0, 86400],
-        ['Batch window', 0, 300],
+        ['Refresh Interval', 2, 3600],
+        ['Node Delay', 0, 3600],
+        ['Cluster Delay', 0, 3600],
+        ['Hold Time', 0, 3600],
+        ['Repeat Reminder', 0, 86400],
+        ['Batch Window', 0, 300],
     ];
     for (const [title, lower, upper] of expected) {
         const row = rowByTitle(page, title);
@@ -110,7 +114,7 @@ test('rows carrying untrusted text disable Pango markup', async () => {
 
 test('the icon-only buttons carry tooltips, so they are not unlabelled to a reader', async () => {
     const {page} = await openPrefs({'kubeconfig-path': '/home/tester/a.yaml'});
-    const add = rowByTitle(page, 'Add kubeconfig file…');
+    const add = rowByTitle(page, 'Add kubeconfig File…');
     assert.equal(add.__suffixes[0].tooltip_text, 'Add a kubeconfig file');
     const file = rowByTitle(page, 'a.yaml');
     assert.match(file.__suffixes[0].tooltip_text, /Remove a\.yaml/);
@@ -124,7 +128,7 @@ test('detection reports kubectl found on PATH, and says where to fix it when not
     assert.equal(row.subtitle, '/usr/bin/kubectl');
     assert.equal(row.__suffixes[0].icon_name, 'object-select-symbolic');
 
-    ({page} = await openPrefs({}, {programs: {}}));   // nothing on PATH
+    ({page} = await openPrefs({}, {programs: {}, binaries: {}}));
     row = rowByTitle(page, 'kubectl');
     assert.match(row.subtitle, /Not found on PATH/,
         'the meaning is in words, not only in the icon');
@@ -132,7 +136,8 @@ test('detection reports kubectl found on PATH, and says where to fix it when not
 });
 
 test('an explicit kubectl path wins over the PATH lookup', async () => {
-    const {page} = await openPrefs({'kubectl-path': '/opt/kubectl'});
+    const {page} = await openPrefs({'kubectl-path': '/opt/kubectl'},
+        {binaries: {'/opt/kubectl': {type: Gio.FileType.REGULAR, executable: true}}});
     assert.equal(rowByTitle(page, 'kubectl').subtitle, '/opt/kubectl');
 });
 
@@ -205,6 +210,7 @@ test('a cluster whose contexts cannot be listed still opens cleanly', async () =
     const prefs = new KubeMonitorPreferences({uuid: 'u', path: '/ext'});
     const window = new Adw.PreferencesWindow();
     await prefs.fillPreferencesWindow(window);
+    await GLib.__settle();
     const combo = rowByTitle(window.__pages[0], 'Context');
     assert.deepEqual(combo.model.__items, ['Current context (auto)'],
         'just the auto entry; the dialog is still usable');
@@ -212,7 +218,7 @@ test('a cluster whose contexts cannot be listed still opens cleanly', async () =
 
 test('the test button reports a classified reason, never raw stderr', async () => {
     const {page, window} = await openPrefs();
-    const testBtn = rowByTitle(page, 'Test connection').__suffixes[0];
+    const testBtn = rowByTitle(page, 'Test Connection').__suffixes[0];
 
     Gio.__setSpawn(() => ({
         stdout: '', ok: false,
@@ -232,7 +238,7 @@ test('the test button reports a classified reason, never raw stderr', async () =
 
 test('a successful test reports the count, with correct singular and plural', async () => {
     const {page, window} = await openPrefs();
-    const testBtn = rowByTitle(page, 'Test connection').__suffixes[0];
+    const testBtn = rowByTitle(page, 'Test Connection').__suffixes[0];
 
     Gio.__setSpawn(() => ({stdout: 'only-one\n'}));
     testBtn.emit('clicked');
@@ -247,7 +253,7 @@ test('a successful test reports the count, with correct singular and plural', as
 
 test('the test button is disabled while the check runs', async () => {
     const {page} = await openPrefs();
-    const testBtn = rowByTitle(page, 'Test connection').__suffixes[0];
+    const testBtn = rowByTitle(page, 'Test Connection').__suffixes[0];
     Gio.__setSpawn(() => ({stdout: '', defer: true}));
 
     testBtn.emit('clicked');
@@ -255,6 +261,21 @@ test('the test button is disabled while the check runs', async () => {
     Gio.__release();
     await GLib.__settle();
     assert.equal(testBtn.sensitive, true);
+});
+
+test('closing the window kills a check still on the wire', async () => {
+    // Nothing here passed a cancellable before, so a kubectl the preferences
+    // window started could outlive it.
+    const {page, window} = await openPrefs();
+    const testBtn = rowByTitle(page, 'Test Connection').__suffixes[0];
+    Gio.__setSpawn(() => ({hang: true}));
+
+    testBtn.emit('clicked');
+    await GLib.__settle();
+    const before = Gio.__killCount();
+    window.emit('close-request');
+    await GLib.__settle();
+    assert.equal(Gio.__killCount(), before + 1, 'the child goes with the window');
 });
 
 test('kubeconfig files are listed one row each, newest addition included', async () => {
@@ -268,7 +289,7 @@ test('kubeconfig files are listed one row each, newest addition included', async
 
 test('the file picker appends a kubeconfig, and ignores duplicates', async () => {
     const {page, settings} = await openPrefs();
-    const addBtn = rowByTitle(page, 'Add kubeconfig file…').__suffixes[0];
+    const addBtn = rowByTitle(page, 'Add kubeconfig File…').__suffixes[0];
 
     Gtk.__setFileDialogResult({path: '/picked/one.yaml'});
     addBtn.emit('clicked');
@@ -285,7 +306,7 @@ test('the file picker appends a kubeconfig, and ignores duplicates', async () =>
 
 test('dismissing the file picker changes nothing', async () => {
     const {page, settings} = await openPrefs({'kubeconfig-path': '/keep.yaml'});
-    const addBtn = rowByTitle(page, 'Add kubeconfig file…').__suffixes[0];
+    const addBtn = rowByTitle(page, 'Add kubeconfig File…').__suffixes[0];
     Gtk.__setFileDialogResult({dismissed: true});
     addBtn.emit('clicked');
     assert.equal(settings.get_string('kubeconfig-path'), '/keep.yaml');
@@ -293,7 +314,7 @@ test('dismissing the file picker changes nothing', async () => {
 
 test('a picker returning an empty path is ignored', async () => {
     const {page, settings} = await openPrefs();
-    const addBtn = rowByTitle(page, 'Add kubeconfig file…').__suffixes[0];
+    const addBtn = rowByTitle(page, 'Add kubeconfig File…').__suffixes[0];
     Gtk.__setFileDialogResult({path: ''});
     addBtn.emit('clicked');
     assert.equal(settings.get_string('kubeconfig-path'), '');
@@ -319,10 +340,25 @@ test('changing the kubeconfig setting rebuilds the rows and re-runs detection', 
 });
 
 test('changing the kubectl path re-runs detection', async () => {
-    const {page, settings} = await openPrefs();
+    const {page, settings} = await openPrefs({},
+        {binaries: {'/opt/custom-kubectl': {type: Gio.FileType.REGULAR, executable: true}}});
     settings.set_string('kubectl-path', '/opt/custom-kubectl');
     await GLib.__settle();
     assert.equal(rowByTitle(page, 'kubectl').subtitle, '/opt/custom-kubectl');
+});
+
+test('the kubectl entry writes on apply, not on every keystroke', async () => {
+    // A bound entry rewrote the key per character, and both processes re-list
+    // the cluster on that key, so typing a path spawned kubectl for every letter.
+    const {page, settings} = await openPrefs();
+    const entry = rowByTitle(page, 'kubectl Path');
+    assert.equal(entry.show_apply_button, true);
+
+    entry.text = '/opt/cust';
+    assert.equal(settings.get_string('kubectl-path'), '', 'mid-typing writes nothing');
+    entry.text = '/opt/custom-kubectl';
+    entry.emit('apply');
+    assert.equal(settings.get_string('kubectl-path'), '/opt/custom-kubectl');
 });
 
 test('the Advanced section is collapsed detail, not a top-level group', async () => {
@@ -330,13 +366,13 @@ test('the Advanced section is collapsed detail, not a top-level group', async ()
     const conn = page.__groups.find(g => g.title === 'Connection');
     const advanced = conn.__children.find(r => r.title === 'Advanced');
     assert.ok(advanced, 'kubectl path and extra kubeconfigs live behind Advanced');
-    assert.ok(advanced.__rows.some(r => r.title === 'kubectl path'));
+    assert.ok(advanced.__rows.some(r => r.title === 'kubectl Path'));
 });
 
 test('a picker handing back nothing at all is ignored', async () => {
     // Not a documented Gtk outcome; the guard stops an empty KUBECONFIG entry.
     const {page, settings} = await openPrefs({'kubeconfig-path': '/keep.yaml'});
-    const addBtn = rowByTitle(page, 'Add kubeconfig file…').__suffixes[0];
+    const addBtn = rowByTitle(page, 'Add kubeconfig File…').__suffixes[0];
     Gtk.__setFileDialogResult({nullFile: true});
     addBtn.emit('clicked');
     assert.equal(settings.get_string('kubeconfig-path'), '/keep.yaml');
@@ -344,7 +380,7 @@ test('a picker handing back nothing at all is ignored', async () => {
 
 test('a non-Error rejection still yields a readable toast', async () => {
     const {page, window} = await openPrefs();
-    const testBtn = rowByTitle(page, 'Test connection').__suffixes[0];
+    const testBtn = rowByTitle(page, 'Test Connection').__suffixes[0];
     Gio.__setSpawn(() => ({throws: 'a bare string failure'}));
     testBtn.emit('clicked');
     await GLib.__settle();

@@ -134,13 +134,15 @@ House style is gnome-shell's own: short, factual, written for the next maintaine
 
 ## User-facing wording
 
-Follow the GNOME HIG: sentence case, no trailing period on a row title or a fragment
-subtitle, no jargon where a plain word works, and **never a shell command in a preferences
-subtitle**.
+Follow the GNOME HIG, which splits by role: **header capitalization for control labels**
+(row and group titles, buttons, menu items, window titles), **sentence case for subtitles
+and descriptions**. That is what GNOME Settings itself ships, checked against its own 247
+`Adw*Row` objects. No trailing period on a row title or a fragment subtitle, no jargon
+where a plain word works, and **never a shell command in a preferences subtitle**.
 
 - Prometheus/Alertmanager vocabulary (`for`, `keep_firing_for`, `group_wait`, "debounce")
   is fine in `lib/alerts.js` and in `docs/`. In the preferences window it becomes Node
-  delay, Hold time, Batch window.
+  Delay, Hold Time, Batch Window.
 - Kubernetes API identifiers stay verbatim everywhere: `Ready`, `NotReady`,
   `SchedulingDisabled`, the pressure condition types, role names, `kubectl`, `kubeconfig`.
   They are what `kubectl get nodes` prints, and translating them would make the menu

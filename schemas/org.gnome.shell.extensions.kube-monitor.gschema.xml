@@ -11,7 +11,7 @@
     <key name="notify-node-changes" type="b">
       <default>true</default>
       <summary>Notify about node problems</summary>
-      <description>Notify when a node stops being Ready, and when it comes back.</description>
+      <description>Notify when a node stops being Ready. Recovery needs the recovery key too.</description>
     </key>
     <key name="notify-cluster-unreachable" type="b">
       <default>true</default>
@@ -61,7 +61,7 @@
     </key>
     <key name="debug-logging" type="b">
       <default>false</default>
-      <summary>Log diagnostics</summary>
+      <summary>Diagnostic logging</summary>
       <description>Record poll and alert decisions in the system log. Off by default, since the log is shared with every other application. Credential material is redacted and raw kubectl output is never written.</description>
     </key>
     <key name="alert-state" type="s">

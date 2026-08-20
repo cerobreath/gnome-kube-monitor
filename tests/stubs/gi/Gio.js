@@ -167,10 +167,32 @@ class FakeLineStream {
  * Real code reads its pipes callback-style (gnome-shell pre-promisifies
  * read_line_async with the byte finisher); the fake keeps that split.
  */
+let streamsOpened = 0;
+let streamsClosed = 0;
+
+/** Pipe streams built and released, so fd hygiene is assertable. */
+export function __streamCounts() {
+    return {opened: streamsOpened, closed: streamsClosed};
+}
+
 export class DataInputStream {
     /** @param {{base_stream: FakeLineStream, close_base_stream?: boolean}} params */
     constructor(params) {
         this._base = params.base_stream;
+        this._closeBase = params.close_base_stream === true;
+        this.__closed = 0;
+        streamsOpened++;
+    }
+
+    // Real GIO closes the base stream too when close_base_stream is set, and
+    // close() is idempotent. Counted so a test can assert the fds are released.
+    close() {
+        if (!this.__closed)
+            streamsClosed++;
+        this.__closed++;
+        if (this._closeBase)
+            this._base.__end?.();
+        return true;
     }
 
     /**
@@ -235,6 +257,8 @@ export function __reset() {
     spawnHandler = () => ({stdout: '', stderr: '', ok: true});
     calls = [];
     killed = 0;
+    streamsOpened = 0;
+    streamsClosed = 0;
     deferred = [];
     streamProcs = [];
     files = {'/usr/bin/kubectl': {type: FileType.REGULAR, executable: true}};
@@ -514,7 +538,7 @@ export default {
     IOErrorEnum, SubprocessFlags, FileType, FileQueryInfoFlags, SettingsBindFlags,
     Cancellable, Subprocess, SubprocessLauncher, DataInputStream, File, GioError,
     NetworkMonitor, _promisify, icon_new_for_string,
-    __setSpawn, __calls, __lastCall, __killCount, __setFiles, __reset,
+    __setSpawn, __calls, __lastCall, __killCount, __setFiles, __reset, __streamCounts,
     __release, __pendingSpawns, __networkMonitor, __streamProcs, __lastStreamProc,
     get Settings() {
         return Settings;

@@ -158,12 +158,24 @@ test('kubectl-path: only an absolute, executable, regular file is honoured', asy
     }
 });
 
-test('kubectl-path: falls back to a bare name when nothing is on PATH', async () => {
+test('kubectl-path: falls back to a bare name when nothing is found at all', async () => {
     reset();
     GLib.__setPrograms({});          // find_program_in_path returns null
+    Gio.__setFiles({});              // and no standard directory holds one
     respond('');
     await fetchContexts(opts(), null);
     assert.equal(Gio.__lastCall().argv[0], 'kubectl');
+});
+
+test('kubectl off the shell PATH is still found in a standard install dir', async () => {
+    // spawnv resolves a bare argv[0] against gnome-shell's PATH, not the one the
+    // launcher sets, so a snap-only install has to be spelled out.
+    reset();
+    GLib.__setPrograms({});
+    Gio.__setFiles({'/snap/bin/kubectl': {type: Gio.FileType.REGULAR, executable: true}});
+    respond('');
+    await fetchContexts(opts(), null);
+    assert.equal(Gio.__lastCall().argv[0], '/snap/bin/kubectl');
 });
 
 test('a non-zero exit surfaces stderr, falling back to stdout', async () => {
@@ -322,6 +334,20 @@ test('watch failure carries a bounded stderr tail for classification', async () 
     await GLib.__settle();
     assert.ok(seen2.exits[0].detail.length <= 4096);
     assert.ok(seen2.exits[0].detail.endsWith('final summary'));
+});
+
+test('a watch releases both pipe streams, without waiting for a GC', async () => {
+    // close_base_stream only closes the fd at finalization, so the pipes used to
+    // accumulate two per respawn until something else provoked a collection.
+    const {proc} = watchHarness();
+    proc.__pushLine('ADDED|n1||Ready|True');
+    await GLib.__settle();
+    proc.__exit({ok: true});
+    await GLib.__settle();
+
+    const {opened, closed} = Gio.__streamCounts();
+    assert.equal(opened, 2, 'stdout and stderr');
+    assert.equal(closed, 2, 'both closed on the way out');
 });
 
 test('watch stop() kills the child and silences onExit', async () => {

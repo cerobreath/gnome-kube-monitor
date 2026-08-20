@@ -151,13 +151,36 @@ Two surfaces are probed, not one: the panel button and the menu box. A theme can
 
 4.5:1 is the AA floor for text, 3:1 for a non-text indicator.
 
-The light values are not new hues. They are the dark palette's own, put through libadwaita's standalone rule for light themes, `oklab(from <colour> min(l, 0.5) a b)`, because Adwaita holds nothing green or amber dark enough to carry text on `#fafafb`. Dimmed rows had to be raised too, and that is the half that reads as washed out rather than as the wrong colour: dark text loses more contrast per step of opacity than white text gains, so the same 0.5 that gives 4.31 on the dark popup gives 3.13 on the light one.
+**St parses `opacity`, stores it, and never reads it back.** Verified on GNOME Shell 50.1 by loading this sheet in a headless shell: `max-width` from the same rule arrived, `actor.opacity` stayed at 255. So the dimmed half of the palette is written as colours, each one the blend that alpha would have produced: white over `#36363a`, Adwaita's `#241f31` over `#fafafb`.
+
+| Role | Dark | on `#36363a` | Light | on `#fafafb` | Floor |
+| --- | --- | --- | --- | --- | --- |
+| `.kube-caret` | `#909093` | 3.78 | `#7a7782` | 4.20 | 3 |
+| `.kube-context-empty` | `#9f9fa0` | 4.55 | `#75727e` | 4.51 | 4.5 |
+| `.kube-meter-label` | `#9f9fa0` | 4.55 | `#6f6c78` | 4.92 | 4.5 |
+| `.kube-error-detail`, `.kube-error-strip` | `#a5a5a6` | 4.89 | `#64616e` | 5.79 | 4.5 |
+| `.kube-pods-ok` | `#afafb0` | 5.49 | `#64616e` | 5.79 | 4.5 |
+| `.kube-time` | `#b9b9ba` | 6.14 | `#5a5664` | 6.82 | 4.5 |
+| `.kube-node-qual` | `#c3c3c4` | 6.83 | `#4f4b59` | 8.11 | 4.5 |
+| `.kube-meter-value` | `#cdcdce` | 7.57 | `#4f4b59` | 8.11 | 4.5 |
+
+Writing the blend out found two rows that had been under the floor all along. `.kube-context-empty` and `.kube-meter-label` both sat near 3.8 on the dark popup at the alpha they carried, so both are clamped to the AA floor here, which is why they share a value. The caret is an icon and keeps the 3:1 floor.
+
+The light values are not new hues. They are the dark palette's own, put through libadwaita's standalone rule for light themes, `oklab(from <colour> min(l, 0.5) a b)`, because Adwaita holds nothing green or amber dark enough to carry text on `#fafafb`. Dimmed rows had to be pushed further too, and that is the half that reads as washed out rather than as the wrong colour: dark text loses more contrast per step than white text gains, so a half-strength blend reaches 4.28 on the dark popup and only 3.17 on the light one.
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="images/brand/palette-dark.svg">
+    <source media="(prefers-color-scheme: light)" srcset="images/brand/palette-light.svg">
+    <img src="images/brand/palette-light.svg" alt="Both palettes as swatches on the surface each was written for: seven hues and seven dimmed steps on the dark popup, four hues and six dimmed steps on the light one" width="880">
+  </picture>
+</p>
 
 Neutral greys are exempt from all of it. `rgba(128, 128, 128, …)` on the hovers, the focus fill and the meter track reads the same either way, which is what makes it the right way to write a hover in the first place.
 
 Timing has two traps. `get_theme_node()` logs a critical for a widget outside the stage, and the panel adopts the button only after `_init` returns, so the first read borrows `Main.panel`'s node. And both `style-changed` handlers are disconnected in `destroy()` before the actors are unparented, because unparenting restyles and the handler would then read a node that has left the stage.
 
-`tests/stylesheet.test.js` fails the build on any hued colour or any `opacity` with no `.kube-light` counterpart, so the two halves cannot drift apart.
+`tests/stylesheet.test.js` fails the build on any hued colour or any `color:` with no `.kube-light` counterpart, so the two halves cannot drift apart. Validated by injecting a grey `color:` and watching the guard name the class.
 
 ## Scale limits
 

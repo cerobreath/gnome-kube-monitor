@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 192" width="880" height="192" fill="none" role="img" aria-label="The palette on both popup surfaces: seven hues and seven dimmed steps on the dark popup, four hues and six dimmed steps on the light one, where Adwaita has nothing dark enough to keep them apart">
+<title>The palette on both popup surfaces: seven hues and seven dimmed steps on the dark popup, four hues and six dimmed steps on the light one, where Adwaita has nothing dark enough to keep them apart</title>
+<defs>
+  <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M0,1 L9,5 L0,9 z" fill="rgba(43,12,28,0.68)"/>
+  </marker>
+  <marker id="ahA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M0,1 L9,5 L0,9 z" fill="#A82740"/>
+  </marker>
+  <marker id="ahBad" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M0,1 L9,5 L0,9 z" fill="#FF5C5C"/>
+  </marker></defs>
+  <rect x="74" y="16" width="386" height="166" rx="12" fill="#36363a" stroke="rgba(168,39,64,0.18)"/>
+  <text x="90" y="36" text-anchor="start" font-family="ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace" font-size="11" font-weight="400" fill="#b9b9ba">#36363a</text>
+  <rect x="90" y="50" width="42" height="26" rx="5" fill="#57e389"/>
+  <text x="111" y="88" text-anchor="middle" font-family="ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace" font-size="9" font-weight="400" fill="#b9b9ba">57e389</text>
+  <rect x="139" y="50" width="42" height="26" rx="5" fill="#f5c211"/>
+  <text x="160" y="88" text-anchor="middle" font-family="ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace" font-size="9" font-weight="400" fill="#b9b9ba">f5c211</text>
+  <rect x="188" y="50" width="42" height="26" rx="5" fill="#e5a50a"/>
+  <text x="209" y="88" text-anchor="middle" font-family="ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace" font-size="9" font-weight="400" fill="#b9b9ba">e5a50a</text>
+  <rect x="237" y="50" width="42" height="26" rx="5" fill="#ff7b72"/>
+  <text x="258" y="88" text-anchor="middle" font-family="ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace" font-size="9" font-weight="400" fill="#b9b9ba">ff7b72</text>
+  <rect x="286" y="50" width="42" height="26" rx="5" fill="#2ec27e"/>
+  <text x="307" y="88" text-anchor="middle" font-family="ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace" font-size="9" font-weight="400" fill="#b9b9ba">2ec27e</text>
+  <rect x="335" y="50" width="42" height="26" rx="5" fill="#ff5c5c"/>
+  <text x="356" y="88" text-anchor="middle" font-family="ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace" font-size="9" font-weight="400" fill="#b9b9ba">ff5c5c</text>
+  <rect x="384" y="50" width="42" height="26" rx="5" fill="#9a9996"/>
+  <text x="405" y="88" text-anchor="middle" font-family="ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace" font-size="9" font-weight="400" fill="#b9b9ba">9a9996</text>
+  <rect x="90" y="116" width="42" height="26" rx="5" fill="#909093"/>
+  <text x="111" y="154" text-anchor="middle" font-family="ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace" font-size="9" font-weight="400" fill="#b9b9ba">909093</text>
+  <rect x="139" y="116" width="42" height="26" rx="5" fill="#9f9fa0"/>
+  <text x="160" y="154" text-anchor="middle" font-family="ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace" font-size="9" font-weight="400" fill="#b9b9ba">9f9fa0</text>
+  <rect x="188" y="116" width="42" height="26" rx="5" fill="#a5a5a6"/>
+  <text x="209" y="154" text-anchor="middle" font-family="ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace" font-size="9" font-weight="400" fill="#b9b9ba">a5a5a6</text>
+  <rect x="237" y="116" width="42" height="26" rx="5" fill="#afafb0"/>
+  <text x="258" y="154" text-anchor="middle" font-family="ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace" font-size="9" font-weight="400" fill="#b9b9ba">afafb0</text>
+  <rect x="286" y="116" width="42" height="26" rx="5" fill="#b9b9ba"/>
+  <text x="307" y="154" text-anchor="middle" font-family="ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace" font-size="9" font-weight="400" fill="#b9b9ba">b9b9ba</text>
+  <rect x="335" y="116" width="42" height="26" rx="5" fill="#c3c3c4"/>
+  <text x="356" y="154" text-anchor="middle" font-family="ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace" font-size="9" font-weight="400" fill="#b9b9ba">c3c3c4</text>
+  <rect x="384" y="116" width="42" height="26" rx="5" fill="#cdcdce"/>
+  <text x="405" y="154" text-anchor="middle" font-family="ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace" font-size="9" font-weight="400" fill="#b9b9ba">cdcdce</text>
+  <rect x="480" y="16" width="386" height="166" rx="12" fill="#fafafb" stroke="rgba(168,39,64,0.18)"/>
+  <text x="496" y="36" text-anchor="start" font-family="ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace" font-size="11" font-weight="400" fill="#5a5664">#fafafb</text>
+  <rect x="496" y="50" width="42" height="26" rx="5" fill="#007c3d"/>
+  <text x="517" y="88" text-anchor="middle" font-family="ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace" font-size="9" font-weight="400" fill="#5a5664">007c3d</text>
+  <rect x="545" y="50" width="42" height="26" rx="5" fill="#905400"/>
+  <text x="566" y="88" text-anchor="middle" font-family="ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace" font-size="9" font-weight="400" fill="#5a5664">905400</text>
+  <rect x="594" y="50" width="42" height="26" rx="5" fill="#c30000"/>
+  <text x="615" y="88" text-anchor="middle" font-family="ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace" font-size="9" font-weight="400" fill="#5a5664">c30000</text>
+  <rect x="643" y="50" width="42" height="26" rx="5" fill="#646360"/>
+  <text x="664" y="88" text-anchor="middle" font-family="ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace" font-size="9" font-weight="400" fill="#5a5664">646360</text>
+  <rect x="496" y="116" width="42" height="26" rx="5" fill="#7a7782"/>
+  <text x="517" y="154" text-anchor="middle" font-family="ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace" font-size="9" font-weight="400" fill="#5a5664">7a7782</text>
+  <rect x="545" y="116" width="42" height="26" rx="5" fill="#75727e"/>
+  <text x="566" y="154" text-anchor="middle" font-family="ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace" font-size="9" font-weight="400" fill="#5a5664">75727e</text>
+  <rect x="594" y="116" width="42" height="26" rx="5" fill="#6f6c78"/>
+  <text x="615" y="154" text-anchor="middle" font-family="ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace" font-size="9" font-weight="400" fill="#5a5664">6f6c78</text>
+  <rect x="643" y="116" width="42" height="26" rx="5" fill="#64616e"/>
+  <text x="664" y="154" text-anchor="middle" font-family="ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace" font-size="9" font-weight="400" fill="#5a5664">64616e</text>
+  <rect x="692" y="116" width="42" height="26" rx="5" fill="#5a5664"/>
+  <text x="713" y="154" text-anchor="middle" font-family="ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace" font-size="9" font-weight="400" fill="#5a5664">5a5664</text>
+  <rect x="741" y="116" width="42" height="26" rx="5" fill="#4f4b59"/>
+  <text x="762" y="154" text-anchor="middle" font-family="ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace" font-size="9" font-weight="400" fill="#5a5664">4f4b59</text>
+  <text x="60" y="67" text-anchor="end" font-family="system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="11.5" font-weight="400" fill="rgba(43,12,28,0.62)">hues</text>
+  <text x="60" y="133" text-anchor="end" font-family="system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="11.5" font-weight="400" fill="rgba(43,12,28,0.62)">dimmed</text>
+</svg>

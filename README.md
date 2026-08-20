@@ -7,19 +7,19 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/cerobreath/gnome-kube-monitor/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/cerobreath/gnome-kube-monitor/ci.yml?branch=main&style=flat-square&label=CI&labelColor=1B1119&color=C8394C" alt="CI"></a>
-  <a href="https://github.com/cerobreath/gnome-kube-monitor/releases/latest"><img src="https://img.shields.io/github/v/release/cerobreath/gnome-kube-monitor?style=flat-square&label=release&labelColor=1B1119&color=B32E45" alt="Latest release"></a>
+  <a href="https://github.com/cerobreath/gnome-kube-monitor/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/cerobreath/gnome-kube-monitor/ci.yml?branch=main&style=flat-square&label=CI&labelColor=1B1119&color=007C3D" alt="CI"></a>
+  <img src="https://img.shields.io/badge/coverage-100%25-007C3D?style=flat-square&labelColor=1B1119" alt="100% test coverage">
+  <a href="https://github.com/cerobreath/gnome-kube-monitor/releases/latest"><img src="https://img.shields.io/github/v/release/cerobreath/gnome-kube-monitor?style=flat-square&label=release&labelColor=1B1119&color=C8394C" alt="Latest release"></a>
   <img src="https://img.shields.io/badge/GNOME_Shell-45--50-A82740?style=flat-square&labelColor=1B1119" alt="GNOME Shell 45 to 50">
-  <img src="https://img.shields.io/badge/coverage-100%25-8E2450?style=flat-square&labelColor=1B1119" alt="100% test coverage">
   <a href="COPYING"><img src="https://img.shields.io/badge/license-GPL--2.0--or--later-6B1E45?style=flat-square&labelColor=1B1119" alt="GPL-2.0-or-later"></a>
 </p>
 
 <!--
   PUBLISH TODO: uncomment once the extension is live on extensions.gnome.org and
-  the numeric <ID> is known.
+  the extension is public. Its id is 10726.
 
   <p align="center">
-    <a href="https://extensions.gnome.org/extension/<ID>/kube-node-monitor/">
+    <a href="https://extensions.gnome.org/extension/10726/kube-node-monitor/">
       <img src="https://img.shields.io/badge/Get_it_on-GNOME_Extensions-A82740?style=flat-square&logo=gnome&logoColor=white&labelColor=1B1119" alt="Get it on GNOME Extensions">
     </a>
   </p>
@@ -48,7 +48,7 @@ It runs on the `kubectl` and kubeconfig you already have, so whatever context an
 
 ## Install
 
-Needs GNOME Shell 45 to 50, `kubectl` on your `PATH`, and a working kubeconfig. Per-node CPU and memory bars need metrics-server in the cluster; nothing else depends on it.
+Needs GNOME Shell 45 to 50, `kubectl` installed, and a working kubeconfig. Both are auto-detected, snap and krew locations included; an unusual path goes under Advanced. Per-node CPU and memory bars need metrics-server in the cluster; nothing else depends on it.
 
 Not on [extensions.gnome.org](https://extensions.gnome.org) yet, so install from source:
 

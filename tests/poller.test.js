@@ -880,6 +880,24 @@ test('a watch exit after stop() schedules nothing', async () => {
     assert.equal(GLib.__pendingTimers(), 0, 'no respawn timer after teardown');
 });
 
+test('a watch exit releases every source the stream owned', async () => {
+    const h = harness();
+    h.poller.start();
+    await settle();
+    const proc = await activateWatch();
+    proc.__pushLine('MODIFIED|n1||Ready|False');
+    await settle();
+
+    proc.__exit({ok: false});
+    await settle();
+    assert.equal(h.poller._heartbeatId, 0, 'heartbeat');
+    assert.equal(h.poller._reconcileId, 0, 'reconcile');
+    assert.equal(h.poller._coalesceId, 0, 'pending flush');
+    assert.equal(h.poller._watchStartupId, 0, 'startup budget');
+    h.poller.stop();
+    assert.equal(GLib.__pendingTimers(), 0, 'and the retry with them');
+});
+
 test('garbage lines on the watch stream are ignored', async () => {
     const h = harness();
     h.poller.start();
@@ -1064,7 +1082,7 @@ test('heartbeat guards: no double-arm, and a raced firing re-arms nothing (white
     await settle();
     await activateWatch();
     const timers = GLib.__pendingTimers();
-    h.poller._startHeartbeat();          // already armed -> must not stack
+    h.poller._startHeartbeat();          // already armed -> replaced, not stacked
     assert.equal(GLib.__pendingTimers(), timers);
 
     // GLib can dispatch an already-queued source in the same iteration that
@@ -1087,4 +1105,28 @@ test('a reconcile invoked after teardown does nothing (white-box guard check)', 
     const calls = Gio.__calls().length;
     await h.poller._reconcile();
     assert.equal(Gio.__calls().length, calls, 'no table poll after stop()');
+});
+
+test('a scheduler re-entered replaces its source instead of orphaning one', async () => {
+    // The fake GLib throws on removing an unknown id, so a wrong removal fails
+    // here just as loudly as the leaked timer this guards against.
+    const h = harness();
+    h.poller.start();
+    await settle();
+    await activateWatch();               // heartbeat and reconcile are armed
+    const base = GLib.__pendingTimers();
+
+    h.poller._scheduleNext(5);
+    h.poller._scheduleNext(5);
+    h.poller._armCoalesce(200);
+    h.poller._armCoalesce(200);
+    h.poller._scheduleWatchRetry(5);
+    h.poller._scheduleWatchRetry(5);
+    h.poller._startHeartbeat();
+    h.poller._startReconcile();
+    assert.equal(GLib.__pendingTimers(), base + 3,
+        'one poll, one flush and one retry source, each armed exactly once');
+
+    h.poller.stop();
+    assert.equal(GLib.__pendingTimers(), 0, 'and stop() removes every one of them');
 });

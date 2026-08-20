@@ -44,8 +44,11 @@ Tier 1 is normally a long-lived `kubectl get nodes --watch` (`NodeWatcher` in
   (broken in kubectl 1.35), hence the zipped condition lists.
 - **Snapshots are complete or not at all.** Events coalesce (quiet 250 ms, cap 1.5 s)
   before the alert machine observes them; never deliver a half-listed cluster.
-- **Every watch timer is owned and cleared in `_teardownWatch()`**: startup watchdog,
-  coalesce, heartbeat, reconcile, retry. `stop()` must leave zero sources armed.
+- **Every watch timer is owned and cleared in `_releaseWatch()`**: startup watchdog,
+  coalesce, heartbeat, reconcile, retry. `_teardownWatch()` is that plus killing the
+  child, so the exit path releases without it. `stop()` must leave zero sources armed.
+- **A scheduler removes its own source on the line above the `timeout_add`**, never only
+  in the teardown path, and never by refusing to arm. EGO review rejects both.
 - **Respawn policy lives in `schedule.js`** (`classifyWatchExit`): stable exits respawn at
   once, quick deaths back off, three park the watch behind the slow retry. Keep the math
   pure and tested.

@@ -890,10 +890,8 @@ test('a watch exit releases every source the stream owned', async () => {
 
     proc.__exit({ok: false});
     await settle();
-    assert.equal(h.poller._heartbeatId, 0, 'heartbeat');
-    assert.equal(h.poller._reconcileId, 0, 'reconcile');
-    assert.equal(h.poller._coalesceId, 0, 'pending flush');
-    assert.equal(h.poller._watchStartupId, 0, 'startup budget');
+    for (const name of ['heartbeat', 'reconcile', 'coalesce', 'watchStartup'])
+        assert.equal(h.poller._timeouts.has(name), false, name);
     h.poller.stop();
     assert.equal(GLib.__pendingTimers(), 0, 'and the retry with them');
 });
@@ -1129,4 +1127,19 @@ test('a scheduler re-entered replaces its source instead of orphaning one', asyn
 
     h.poller.stop();
     assert.equal(GLib.__pendingTimers(), 0, 'and stop() removes every one of them');
+});
+
+test('every armed source lives in _timeouts, and stop() empties it', async () => {
+    const h = harness();
+    h.poller.start();
+    await settle();
+    await activateWatch();
+    watchProc().__pushLine('MODIFIED|n1||Ready|False');
+    await settle();
+
+    assert.equal(GLib.__pendingTimers(), h.poller._timeouts.size,
+        'the map tracks exactly the live GLib sources');
+    h.poller.stop();
+    assert.equal(h.poller._timeouts.size, 0, 'stop() looped them all away');
+    assert.equal(GLib.__pendingTimers(), 0);
 });

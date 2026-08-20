@@ -5,7 +5,9 @@
 
 /* Panel corner status dot. The helm logo's size and colour are set in
    indicator.js. */
-.kube-panel-dot {
+/* Both classes: a single .kube-panel-dot ties with .kube-dot on specificity and
+   loses on source order, which silently dropped this rule. */
+.kube-dot.kube-panel-dot {
     width: 10px;
     height: 10px;
     border-radius: 6px;
@@ -26,7 +28,7 @@
 
 .kube-time {
     font-size: 0.8em;
-    opacity: 0.65;
+    color: #b9b9ba;
 }
 
 .kube-context-button {
@@ -42,7 +44,7 @@
    StBoxLayout reverses its children under RTL, so a margin that clears a
    neighbour must be stated for both directions or it lands on the wrong side. */
 .kube-caret {
-    opacity: 0.45;
+    color: #909093;
 }
 
 .kube-caret:ltr {
@@ -91,7 +93,7 @@
 
 .kube-context-empty {
     padding: 5px 8px;
-    opacity: 0.45;
+    color: #9f9fa0;
 }
 
 /* Pods summary. max-width stops a longer locale stretching the popup past the
@@ -103,7 +105,7 @@
 }
 
 .kube-pods-ok {
-    opacity: 0.6;
+    color: #afafb0;
 }
 
 .kube-pods-warn {
@@ -134,11 +136,10 @@
     font-size: 1.02em;
 }
 
-/* Carries the failure reason, so it has to stay legible: opacity 0.45 gives
-   ~3.8:1 on a dark popup, under the 4.5:1 AA floor. */
+/* Carries the failure reason, so it stays above the 4.5:1 AA floor. */
 .kube-node-qual {
     font-size: 0.85em;
-    opacity: 0.7;
+    color: #c3c3c4;
 }
 
 .kube-node-duration {
@@ -181,7 +182,7 @@
 .kube-meter-label {
     font-size: 0.82em;
     font-weight: 600;
-    opacity: 0.5;
+    color: #9f9fa0;
     min-width: 30px;
 }
 
@@ -214,7 +215,7 @@
 
 /* Focus rings. The shell's popup-menu-item:focus never reaches these custom
    classes, so without them keyboard focus is invisible (WCAG 2.4.7). Inset
-   box-shadow, not outline: St's CSS subset does not implement outline. */
+   box-shadow, not outline: outline draws outside the allocation and gets clipped in a menu. */
 .kube-context-button:focus,
 .kube-icon-button:focus,
 .kube-context-row:focus {
@@ -224,7 +225,7 @@
 
 .kube-meter-value {
     font-size: 0.85em;
-    opacity: 0.75;
+    color: #cdcdce;
     min-width: 36px;
 }
 
@@ -270,14 +271,14 @@
 
 .kube-error-detail {
     font-size: 0.85em;
-    opacity: 0.55;
+    color: #a5a5a6;
     max-width: 300px;
 }
 
 /* One transient failure: a dim note above data kept from the last good poll. */
 .kube-error-strip {
     font-size: 0.85em;
-    opacity: 0.55;
+    color: #a5a5a6;
     max-width: 300px;
 }
 
@@ -285,30 +286,33 @@
    the panel button and on the menu box whenever the theme paints dark text on
    them. Values and their measured contrast: docs/architecture.md. */
 
-/* Dark text loses more contrast per step of opacity, so each dimmed row is
-   raised to where it matches its dark twin. */
-.kube-light .kube-caret,
+/* Dark text loses more contrast per step of dimming, so each row is blended
+   further from the surface than its dark twin to land on the same footing. */
+.kube-light .kube-caret {
+    color: #7a7782;
+}
+
 .kube-light .kube-context-empty {
-    opacity: 0.6;
+    color: #75727e;
 }
 
 .kube-light .kube-meter-label {
-    opacity: 0.65;
+    color: #6f6c78;
 }
 
 .kube-light .kube-pods-ok,
 .kube-light .kube-error-detail,
 .kube-light .kube-error-strip {
-    opacity: 0.7;
+    color: #64616e;
 }
 
 .kube-light .kube-time {
-    opacity: 0.75;
+    color: #5a5664;
 }
 
 .kube-light .kube-node-qual,
 .kube-light .kube-meter-value {
-    opacity: 0.8;
+    color: #4f4b59;
 }
 
 /* The dark palette's greens and ambers cannot carry text here: they were picked

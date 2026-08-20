@@ -77,7 +77,7 @@ function hasHue(body) {
 
 test('every hue and every dimmed row is declared for light surfaces too', () => {
     // The dark palette was picked against #36363a: on #fafafb its greens reach
-    // 1.6:1, and the same opacity buys a fifth less contrast. Both need a twin.
+    // 1.6:1, and a dimmed grey inverts outright. Both need a twin.
     const scoped = new Set(rules()
         .filter(r => r.selector.includes('.kube-light'))
         .flatMap(r => r.selector.match(/\.kube-[a-z-]+/g) ?? []));
@@ -85,7 +85,7 @@ test('every hue and every dimmed row is declared for light surfaces too', () => 
     for (const rule of rules()) {
         if (rule.selector.includes('.kube-light'))
             continue;
-        if (!hasHue(rule.body) && !/(?:^|[\s;])opacity\s*:/.test(rule.body))
+        if (!hasHue(rule.body) && !/(?:^|[\s;])color\s*:/.test(rule.body))
             continue;
         for (const cls of rule.selector.match(/\.kube-[a-z-]+/g) ?? []) {
             if (!scoped.has(cls))

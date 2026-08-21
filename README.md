@@ -14,17 +14,6 @@
   <a href="COPYING"><img src="https://img.shields.io/badge/license-GPL--2.0--or--later-6B1E45?style=flat-square&labelColor=1B1119" alt="GPL-2.0-or-later"></a>
 </p>
 
-<!--
-  PUBLISH TODO: uncomment once the extension is live on extensions.gnome.org and
-  the extension is public. Its id is 10726.
-
-  <p align="center">
-    <a href="https://extensions.gnome.org/extension/10726/kube-node-monitor/">
-      <img src="https://img.shields.io/badge/Get_it_on-GNOME_Extensions-A82740?style=flat-square&logo=gnome&logoColor=white&labelColor=1B1119" alt="Get it on GNOME Extensions">
-    </a>
-  </p>
--->
-
 A GNOME Shell extension that puts Kubernetes node health in the top bar. A dot stays green while every node is Ready, amber when one degrades, red when one drops out. A node going down is something you see, not something you find out later. Open the menu for the detail; the rest of the time it says nothing.
 
 It runs on the `kubectl` and kubeconfig you already have, so whatever context and auth work in your terminal work here. It never writes to your cluster.
@@ -50,7 +39,22 @@ It runs on the `kubectl` and kubeconfig you already have, so whatever context an
 
 Needs GNOME Shell 45 to 50, `kubectl` installed, and a working kubeconfig. Both are auto-detected, snap and krew locations included; an unusual path goes under Advanced. Per-node CPU and memory bars need metrics-server in the cluster; nothing else depends on it.
 
-Not on [extensions.gnome.org](https://extensions.gnome.org) yet, so install from source:
+<p align="center">
+  <a href="https://extensions.gnome.org/extension/10726/kube-node-monitor/">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="docs/images/brand/ego-badge-dark.svg">
+      <source media="(prefers-color-scheme: light)" srcset="docs/images/brand/ego-badge-light.svg">
+      <img src="docs/images/brand/ego-badge-light.svg" alt="Get it on GNOME Extensions" width="880">
+    </picture>
+  </a>
+</p>
+
+A store install lands in the session you are already in, no logging out. Updates are fetched for you and take effect at your next login.
+
+<details>
+<summary>From source, from a zip, or uninstalling</summary>
+
+From source is what you want if you intend to change anything. `install.sh` compiles the GSettings schema and symlinks the checkout into `~/.local/share/gnome-shell/extensions`, so from then on a code edit only needs a shell restart.
 
 ```bash
 git clone https://github.com/cerobreath/gnome-kube-monitor.git
@@ -59,17 +63,15 @@ cd gnome-kube-monitor
 gnome-extensions enable kube-monitor@cerobreath.dev
 ```
 
-`install.sh` compiles the GSettings schema and symlinks the folder into `~/.local/share/gnome-shell/extensions`. On Wayland you have to log out and back in before the shell will pick up a new extension.
-
-<details>
-<summary>From a zip, or uninstalling</summary>
+From the zip every tagged release attaches, built from source by CI and signed with a build provenance attestation.
 
 ```bash
-npm run pack   # builds kube-monitor@cerobreath.dev.shell-extension.zip
 gnome-extensions install --force kube-monitor@cerobreath.dev.shell-extension.zip
 ```
 
-Every tagged release attaches that same zip, built from source by CI.
+Both of those are manual installs, and on Wayland the shell only picks one up after you log out and back in.
+
+Uninstalling, including the settings:
 
 ```bash
 gnome-extensions disable kube-monitor@cerobreath.dev

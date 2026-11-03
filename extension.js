@@ -140,6 +140,7 @@ export default class KubeMonitorExtension extends Extension {
                 'alert-silence-until', seconds > 0 ? Date.now() + seconds * 1000 : 0)),
         ];
         this._indicator.setSnoozeUntil(this._settings.get_int64('alert-silence-until'));
+        this._indicator.setPanelContextVisible(this._settings.get_boolean('show-context-in-panel'));
 
         this._poller = new KubePoller({
             getOpts: () => this._readOpts(),
@@ -162,6 +163,8 @@ export default class KubeMonitorExtension extends Extension {
                 this._poller?.refreshNow();
             } else if (key === 'debug-logging') {
                 setDebugEnabled(settings.get_boolean('debug-logging'));
+            } else if (key === 'show-context-in-panel') {
+                this._indicator.setPanelContextVisible(settings.get_boolean('show-context-in-panel'));
             } else if (key === 'alert-silence-until') {
                 // No null-guard: this handler is disconnected in disable(),
                 // before the indicator goes away.

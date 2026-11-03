@@ -439,6 +439,19 @@ test('the refresh row and menu state reach the poller', async () => {
     ext.disable();
 });
 
+test('the panel context label follows its setting on enable and on change', async () => {
+    const {ext, settings} = makeExtension({'show-context-in-panel': true});
+    ext.enable();
+    await settle();
+    const indicator = Main.panel.statusArea['kube-monitor@cerobreath.dev'];
+    assert.equal(indicator._panelLabel.visible, true);
+    assert.equal(indicator._panelLabel.text, indicator._titleLabel.text, 'mirrors the header');
+
+    settings.set_boolean('show-context-in-panel', false);
+    assert.equal(indicator._panelLabel.visible, false);
+    ext.disable();
+});
+
 test('selecting a context writes the setting', async () => {
     const {ext, settings} = makeExtension();
     ext.enable();

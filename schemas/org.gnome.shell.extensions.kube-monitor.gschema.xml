@@ -59,6 +59,11 @@
       <summary>Muted until (Unix milliseconds)</summary>
       <description>Internal. Notifications are muted until this time; zero means not muted. Set from the panel menu.</description>
     </key>
+    <key name="show-context-in-panel" type="b">
+      <default>false</default>
+      <summary>Context in panel</summary>
+      <description>Show the monitored context's name beside the panel icon.</description>
+    </key>
     <key name="debug-logging" type="b">
       <default>false</default>
       <summary>Diagnostic logging</summary>

@@ -109,6 +109,23 @@ test('the panel shows the helm icon plus a status dot, and starts unknown', () =
     assert.match(indicator.accessible_name, /Kube Node Monitor/);
 });
 
+test('the panel label mirrors the context title and shows only when asked', () => {
+    const {indicator} = makeIndicator();
+    assert.equal(indicator._panelLabel.visible, false, 'off by default');
+    assert.equal(indicator._panelLabel.clutter_text.ellipsize, Pango.EllipsizeMode.END,
+        'a long context name must not widen the panel');
+
+    indicator.update(detailState({context: 'prod'}));
+    assert.equal(indicator._panelLabel.text, 'prod');
+    indicator._showSwitching('staging');
+    assert.equal(indicator._panelLabel.text, 'staging', 'instant feedback, like the header');
+
+    indicator.setPanelContextVisible(true);
+    assert.equal(indicator._panelLabel.visible, true);
+    indicator.setPanelContextVisible(false);
+    assert.equal(indicator._panelLabel.visible, false);
+});
+
 test('the panel dot and its spoken name follow the cluster level', () => {
     const {indicator} = makeIndicator();
     /** @type {[string, string][]} */

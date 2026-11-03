@@ -79,6 +79,7 @@ test('every control is bound to its schema key', async () => {
         'notify-node-changes:active',
         'notify-on-recovery:active',
         'refresh-interval:value',
+        'show-context-in-panel:active',
     ].sort());
 });
 

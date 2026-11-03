@@ -13,6 +13,19 @@
     border-radius: 6px;
 }
 
+/* Context name beside the panel icon (show-context-in-panel). */
+.kube-panel-context {
+    max-width: 240px;
+}
+
+.kube-panel-context:ltr {
+    margin-left: 6px;
+}
+
+.kube-panel-context:rtl {
+    margin-right: 6px;
+}
+
 /* Menu header. min-width widens the whole popup, not just this row, so node
    rows and meters have room. */
 .kube-header {

@@ -49,6 +49,13 @@ export default class KubeMonitorPreferences extends ExtensionPreferences {
         monitorGroup.add(interval);
         settings.bind('refresh-interval', interval, 'value', Gio.SettingsBindFlags.DEFAULT);
 
+        const panelContext = new Adw.SwitchRow({
+            title: _('Context in Panel'),
+            subtitle: _('Show the monitored context name beside the panel icon'),
+        });
+        monitorGroup.add(panelContext);
+        settings.bind('show-context-in-panel', panelContext, 'active', Gio.SettingsBindFlags.DEFAULT);
+
         const notifyGroup = new Adw.PreferencesGroup({
             title: _('Notifications'),
             description: _('Choose which events notify you, and how long to wait first'),

@@ -80,6 +80,7 @@ test('every control is bound to its schema key', async () => {
         'notify-on-recovery:active',
         'refresh-interval:value',
         'show-context-in-panel:active',
+        'switch-kubectl-context:active',
     ].sort());
 });
 

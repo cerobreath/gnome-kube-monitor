@@ -461,6 +461,71 @@ test('selecting a context writes the setting', async () => {
     ext.disable();
 });
 
+test('with switching on, a pick makes kubectl follow and clears the pin', async () => {
+    const {ext, settings} = makeExtension({'switch-kubectl-context': true, 'context': 'prod'});
+    ext.enable();
+    await settle();
+    const indicator = Main.panel.statusArea['kube-monitor@cerobreath.dev'];
+    assert.equal(indicator._contextsAlwaysExpanded, true);
+
+    indicator.emit('context-selected', 'staging');
+    await settle();
+    const call = Gio.__calls().find(c => c.argv.includes('use-context'));
+    assert.ok(call, 'kubectl config use-context ran');
+    assert.ok(!call.argv.some(a => a.startsWith('--context')));
+    assert.equal(settings.get_string('context'), '', 'no pin: follow current-context');
+
+    // Already following: no setting changes, so the refresh is explicit.
+    const before = Gio.__calls().filter(c => c.argv.includes('get-contexts')).length;
+    indicator.emit('context-selected', 'dev');
+    await settle();
+    assert.equal(settings.get_string('context'), '');
+    assert.ok(Gio.__calls().filter(c => c.argv.includes('get-contexts')).length > before,
+        'the switcher is re-listed');
+
+    settings.set_boolean('switch-kubectl-context', false);
+    assert.equal(indicator._contextsAlwaysExpanded, false);
+    ext.disable();
+});
+
+test('a refused switch is reported, and the pick falls back to pinning', async () => {
+    const {ext, settings} = makeExtension({'switch-kubectl-context': true});
+    ext.enable();
+    await settle();
+    Gio.__setSpawn(({argv}) => {
+        if (argv.includes('use-context'))
+            return {stdout: '', stderr: 'error: no context exists with the name: "nope"', ok: false};
+        return {stdout: HEALTH_ALL_OK};
+    });
+    Main.panel.statusArea['kube-monitor@cerobreath.dev'].emit('context-selected', 'nope');
+    await settle();
+    await flushBanners();
+    assert.ok(banners().some(b => /Could not switch kubectl context/.test(b.title)));
+    assert.equal(settings.get_string('context'), 'nope');
+    ext.disable();
+});
+
+test('a switch landing after disable neither writes settings nor notifies', async () => {
+    for (const ok of [true, false]) {
+        const {ext, settings} = makeExtension({'switch-kubectl-context': true});
+        ext.enable();
+        await settle();
+        Gio.__setSpawn(({argv}) => {
+            if (argv.includes('use-context'))
+                return {stdout: '', stderr: 'late', ok, defer: true};
+            return {stdout: HEALTH_ALL_OK};
+        });
+        Main.panel.statusArea['kube-monitor@cerobreath.dev'].emit('context-selected', 'late');
+        await settle();
+        const writes = settings.writes.length;
+        ext.disable();
+        Gio.__release();
+        await settle();
+        assert.equal(settings.writes.length, writes, `ok=${ok}: no write after teardown`);
+        assert.ok(!banners().some(b => /Could not switch/.test(b.title)), `ok=${ok}: no banner`);
+    }
+});
+
 test('the context switcher is populated, resolving the current context when unset', async () => {
     const {ext} = makeExtension();
     Gio.__setSpawn(({argv}) => {

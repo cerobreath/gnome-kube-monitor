@@ -9,7 +9,7 @@ import GLib from 'gi://GLib';
 
 import {
     fetchHealth, fetchHealthTable, fetchNodesDetail, fetchNodeMetrics,
-    fetchPodsSummary, fetchContexts, fetchCurrentContext, NodeWatcher,
+    fetchPodsSummary, fetchContexts, fetchCurrentContext, useContext, NodeWatcher,
 } from '../lib/client.js';
 
 const OPTS = {kubectlPath: '', kubeconfig: '', context: ''};
@@ -239,6 +239,19 @@ test('fetchCurrentContext swallows failure and resolves empty', async () => {
     reset();
     respond('  ctx-b \n');
     assert.equal(await fetchCurrentContext(opts(), null), 'ctx-b');
+});
+
+test('useContext runs the config command without a --context flag', async () => {
+    reset();
+    respond('');
+    await useContext('staging', opts({context: 'prod'}), null);
+    const argv = Gio.__lastCall().argv;
+    assert.deepEqual(argv.slice(-3), ['config', 'use-context', 'staging']);
+    assert.ok(!argv.some(a => a.startsWith('--context')), argv.join(' '));
+
+    reset();
+    Gio.__setSpawn(() => ({stdout: '', stderr: 'no context exists', ok: false}));
+    await assert.rejects(useContext('nope', opts(), null), /no context exists/);
 });
 
 test('fetchContexts trims blanks and whitespace', async () => {

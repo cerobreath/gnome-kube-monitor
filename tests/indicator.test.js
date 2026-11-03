@@ -518,6 +518,26 @@ test('the switcher announces whether it is expanded', () => {
     assert.equal(indicator._caret.icon_name, 'pan-end-symbolic');
 });
 
+test('an always-expanded switcher drops the caret and ignores collapse requests', () => {
+    const {indicator} = makeIndicator();
+    indicator.setContexts(['dev', 'prod'], 'dev');
+    indicator.setContextsAlwaysExpanded(true);
+    assert.equal(indicator._contextItem.visible, true);
+    assert.equal(indicator._caret.visible, false);
+
+    indicator._contextButton.emit('clicked');
+    assert.equal(indicator._contextsExpanded, true, 'the header no longer toggles');
+    indicator._contextList.get_children().find(r => r.__allText().includes('prod')).emit('clicked');
+    assert.equal(indicator._contextsExpanded, true, 'a pick leaves the list open');
+    menuOf(indicator).__setOpen(true);
+    menuOf(indicator).__setOpen(false);
+    assert.equal(indicator._contextsExpanded, true, 'so does closing the menu');
+
+    indicator.setContextsAlwaysExpanded(false);
+    assert.equal(indicator._contextsExpanded, false);
+    assert.equal(indicator._caret.visible, true);
+});
+
 test('closing the menu collapses the switcher and reports open state', () => {
     const {indicator} = makeIndicator();
     /** @type {boolean[]} */

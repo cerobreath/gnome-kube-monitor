@@ -147,6 +147,13 @@ export default class KubeMonitorPreferences extends ExtensionPreferences {
         contextRow.model = contextModel;
         connGroup.add(contextRow);
 
+        const switchRow = new Adw.SwitchRow({
+            title: _('Switch kubectl Context'),
+            subtitle: _('Choosing a context in the menu also makes it the current one for kubectl'),
+        });
+        connGroup.add(switchRow);
+        settings.bind('switch-kubectl-context', switchRow, 'active', Gio.SettingsBindFlags.DEFAULT);
+
         // The status icon repeats what the subtitle already says in words, so it
         // is reinforcement rather than the only signal. "kubectl" and
         // "kubeconfig" are product names and stay untranslated as row titles.

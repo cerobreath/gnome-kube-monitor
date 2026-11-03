@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Kube Node Monitor 0.1.0\n"
 "Report-Msgid-Bugs-To: https://github.com/cerobreath/gnome-kube-monitor\n"
-"POT-Creation-Date: 2026-08-20 00:49+0300\n"
+"POT-Creation-Date: 2026-11-03 12:36+0100\n"
 "PO-Revision-Date: 2026-07-31 01:05+0300\n"
 "Last-Translator: Kube Node Monitor contributors\n"
 "Language-Team: Ukrainian\n"
@@ -142,7 +142,7 @@ msgstr "kubectl і kubeconfig визначаються автоматично"
 msgid "Context"
 msgstr "Контекст"
 
-#: prefs.js:138 prefs.js:320
+#: prefs.js:138 prefs.js:322
 msgid "Which context to monitor"
 msgstr "Який контекст відстежувати"
 
@@ -217,7 +217,7 @@ msgstr "Не знайдено в PATH. Вкажіть шлях у розділі
 
 #. Translators: how many kubeconfig files kubectl will merge into
 #. one configuration. %d is the count.
-#: prefs.js:280
+#: prefs.js:282
 #, javascript-format
 msgid "%d file"
 msgid_plural "%d files"
@@ -226,28 +226,28 @@ msgstr[1] "%d файли"
 msgstr[2] "%d файлів"
 
 #. Translators: %s is a file path that does not exist.
-#: prefs.js:288
+#: prefs.js:290
 #, javascript-format
 msgid "%s (missing)"
 msgstr "%s (відсутній)"
 
 #. Translators: first entry of the context picker. It follows whichever
 #. context kubectl has selected instead of pinning one.
-#: prefs.js:308
+#: prefs.js:310
 msgid "Current context (auto)"
 msgstr "Поточний контекст (авто)"
 
 #. Translators: shown when no context is pinned, so the extension
 #. follows kubectl's selection. %s is that context's name.
 #. "current-context" is a kubeconfig field, keep it as it is.
-#: prefs.js:319
+#: prefs.js:321
 #, javascript-format
 msgid "Following current-context (%s)"
 msgstr "Використовується current-context (%s)"
 
 #. Translators: toast after a successful connection test.
 #. %d is how many contexts the kubeconfig defines.
-#: prefs.js:336
+#: prefs.js:338
 #, javascript-format
 msgid "Connected. Found %d context."
 msgid_plural "Connected. Found %d contexts."

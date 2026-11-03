@@ -272,7 +272,9 @@ export default class KubeMonitorPreferences extends ExtensionPreferences {
             // expander below, so use the same wording you gave its title.
             kubectlRow.subtitle = kubectl || _('Not found on PATH. Set it under Advanced.');
 
-            const list = o.kubeconfig ? o.kubeconfig.split(':').filter(Boolean) : [];
+            // $KUBECONFIG is a colon-separated list too, so split it the same way.
+            const source = o.kubeconfig || GLib.getenv('KUBECONFIG') || '';
+            const list = source.split(':').filter(Boolean);
             if (list.length > 1) {
                 kubeconfigIcon.icon_name = 'object-select-symbolic';
                 // Translators: how many kubeconfig files kubectl will merge into
@@ -280,7 +282,7 @@ export default class KubeMonitorPreferences extends ExtensionPreferences {
                 const files = ngettext('%d file', '%d files', list.length);
                 kubeconfigRow.subtitle = format(files, list.length);
             } else {
-                const kc = list[0] || GLib.getenv('KUBECONFIG') ||
+                const kc = list[0] ||
                     GLib.build_filenamev([GLib.get_home_dir(), '.kube', 'config']);
                 const exists = GLib.file_test(kc, GLib.FileTest.EXISTS);
                 kubeconfigIcon.icon_name = exists ? 'object-select-symbolic' : 'dialog-warning-symbolic';

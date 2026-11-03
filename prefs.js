@@ -49,6 +49,13 @@ export default class KubeMonitorPreferences extends ExtensionPreferences {
         monitorGroup.add(interval);
         settings.bind('refresh-interval', interval, 'value', Gio.SettingsBindFlags.DEFAULT);
 
+        const panelContext = new Adw.SwitchRow({
+            title: _('Context in Panel'),
+            subtitle: _('Show the monitored context name beside the panel icon'),
+        });
+        monitorGroup.add(panelContext);
+        settings.bind('show-context-in-panel', panelContext, 'active', Gio.SettingsBindFlags.DEFAULT);
+
         const notifyGroup = new Adw.PreferencesGroup({
             title: _('Notifications'),
             description: _('Choose which events notify you, and how long to wait first'),
@@ -139,6 +146,13 @@ export default class KubeMonitorPreferences extends ExtensionPreferences {
         });
         contextRow.model = contextModel;
         connGroup.add(contextRow);
+
+        const switchRow = new Adw.SwitchRow({
+            title: _('Switch kubectl Context'),
+            subtitle: _('Choosing a context in the menu also makes it the current one for kubectl'),
+        });
+        connGroup.add(switchRow);
+        settings.bind('switch-kubectl-context', switchRow, 'active', Gio.SettingsBindFlags.DEFAULT);
 
         // The status icon repeats what the subtitle already says in words, so it
         // is reinforcement rather than the only signal. "kubectl" and
@@ -272,7 +286,9 @@ export default class KubeMonitorPreferences extends ExtensionPreferences {
             // expander below, so use the same wording you gave its title.
             kubectlRow.subtitle = kubectl || _('Not found on PATH. Set it under Advanced.');
 
-            const list = o.kubeconfig ? o.kubeconfig.split(':').filter(Boolean) : [];
+            // $KUBECONFIG is a colon-separated list too, so split it the same way.
+            const source = o.kubeconfig || GLib.getenv('KUBECONFIG') || '';
+            const list = source.split(':').filter(Boolean);
             if (list.length > 1) {
                 kubeconfigIcon.icon_name = 'object-select-symbolic';
                 // Translators: how many kubeconfig files kubectl will merge into
@@ -280,7 +296,7 @@ export default class KubeMonitorPreferences extends ExtensionPreferences {
                 const files = ngettext('%d file', '%d files', list.length);
                 kubeconfigRow.subtitle = format(files, list.length);
             } else {
-                const kc = list[0] || GLib.getenv('KUBECONFIG') ||
+                const kc = list[0] ||
                     GLib.build_filenamev([GLib.get_home_dir(), '.kube', 'config']);
                 const exists = GLib.file_test(kc, GLib.FileTest.EXISTS);
                 kubeconfigIcon.icon_name = exists ? 'object-select-symbolic' : 'dialog-warning-symbolic';

@@ -16,7 +16,7 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import {KubeIndicator} from './lib/indicator.js';
 import {KubePoller} from './lib/poller.js';
 import {KubeNotifier} from './lib/notifier.js';
-import {fetchContexts, fetchCurrentContext} from './lib/client.js';
+import {fetchContexts, fetchCurrentContext, useContext} from './lib/client.js';
 import {
     reduce, groupActions, rollbackDelivery, needsPersist, serializeState, deserializeState,
 } from './lib/alerts.js';
@@ -127,8 +127,7 @@ export default class KubeMonitorExtension extends Extension {
         this._indicatorIds = [
             this._indicator.connect('refresh-requested', () => this._poller?.refreshNow()),
             this._indicator.connect('menu-open-changed', (_i, open) => this._poller?.setMenuOpen(open)),
-            this._indicator.connect('context-selected',
-                (_i, ctx) => this._settings?.set_string('context', ctx)),
+            this._indicator.connect('context-selected', (_i, ctx) => this._onContextSelected(ctx)),
             // Translators: notification shown after clicking a node row. The body
             // is the shell command put on the clipboard, so it is not translated.
             this._indicator.connect('node-copied', (_i, name) => this._notifier?.notify(
@@ -140,6 +139,8 @@ export default class KubeMonitorExtension extends Extension {
                 'alert-silence-until', seconds > 0 ? Date.now() + seconds * 1000 : 0)),
         ];
         this._indicator.setSnoozeUntil(this._settings.get_int64('alert-silence-until'));
+        this._indicator.setPanelContextVisible(this._settings.get_boolean('show-context-in-panel'));
+        this._indicator.setContextsAlwaysExpanded(this._settings.get_boolean('switch-kubectl-context'));
 
         this._poller = new KubePoller({
             getOpts: () => this._readOpts(),
@@ -162,6 +163,10 @@ export default class KubeMonitorExtension extends Extension {
                 this._poller?.refreshNow();
             } else if (key === 'debug-logging') {
                 setDebugEnabled(settings.get_boolean('debug-logging'));
+            } else if (key === 'switch-kubectl-context') {
+                this._indicator.setContextsAlwaysExpanded(settings.get_boolean('switch-kubectl-context'));
+            } else if (key === 'show-context-in-panel') {
+                this._indicator.setPanelContextVisible(settings.get_boolean('show-context-in-panel'));
             } else if (key === 'alert-silence-until') {
                 // No null-guard: this handler is disconnected in disable(),
                 // before the indicator goes away.
@@ -173,6 +178,41 @@ export default class KubeMonitorExtension extends Extension {
 
         this._refreshContextInfo();
         this._poller.start();
+    }
+
+    // A menu pick either pins the context or, with switch-kubectl-context, makes
+    // it kubectl's current-context and clears the pin so the terminal and the
+    // menu stay in step.
+    /** @param {string} ctx */
+    _onContextSelected(ctx) {
+        const settings = /** @type {Gio.Settings} */ (this._settings);
+        if (!settings.get_boolean('switch-kubectl-context')) {
+            settings.set_string('context', ctx);
+            return;
+        }
+        const cancellable = /** @type {Gio.Cancellable} */ (this._cancellable);
+        useContext(ctx, this._readOpts(), cancellable)
+            .then(() => /** @type {Error | null} */ (null), (/** @type {Error} */ e) => e)
+            .then(error => {
+                if (cancellable.is_cancelled())
+                    return;   // disable() ran meanwhile
+                if (error) {
+                    // Translators: notification title when kubectl refused to
+                    // switch context. The body is kubectl's own message.
+                    this._notifier.notify(_('Could not switch kubectl context'), error.message,
+                        {transient: true});
+                    settings.set_string('context', ctx);   // pin, so the pick still takes effect
+                    return;
+                }
+                this._context = ctx;
+                if (settings.get_string('context') !== '') {
+                    settings.set_string('context', '');   // the changed handler refreshes
+                } else {
+                    this._alertState = null;
+                    this._refreshContextInfo();
+                    this._poller.refreshNow();
+                }
+            });
     }
 
     _readOpts() {

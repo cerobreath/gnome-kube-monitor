@@ -109,6 +109,23 @@ test('the panel shows the helm icon plus a status dot, and starts unknown', () =
     assert.match(indicator.accessible_name, /Kube Node Monitor/);
 });
 
+test('the panel label mirrors the context title and shows only when asked', () => {
+    const {indicator} = makeIndicator();
+    assert.equal(indicator._panelLabel.visible, false, 'off by default');
+    assert.equal(indicator._panelLabel.clutter_text.ellipsize, Pango.EllipsizeMode.END,
+        'a long context name must not widen the panel');
+
+    indicator.update(detailState({context: 'prod'}));
+    assert.equal(indicator._panelLabel.text, 'prod');
+    indicator._showSwitching('staging');
+    assert.equal(indicator._panelLabel.text, 'staging', 'instant feedback, like the header');
+
+    indicator.setPanelContextVisible(true);
+    assert.equal(indicator._panelLabel.visible, true);
+    indicator.setPanelContextVisible(false);
+    assert.equal(indicator._panelLabel.visible, false);
+});
+
 test('the panel dot and its spoken name follow the cluster level', () => {
     const {indicator} = makeIndicator();
     /** @type {[string, string][]} */
@@ -499,6 +516,26 @@ test('the switcher announces whether it is expanded', () => {
     indicator._contextButton.emit('clicked');
     assert.match(indicator._contextButton.accessible_name, /collapsed/);
     assert.equal(indicator._caret.icon_name, 'pan-end-symbolic');
+});
+
+test('an always-expanded switcher drops the caret and ignores collapse requests', () => {
+    const {indicator} = makeIndicator();
+    indicator.setContexts(['dev', 'prod'], 'dev');
+    indicator.setContextsAlwaysExpanded(true);
+    assert.equal(indicator._contextItem.visible, true);
+    assert.equal(indicator._caret.visible, false);
+
+    indicator._contextButton.emit('clicked');
+    assert.equal(indicator._contextsExpanded, true, 'the header no longer toggles');
+    indicator._contextList.get_children().find(r => r.__allText().includes('prod')).emit('clicked');
+    assert.equal(indicator._contextsExpanded, true, 'a pick leaves the list open');
+    menuOf(indicator).__setOpen(true);
+    menuOf(indicator).__setOpen(false);
+    assert.equal(indicator._contextsExpanded, true, 'so does closing the menu');
+
+    indicator.setContextsAlwaysExpanded(false);
+    assert.equal(indicator._contextsExpanded, false);
+    assert.equal(indicator._caret.visible, true);
 });
 
 test('closing the menu collapses the switcher and reports open state', () => {

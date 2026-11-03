@@ -567,6 +567,8 @@ export class Settings {
             'alert-group-wait': 0,
             'alert-silence-until': 0,
             'debug-logging': false,
+            'show-context-in-panel': false,
+            'switch-kubectl-context': false,
             'alert-state': '',
             'context': '',
             'kubeconfig-path': '',

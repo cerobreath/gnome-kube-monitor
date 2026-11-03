@@ -79,6 +79,8 @@ test('every control is bound to its schema key', async () => {
         'notify-node-changes:active',
         'notify-on-recovery:active',
         'refresh-interval:value',
+        'show-context-in-panel:active',
+        'switch-kubectl-context:active',
     ].sort());
 });
 
@@ -163,6 +165,12 @@ test('kubeconfig detection covers default, missing, explicit and multi-file case
     // Several files merged: report the count rather than a misleading single path.
     ({page} = await openPrefs({'kubeconfig-path': '/a.yaml:/b.yaml'}));
     assert.equal(rowByTitle(page, 'kubeconfig').subtitle, '2 files');
+
+    // A multi-file $KUBECONFIG is a list as well, not one missing path.
+    ({page} = await openPrefs({}, {getenv: {KUBECONFIG: '/env/a.yaml:/env/b.yaml:/env/c.yaml'}}));
+    row = rowByTitle(page, 'kubeconfig');
+    assert.equal(row.subtitle, '3 files');
+    assert.equal(row.__suffixes[0].icon_name, 'object-select-symbolic');
 });
 
 test('the context list offers auto-follow plus every context', async () => {
